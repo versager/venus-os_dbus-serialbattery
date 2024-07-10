@@ -193,8 +193,19 @@ class Jkbms_pb(Battery):
         # Temperature sensors
         temp1 = unpack_from("<h", status_data, 162)[0] / 10
         temp2 = unpack_from("<h", status_data, 164)[0] / 10
-        self.to_temp(1, temp1 if temp1 < 99 else (100 - temp1))
-        self.to_temp(2, temp2 if temp2 < 99 else (100 - temp2))
+        temp3 = unpack_from("<h", status_data, 254)[0] / 10
+        temp4 = unpack_from("<h", status_data, 256)[0] / 10
+        temp5 = unpack_from("<h", status_data, 258)[0] / 10
+        if(unpack_from("<B", status_data, 214)[0] & 0x02):
+                self.to_temp(1, temp1 if temp1 < 99 else (100 - temp1))
+        if(unpack_from("<B", status_data, 214)[0] & 0x04):
+                self.to_temp(2, temp2 if temp2 < 99 else (100 - temp2))
+        if(unpack_from("<B", status_data, 214)[0] & 0x08):
+                self.to_temp(3, temp3 if temp3 < 99 else (100 - temp3))
+        if(unpack_from("<B", status_data, 214)[0] & 0x10):
+                self.to_temp(4, temp4 if temp4 < 99 else (100 - temp4))
+        if(unpack_from("<B", status_data, 214)[0] & 0x20):
+                self.to_temp(5, temp5 if temp5 < 99 else (100 - temp5))
 
         # Battery voltage
         self.voltage = unpack_from("<I", status_data, 150)[0] / 1000
