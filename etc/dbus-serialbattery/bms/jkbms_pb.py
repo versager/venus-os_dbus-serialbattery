@@ -25,15 +25,15 @@ class Jkbms_pb(Battery):
 
     @property
     def command_status(self):
-        return self.address + b"\x10\x16\x20\x00\x01\x02\x00\x00\xD6\xF1"
+        return b"\x10\x16\x20\x00\x01\x02\x00\x00"
 
     @property
     def command_settings(self):
-        return self.address + b"\x10\x16\x1E\x00\x01\x02\x00\x00\xD2\x2F"
+        return b"\x10\x16\x1E\x00\x01\x02\x00\x00"
 
     @property
     def command_about(self):
-        return self.address + b"\x10\x16\x1C\x00\x01\x02\x00\x00\xD3\xCD"
+        return b"\x10\x16\x1C\x00\x01\x02\x00\x00"
 
     def test_connection(self):
         # call a function that will connect to the battery, send a command and retrieve the result.
@@ -343,8 +343,13 @@ class Jkbms_pb(Battery):
         :param command: the command to be sent to the bms
         :return: True if everything is fine, else False
         """
+        modbus_msg = self.address
+        modbus_msg += command
+        modbus_msg += self.modbusCrc(modbus_msg)
+
+
         data = read_serial_data(
-            command,
+            modbus_msg,
             self.port,
             self.baud_rate,
             self.LENGTH_POS,  # ignored
@@ -358,7 +363,7 @@ class Jkbms_pb(Battery):
         # be = ''.join(format(x, ' 02X') for x in data)
         # logger.error(be)
 
-        # I never understood the CRC algorithm in the message,
+        # I never understood the CRC algorithm in the returned message,
         # so we check the header and the length and that's it
 
         if data[0] == 0x55 and data[1] == 0xAA:
@@ -366,3 +371,19 @@ class Jkbms_pb(Battery):
         else:
             logger.error(">>> ERROR: Incorrect Reply ")
             return False
+
+    def modbusCrc(self, msg:str):
+        """
+        copied from https://stackoverflow.com/a/75328573
+        to calculate the needed checksum
+        """
+        crc = 0xFFFF
+        for n in range(len(msg)):
+            crc ^= msg[n]
+            for i in range(8):
+                if crc & 1:
+                    crc >>= 1
+                    crc ^= 0xA001
+                else:
+                    crc >>= 1
+        return crc.to_bytes(2, 'little')
