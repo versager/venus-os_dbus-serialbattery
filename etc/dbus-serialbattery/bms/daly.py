@@ -14,7 +14,7 @@ class Daly(Battery):
         super(Daly, self).__init__(port, baud, address)
         self.charger_connected = None
         self.load_connected = None
-        self.command_address = address
+        self.address = address
         self.cell_min_voltage = None
         self.cell_max_voltage = None
         self.cell_min_no = None
@@ -600,7 +600,7 @@ class Daly(Battery):
             cmd,
             0,
             0xA5,
-            self.command_address[0],
+            self.address[0],
             self.command_set_soc[0],
             8,
             now.year - 2000,
@@ -707,7 +707,7 @@ class Daly(Battery):
 
     def generate_command(self, command):
         buffer = bytearray(self.command_base)
-        buffer[1] = self.command_address[0]  # Always serial 40 or 80
+        buffer[1] = self.address[0]  # Always serial 40 or 80
         buffer[2] = command[0]
         buffer[12] = sum(buffer[:12]) & 0xFF  # checksum calc
         return buffer

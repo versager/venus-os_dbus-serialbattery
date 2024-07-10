@@ -17,23 +17,14 @@ class Jkbms_pb(Battery):
         self.unique_identifier_tmp = ""
         self.cell_count = 0
         self.address = address
+        self.command_status = b"\x10\x16\x20\x00\x01\x02\x00\x00"
+        self.command_settings = b"\x10\x16\x1E\x00\x01\x02\x00\x00"
+        self.command_about = b"\x10\x16\x1C\x00\x01\x02\x00\x00"
 
     BATTERYTYPE = "JKBMS PB Model"
     LENGTH_CHECK = 0  # ignored
     LENGTH_POS = 2  # ignored
     LENGTH_SIZE = "H"  # ignored
-
-    @property
-    def command_status(self):
-        return b"\x10\x16\x20\x00\x01\x02\x00\x00"
-
-    @property
-    def command_settings(self):
-        return b"\x10\x16\x1E\x00\x01\x02\x00\x00"
-
-    @property
-    def command_about(self):
-        return b"\x10\x16\x1C\x00\x01\x02\x00\x00"
 
     def test_connection(self):
         # call a function that will connect to the battery, send a command and retrieve the result.
@@ -347,7 +338,6 @@ class Jkbms_pb(Battery):
         modbus_msg += command
         modbus_msg += self.modbusCrc(modbus_msg)
 
-
         data = read_serial_data(
             modbus_msg,
             self.port,
@@ -372,7 +362,7 @@ class Jkbms_pb(Battery):
             logger.error(">>> ERROR: Incorrect Reply ")
             return False
 
-    def modbusCrc(self, msg:str):
+    def modbusCrc(self, msg: str):
         """
         copied from https://stackoverflow.com/a/75328573
         to calculate the needed checksum
@@ -386,4 +376,4 @@ class Jkbms_pb(Battery):
                     crc ^= 0xA001
                 else:
                     crc >>= 1
-        return crc.to_bytes(2, 'little')
+        return crc.to_bytes(2, "little")

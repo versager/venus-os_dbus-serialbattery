@@ -23,18 +23,24 @@ from settingsdevice import (  # noqa: E402
 )
 
 
+class SystemBus(dbus.bus.BusConnection):
+    def __new__(cls):
+        return dbus.bus.BusConnection.__new__(cls, dbus.bus.BusConnection.TYPE_SYSTEM)
+
+
+class SessionBus(dbus.bus.BusConnection):
+    def __new__(cls):
+        return dbus.bus.BusConnection.__new__(cls, dbus.bus.BusConnection.TYPE_SESSION)
+
+
 def get_bus() -> dbus.bus.BusConnection:
-    return (
-        dbus.SessionBus()
-        if "DBUS_SESSION_BUS_ADDRESS" in os.environ
-        else dbus.SystemBus()
-    )
+    return SessionBus() if "DBUS_SESSION_BUS_ADDRESS" in os.environ else SystemBus()
 
 
 class DbusHelper:
     EMPTY_DICT = {}
 
-    def __init__(self, battery):
+    def __init__(self, battery, bms_address=None):
         self.battery = battery
         self.instance = 1
         self.settings = None
@@ -43,6 +49,7 @@ class DbusHelper:
         self._dbusname = (
             "com.victronenergy.battery."
             + self.battery.port[self.battery.port.rfind("/") + 1 :]
+            + ("__" + str(bms_address) if bms_address is not None else "")
         )
         self._dbusservice = VeDbusService(self._dbusname, get_bus())
         self.bms_id = "".join(
@@ -476,7 +483,7 @@ class DbusHelper:
             return
 
     # this function is called when the battery is initiated
-    def setup_vedbus(self):
+    def setup_vedbus(self) -> bool:
         """
         Set up dbus service and device instance
         and notify of all the attributes we intend to update

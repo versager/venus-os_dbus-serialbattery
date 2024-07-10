@@ -48,8 +48,8 @@ supported_bms_types = [
     {"bms": Daly, "baud": 9600, "address": b"\x40"},
     {"bms": Daly, "baud": 9600, "address": b"\x80"},
     {"bms": Ecs, "baud": 19200},
-    {"bms": EG4_Lifepower, "baud": 9600},
-    {"bms": EG4_LL, "baud": 9600, "address": b"\x7C"},
+    {"bms": EG4_Lifepower, "baud": 9600, "address": b"\x01"},
+    {"bms": EG4_LL, "baud": 9600, "address": b"\x01"},
     {"bms": HeltecModbus, "baud": 9600},
     {"bms": HLPdataBMS4S, "baud": 9600},
     {"bms": Jkbms, "baud": 115200},
@@ -57,7 +57,7 @@ supported_bms_types = [
     {"bms": LltJbd, "baud": 9600},
     {"bms": Renogy, "baud": 9600, "address": b"\x30"},
     {"bms": Renogy, "baud": 9600, "address": b"\xF7"},
-    {"bms": Seplos, "baud": 19200},
+    {"bms": Seplos, "baud": 19200, "address": b"\x00"},
     {"bms": Seplosv3, "baud": 19200},
 ]
 

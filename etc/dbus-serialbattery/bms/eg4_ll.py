@@ -35,9 +35,6 @@ import sys
 # Eg4 LL 12v 400 AH (single battery)
 # battery should be set to ID = 1 via the DIP switches
 
-# BMS Documentation Sourced:
-# https://eg4electronics.com/wp-content/uploads/2022/09/egll-MODBUS-Communication-Protocol_ENG-correct-1.pdf
-
 
 class EG4_LL(Battery):
     def __init__(self, port, baud, address):
@@ -45,7 +42,7 @@ class EG4_LL(Battery):
         super(EG4_LL, self).__init__(port, baud, address)
         self.charger_connected = None
         self.load_connected = None
-        self.command_address = address
+        self.address = address
         self.cell_min_voltage = None
         self.cell_max_voltage = None
         self.cell_min_no = None
@@ -58,6 +55,12 @@ class EG4_LL(Battery):
         self.runtime = 0  # TROUBLESHOOTING for no reply errors
         self.trigger_force_disable_discharge = None
         self.trigger_force_disable_charge = None
+        # self.command_get_version = b"\x01\x03\x00\x69\x00\x23\xD4\x0F"  # Pulled from PC Client
+        self.command_get_version = address + b"\x03\x00\x69\x00\x23\xD4\x0F"
+        # self.command_get_stats = b"\x01\x03\x00\x00\x00\x27\x05\xD0"  # Pulled from PC Client
+        self.command_get_stats = address + b"\x03\x00\x00\x00\x27\x05\xD0"
+        # self.command_get_config = b"\x01\x03\x00\x2D\x00\x5B\x94\x38"  # Pulled from PC Client
+        self.command_get_config = address + b"\x03\x00\x2D\x00\x5B\x94\x38"
 
     # Modbus uses 7C call vs Lifepower 7E, as return values do not correlate to the Lifepower ones if 7E is used.
     # at least on my own BMS.
@@ -70,10 +73,6 @@ class EG4_LL(Battery):
     LENGTH_CHECK = 0
     LENGTH_POS = 2  # offset starting from 0
     LENGTH_FIXED = -1
-
-    command_get_version = b"\x01\x03\x00\x69\x00\x23\xD4\x0F"  # Pulled from PC Client
-    command_get_stats = b"\x01\x03\x00\x00\x00\x27\x05\xD0"  # Pulled from PC Client
-    command_get_config = b"\x01\x03\x00\x2D\x00\x5B\x94\x38"  # Pulled from PC Client
 
     def unique_identifier(self) -> str:
         return self.serial_number
@@ -427,14 +426,14 @@ class EG4_LL(Battery):
         return True
 
     def generate_command(self, command):
-        # buffer = bytearray(self.command_address)
+        # buffer = bytearray(self.address)
         # buffer += command
         return command
 
     def read_serial_data_eg4_ll(self, command):
         # use the read_serial_data() function to read the data and then do BMS specific checks (crc, start bytes, etc
         if self.debug:
-            logger.info(f"Modbus CMD Address: {hex(self.command_address[0]).upper()}")
+            logger.info(f"Modbus CMD Address: {hex(self.address[0]).upper()}")
             logger.info(f'Executed Command: {command.hex(":").upper()}')
 
         data = read_serial_data(

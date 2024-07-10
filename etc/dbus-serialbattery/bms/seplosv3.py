@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+# Notes
+# Added by https://github.com/marcelrv
+# https://github.com/Louisvdw/dbus-serialbattery/pull/1016
+
 import math
 import struct
 from typing import Union

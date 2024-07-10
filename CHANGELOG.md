@@ -58,7 +58,13 @@
   * `BULK_AFTER_DAYS` -> `SOC_RESET_AFTER_DAYS`
 
 
+## v1.4.x
+
+* Changed: JKBMS PB Model fixes by @KoljaWindeler
+
+
 ## v1.3.20240705
+
 * Added: EG4 LL BMS by @tuxntoast
 * Added: Fields for debugging switch to float/bulk by @mr-manuel
 * Added: JKBMS PB Model with https://github.com/mr-manuel/venus-os_dbus-serialbattery/pull/39 by @KoljaWindeler
@@ -80,6 +86,7 @@
 * Changed: Renamed Lifepower to EG4_Lifepower by @mr-manuel
 * Changed: Renogy BMS - Fixes for unknown serial number by @mr-manuel
 * Changed: Seplos BMS - Fixed temperature display https://github.com/Louisvdw/dbus-serialbattery/issues/1072 by @wollew
+
 
 ## v1.2.20240408
 
