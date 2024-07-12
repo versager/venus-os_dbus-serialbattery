@@ -834,10 +834,10 @@ class DbusHelper:
                 if time_since_first_error >= 60 * 20 and not utils.BLOCK_ON_DISCONNECT:
                     loop.quit()
 
-            # This is to mannage CVCL
+            # This is to manage CVCL
             self.battery.manage_charge_voltage()
 
-            # This is to mannage CCL\DCL
+            # This is to manage CCL\DCL
             self.battery.manage_charge_current()
 
             # Manage battery state, if not set to error (10)
