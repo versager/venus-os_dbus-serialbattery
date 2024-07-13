@@ -102,8 +102,10 @@ rm -rf /opt/victronenergy/service-templates/dbus-serialbattery
 rm -rf /opt/victronenergy/dbus-serialbattery
 mkdir /opt/victronenergy/dbus-serialbattery
 mkdir /opt/victronenergy/dbus-serialbattery/bms
+mkdir /opt/victronenergy/dbus-serialbattery/ext
 cp -f /data/etc/dbus-serialbattery/* /opt/victronenergy/dbus-serialbattery &>/dev/null
 cp -f /data/etc/dbus-serialbattery/bms/* /opt/victronenergy/dbus-serialbattery/bms &>/dev/null
+cp -rf /data/etc/dbus-serialbattery/ext/* /opt/victronenergy/dbus-serialbattery/ext &>/dev/null
 cp -rf /data/etc/dbus-serialbattery/service /opt/victronenergy/service-templates/dbus-serialbattery
 bash /data/etc/dbus-serialbattery/install-qml.sh
 

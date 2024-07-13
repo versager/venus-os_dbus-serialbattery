@@ -9,18 +9,10 @@ from utils import logger, publish_config_variables
 import utils
 from xml.etree import ElementTree
 
-# Victron packages
-sys.path.insert(
-    1,
-    os.path.join(
-        os.path.dirname(__file__),
-        "/opt/victronenergy/dbus-systemcalc-py/ext/velib_python",
-    ),
-)
+# add path to velib_python
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), "ext", "velib_python"))
 from vedbus import VeDbusService  # noqa: E402
-from settingsdevice import (  # noqa: E402
-    SettingsDevice,
-)
+from settingsdevice import SettingsDevice  # noqa: E402
 
 
 class SystemBus(dbus.bus.BusConnection):
@@ -51,7 +43,7 @@ class DbusHelper:
             + self.battery.port[self.battery.port.rfind("/") + 1 :]
             + ("__" + str(bms_address) if bms_address is not None else "")
         )
-        self._dbusservice = VeDbusService(self._dbusname, get_bus())
+        self._dbusservice = VeDbusService(self._dbusname, get_bus(), register=False)
         self.bms_id = "".join(
             # remove all non alphanumeric characters from the identifier
             c if c.isalnum() else "_"
@@ -777,6 +769,11 @@ class DbusHelper:
                 writeable=True,
                 onchangecallback=self.battery.reset_soc_callback,
             )
+
+        # register VeDbusService after all paths where added
+        # https://github.com/victronenergy/velib_python/commit/494f9aef38f46d6cfcddd8b1242336a0a3a79563
+        # https://github.com/victronenergy/velib_python/commit/88a183d099ea5c60139e4d7494f9044e2dedd2d4
+        self._dbusservice.register()
 
         return True
 

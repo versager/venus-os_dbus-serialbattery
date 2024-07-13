@@ -60,6 +60,7 @@
 
 ## v1.4.x
 
+* Changed: Fixed how `velib_python` was integrated in this driver by @mr-manuel
 * Changed: JKBMS BLE - Fixes wrong max battery voltage https://github.com/Louisvdw/dbus-serialbattery/issues/1094 by @mr-manuel
 * Changed: JKBMS PB Model fixes by @KoljaWindeler
 

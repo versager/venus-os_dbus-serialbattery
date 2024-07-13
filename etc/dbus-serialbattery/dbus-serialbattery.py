@@ -1,22 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import sys
+from time import sleep
 from typing import Union
 
-from time import sleep
+# import dbus and gobject
 from dbus.mainloop.glib import DBusGMainLoop
-
-import sys
-
-# not needed anymore since a few years
-# removed after next release > v1.2.x
-# if sys.version_info.major == 2:
-#     import gobject
-# else:
 from gi.repository import GLib as gobject
 
-# Victron packages
-# from ve_utils import exit_on_error
-
+# import driver classes
 from dbushelper import DbusHelper
 from utils import logger
 import utils
