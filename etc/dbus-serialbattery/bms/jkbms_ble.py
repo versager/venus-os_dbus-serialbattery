@@ -89,7 +89,7 @@ class Jkbms_Ble(Battery):
         return result
 
     def get_settings(self):
-        # After successful  connection get_settings will be call to set up the battery.
+        # After successful connection get_settings() will be called to set up the battery
         # Set the current limits, populate cell count, etc
         # Return True if success, False for failure
         st = self.jk.get_status()["settings"]
@@ -125,7 +125,7 @@ class Jkbms_Ble(Battery):
             + self.jk.get_status()["device_info"]["hw_rev"]
             + " "
             + str(self.cell_count)
-            + " cells"
+            + "S"
             + (" (" + self.production + ")" if self.production else "")
         )
         logger.info("BAT: " + self.hardware_version)
@@ -206,7 +206,7 @@ class Jkbms_Ble(Battery):
         self.voltage = round(st["cell_info"]["total_voltage"], 2)
 
         self.soc = st["cell_info"]["battery_soc"]
-        self.cycles = st["cell_info"]["cycle_count"]
+        self.history.charge_cycles = st["cell_info"]["cycle_count"]
 
         self.charge_fet = st["settings"]["charging_switch"]
         self.discharge_fet = st["settings"]["discharging_switch"]

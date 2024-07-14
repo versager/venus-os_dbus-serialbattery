@@ -50,7 +50,7 @@ class Jkbms_pb(Battery):
         return result
 
     def get_settings(self):
-        # After successful  connection get_settings will be call to set up the battery.
+        # After successful connection get_settings() will be called to set up the battery
         # Set the current limits, populate cell count, etc
         # Return True if success, False for failure
         status_data = self.read_serial_data_jkbms_pb(self.command_settings, 300)
@@ -218,7 +218,7 @@ class Jkbms_pb(Battery):
         self.soc = unpack_from("<B", status_data, 173)[0]
 
         # cycles
-        self.cycles = unpack_from("<i", status_data, 182)[0]
+        self.history.charge_cycles = unpack_from("<i", status_data, 182)[0]
 
         # capacity
         self.capacity_remain = unpack_from("<i", status_data, 174)[0] / 1000

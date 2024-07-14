@@ -316,6 +316,8 @@ if [ "$bluetooth_length" -gt 0 ]; then
             echo "#!/bin/sh"
             echo "exec 2>&1"
             echo "echo"
+            echo "echo"
+            echo "echo \"INFO:Preparing Bluetooth for connection to BMS\""
             echo "echo \"INFO:Bluetooth details\""
             # close all open connections, else the driver can't connect
             echo "bluetoothctl disconnect $3"

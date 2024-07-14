@@ -60,10 +60,13 @@
 
 ## v1.4.x
 
+* Added: History() class that holds all BMS history values by @mr-manuel
 * Changed: Fixed how `velib_python` was integrated in this driver by @mr-manuel
+* Changed: Fixed problem with battery status and error code by @mr-manuel
 * Changed: JKBMS BLE - Fixes wrong max battery voltage https://github.com/Louisvdw/dbus-serialbattery/issues/1094 by @mr-manuel
 * Changed: JKBMS PB Model fixes by @KoljaWindeler
-
+* Changed: Reworked, documented and cleaned up a lot of code by @mr-manuel
+* Changed: Updated `battery_template.py` and added tons of descriptions by @mr-manuel
 
 ## v1.3.20240705
 
