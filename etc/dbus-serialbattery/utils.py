@@ -144,6 +144,11 @@ SOC_RESET_AFTER_DAYS: int = (
     else False
 )
 
+# --------- Modbus (multiple BMS on one serial adapter) ---------
+MODBUS_ADDRESSES: list = _get_list_from_config(
+    "DEFAULT", "MODBUS_ADDRESSES", lambda v: str(v)
+)
+
 # --------- BMS disconnect behaviour ---------
 BLOCK_ON_DISCONNECT: bool = "True" == config["DEFAULT"]["BLOCK_ON_DISCONNECT"]
 
@@ -433,11 +438,6 @@ GREENMETER_ADDRESS: int = int(config["DEFAULT"]["GREENMETER_ADDRESS"])
 LIPRO_START_ADDRESS: int = int(config["DEFAULT"]["LIPRO_START_ADDRESS"])
 LIPRO_END_ADDRESS: int = int(config["DEFAULT"]["LIPRO_END_ADDRESS"])
 LIPRO_CELL_COUNT: int = int(config["DEFAULT"]["LIPRO_CELL_COUNT"])
-
-# -- HeltecModbus device settings
-HELTEC_MODBUS_ADDR: list = _get_list_from_config(
-    "DEFAULT", "HELTEC_MODBUS_ADDR", lambda v: int(v)
-)
 
 # -- Seplos V3 settings
 SEPLOS_USE_BMS_VALUES: bool = "True" == config["DEFAULT"]["SEPLOS_USE_BMS_VALUES"]

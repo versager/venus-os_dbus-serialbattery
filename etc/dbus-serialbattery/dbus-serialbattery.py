@@ -42,7 +42,7 @@ supported_bms_types = [
     {"bms": Ecs, "baud": 19200},
     {"bms": EG4_Lifepower, "baud": 9600, "address": b"\x01"},
     {"bms": EG4_LL, "baud": 9600, "address": b"\x01"},
-    {"bms": HeltecModbus, "baud": 9600},
+    {"bms": HeltecModbus, "baud": 9600, "address": b"\x01"},
     {"bms": HLPdataBMS4S, "baud": 9600},
     {"bms": Jkbms, "baud": 115200},
     {"bms": Jkbms_pb, "baud": 115200, "address": b"\x01"},
