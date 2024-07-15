@@ -55,8 +55,6 @@ class EG4_Lifepower(Battery):
         # After successful connection get_settings() will be called to set up the battery
         # Set the current limits, populate cell count, etc
         # Return True if success, False for failure
-        self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
         hardware_version = self.read_serial_data_eg4(self.command_hardware_version)
         if hardware_version:
             # I get some characters that I'm not able to figure out the encoding, probably chinese so I discard it

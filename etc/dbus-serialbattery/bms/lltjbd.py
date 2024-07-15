@@ -298,9 +298,6 @@ class LltJbd(Battery):
         if not self.read_gen_data():
             return False
 
-        self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
-
         with self.eeprom(writable=False):
             cycle_cap = self.read_serial_data_llt(readCmd(REG_CYCLE_CAP))
 

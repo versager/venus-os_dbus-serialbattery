@@ -115,8 +115,7 @@ class Daly_Can(Battery):
 
     def get_settings(self):
         self.capacity = BATTERY_CAPACITY
-        self.max_battery_charge_current = MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = MAX_BATTERY_DISCHARGE_CURRENT
+
         return True
 
     def refresh_data(self):

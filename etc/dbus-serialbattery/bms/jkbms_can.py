@@ -9,8 +9,6 @@ from battery import Battery, Cell
 from utils import (
     is_bit_set,
     logger,
-    MAX_BATTERY_CHARGE_CURRENT,
-    MAX_BATTERY_DISCHARGE_CURRENT,
     MAX_CELL_VOLTAGE,
     MIN_CELL_VOLTAGE,
     JKBMS_CAN_CELL_COUNT,
@@ -92,8 +90,7 @@ class Jkbms_Can(Battery):
         # Set the current limits, populate cell count, etc
         # Return True if success, False for failure
         self.cell_count = JKBMS_CAN_CELL_COUNT
-        self.max_battery_charge_current = MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = MAX_BATTERY_DISCHARGE_CURRENT
+
         self.max_battery_voltage = MAX_CELL_VOLTAGE * self.cell_count
         self.min_battery_voltage = MIN_CELL_VOLTAGE * self.cell_count
 

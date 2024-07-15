@@ -100,8 +100,6 @@ class Daly(Battery):
         self.read_capacity(ser)
         self.read_production_date(ser)
 
-        self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
         return True
 
     def refresh_data(self):

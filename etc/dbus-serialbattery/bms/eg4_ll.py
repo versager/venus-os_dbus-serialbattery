@@ -137,9 +137,6 @@ class EG4_LL(Battery):
         self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
         self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
 
-        self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
-
         # self.balancer_voltage = int.from_bytes(config_results[25:27], "big")/1000
         # self.balancer_current_delta = int.from_bytes(config_results[27:29], "big")/1000
 

@@ -71,6 +71,7 @@
 * Changed: JKBMS BLE - Fixes wrong max battery voltage https://github.com/Louisvdw/dbus-serialbattery/issues/1094 by @mr-manuel
 * Changed: JKBMS PB Model fixes by @KoljaWindeler
 * Changed: Reworked, documented and cleaned up a lot of code by @mr-manuel
+* Changed: Set default charge/discharge current from utils in main battery class by @mr-manuel
 * Changed: The setting `HELTEC_MODBUS_ADDR` was replaced by `MODBUS_ADDRESSES` in the `config.default.ini` by @mr-manuel
 * Changed: Updated `battery_template.py` and added tons of descriptions by @mr-manuel
 

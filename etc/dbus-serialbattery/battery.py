@@ -164,8 +164,8 @@ class Battery(ABC):
         self.hardware_version: str = None
         self.cell_count: int = None
         # max battery charge/discharge current
-        self.max_battery_charge_current: float = None
-        self.max_battery_discharge_current: float = None
+        self.max_battery_charge_current: float = utils.MAX_BATTERY_CHARGE_CURRENT
+        self.max_battery_discharge_current: float = utils.MAX_BATTERY_DISCHARGE_CURRENT
         self.has_settings: bool = False
 
         # this values should only be initialized once,

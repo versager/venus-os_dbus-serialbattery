@@ -104,8 +104,6 @@ class Ecs(Battery):
         # Return True if success, False for failure
 
         # Uncomment if BMS does not supply capacity
-        self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
         self.cell_count = utils.LIPRO_CELL_COUNT
         self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
         self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count

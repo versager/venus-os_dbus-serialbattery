@@ -76,8 +76,6 @@ class MNB(Battery):
         self.poll_interval = None
         self.type = self.BATTERYTYPE
         self.inst_capacity = None
-        self.max_battery_charge_current = None
-        self.max_battery_discharge_current = None
         self.V_C_min = None
         self.V_C_max = None
         self.max_battery_voltage = None
