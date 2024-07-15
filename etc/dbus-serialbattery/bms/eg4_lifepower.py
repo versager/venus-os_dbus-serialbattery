@@ -24,12 +24,18 @@ class EG4_Lifepower(Battery):
     LENGTH_FIXED = None
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         result = False
         try:
-            result = self.read_status_data()
+            # get settings to check if the data is valid and the connection is working
+            result = self.get_settings()
+            # get the rest of the data to be sure, that all data is valid and the correct battery type is recognized
+            # only read next data if the first one was successful, this saves time when checking multiple battery types
+            result = result and self.refresh_data()
         except Exception:
             (
                 exception_type,

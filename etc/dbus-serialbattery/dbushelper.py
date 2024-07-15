@@ -484,10 +484,6 @@ class DbusHelper:
         self.setup_instance()
         logger.info("%s" % (self._dbusname))
 
-        # Get the settings for the battery
-        if not self.battery.get_settings():
-            return False
-
         # Create the management objects, as specified in the ccgx dbus-api document
         self._dbusservice.add_path("/Mgmt/ProcessName", __file__)
         self._dbusservice.add_path(

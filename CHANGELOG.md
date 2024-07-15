@@ -65,6 +65,7 @@
 ## v1.4.x
 
 * Added: History() class that holds all BMS history values by @mr-manuel
+* Changed: Call `get_settings()` in `test_connection()` for all battery classes, removed `get_settings()` call from `setup_vedbus()` by @mr-manuel
 * Changed: Fixed how `velib_python` was integrated in this driver by @mr-manuel
 * Changed: Fixed problem with battery status and error code by @mr-manuel
 * Changed: JKBMS BLE - Fixes wrong max battery voltage https://github.com/Louisvdw/dbus-serialbattery/issues/1094 by @mr-manuel

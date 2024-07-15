@@ -18,6 +18,7 @@ from utils import (
 )
 from struct import unpack_from
 import can
+import sys
 import time
 
 
@@ -59,10 +60,32 @@ class Jkbms_Can(Battery):
     }
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
-        return self.read_status_data()
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
+        result = False
+        try:
+            # get settings to check if the data is valid and the connection is working
+            result = self.get_settings()
+            # get the rest of the data to be sure, that all data is valid and the correct battery type is recognized
+            # only read next data if the first one was successful, this saves time when checking multiple battery types
+            result = result and self.refresh_data()
+        except Exception:
+            (
+                exception_type,
+                exception_object,
+                exception_traceback,
+            ) = sys.exc_info()
+            file = exception_traceback.tb_frame.f_code.co_filename
+            line = exception_traceback.tb_lineno
+            logger.error(
+                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
+            )
+            result = False
+
+        return result
 
     def get_settings(self):
         # After successful connection get_settings() will be called to set up the battery
@@ -87,9 +110,7 @@ class Jkbms_Can(Battery):
         # call all functions that will refresh the battery data.
         # This will be called for every iteration (1 second)
         # Return True if success, False for failure
-        result = self.read_status_data()
-
-        return result
+        return self.read_status_data()
 
     def read_status_data(self):
         status_data = self.read_serial_data_jkbms_CAN()

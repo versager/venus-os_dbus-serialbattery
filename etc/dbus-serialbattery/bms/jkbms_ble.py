@@ -35,9 +35,11 @@ class Jkbms_Ble(Battery):
         return "SerialBattery(" + self.type + ") " + self.address[-5:]
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         result = False
         logger.info("Test of Jkbms_Ble at " + self.address)
         try:
@@ -66,10 +68,9 @@ class Jkbms_Ble(Battery):
                     self.jk.stop_scraping()
                     result = False
 
-                # get first data to show in startup log
-                if result:
-                    self.get_settings()
-                    self.refresh_data()
+                # get first data
+                result = result and self.get_settings()
+                result = result and self.refresh_data()
             if not result:
                 logger.error("No BMS found at " + self.address)
 

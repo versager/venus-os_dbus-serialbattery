@@ -65,9 +65,11 @@ class Seplosv3(Battery):
         return mbdev
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         found = False
 
         # This will cycle through all the slave addresses to find the BMS.
@@ -126,6 +128,9 @@ class Seplosv3(Battery):
         # give the user a feedback that no BMS was found
         if not found:
             logger.error(">>> No reply - returning")
+        else:
+            result = self.get_settings()
+            result = result and self.refresh_data()
 
         return found
 
@@ -141,7 +146,7 @@ class Seplosv3(Battery):
     def get_settings(self):
         self.charger_connected = True
         self.load_connected = True
-        return self.refresh_data()
+        return True
 
     def read_device_date(self):
         spa, pia, pib, sca, pic, sfa = None, None, None, None, None, None

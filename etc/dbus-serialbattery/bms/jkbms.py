@@ -25,11 +25,18 @@ class Jkbms(Battery):
     command_status = b"\x4E\x57\x00\x13\x00\x00\x00\x00\x06\x03\x00\x00\x00\x00\x00\x00\x68\x00\x00\x01\x29"
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
+        result = False
         try:
-            return self.read_status_data()
+            # get settings to check if the data is valid and the connection is working
+            result = self.refresh_data()
+            # get the rest of the data to be sure, that all data is valid and the correct battery type is recognized
+            # only read next data if the first one was successful, this saves time when checking multiple battery types
+            result = result and self.get_settings()
         except Exception:
             (
                 exception_type,
@@ -41,7 +48,9 @@ class Jkbms(Battery):
             logger.error(
                 f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
             )
-            return False
+            result = False
+
+        return result
 
     def get_settings(self):
         # After successful connection get_settings() will be called to set up the battery
@@ -68,9 +77,7 @@ class Jkbms(Battery):
         # call all functions that will refresh the battery data.
         # This will be called for every iteration (1 second)
         # Return True if success, False for failure
-        result = self.read_status_data()
-
-        return result
+        return self.read_status_data()
 
     def get_data(self, bytes, idcode, start, length):
         # logger.debug("start "+str(start) + " length " + str(length))

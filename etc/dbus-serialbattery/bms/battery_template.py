@@ -38,8 +38,10 @@ class BatteryTemplate(Battery):
         """
         result = False
         try:
-            result = self.read_status_data()
-            # get first data to show in startup log, only if result is true
+            # get settings to check if the data is valid and the connection is working
+            result = self.get_settings()
+            # get the rest of the data to be sure, that all data is valid and the correct battery type is recognized
+            # only read next data if the first one was successful, this saves time when checking multiple battery types
             result = result and self.refresh_data()
         except Exception:
             (
@@ -63,7 +65,7 @@ class BatteryTemplate(Battery):
         e.g. the serial number
         If there is no such value, please remove this function
         """
-        return self.serialnumber
+        return self.serial_number
 
     def get_settings(self):
         """
@@ -96,9 +98,6 @@ class BatteryTemplate(Battery):
         # maximum discharge current in amps (float)
         self.max_battery_discharge_current = VALUE_FROM_BMS
 
-        # serial number of the battery (str)
-        self.serial_number = VALUE_FROM_BMS
-
         # custom field, that the user can set in the BMS software (str)
         self.custom_field = VALUE_FROM_BMS
 
@@ -118,6 +117,10 @@ class BatteryTemplate(Battery):
         # serial number of the battery (str)
         self.serial_number = VALUE_FROM_BMS
         """
+
+        # init battery voltages
+        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
+        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
 
         # init the cell array once
         if len(self.cells) == 0:

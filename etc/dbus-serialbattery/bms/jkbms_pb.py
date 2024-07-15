@@ -27,13 +27,18 @@ class Jkbms_pb(Battery):
     LENGTH_SIZE = "H"  # ignored
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         result = False
         try:
+            # get settings to check if the data is valid and the connection is working
             result = self.get_settings()
-            result = result and self.read_status_data()
+            # get the rest of the data to be sure, that all data is valid and the correct battery type is recognized
+            # only read next data if the first one was successful, this saves time when checking multiple battery types
+            result = result and self.refresh_data()
         except Exception:
             (
                 exception_type,
@@ -166,8 +171,7 @@ class Jkbms_pb(Battery):
         # call all functions that will refresh the battery data.
         # This will be called for every iteration (1 second)
         # Return True if success, False for failure
-        result = self.read_status_data()
-        return result
+        return self.read_status_data()
 
     def read_status_data(self):
         status_data = self.read_serial_data_jkbms_pb(self.command_status, 299)

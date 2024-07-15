@@ -18,6 +18,7 @@ from utils import (
 )
 from struct import unpack_from
 import can
+import sys
 
 
 class Daly_Can(Battery):
@@ -64,31 +65,51 @@ class Daly_Can(Battery):
     TEMP_ZERO_CONSTANT = 40
 
     def test_connection(self):
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         result = False
+        try:
+            # TODO handle errors?
+            can_filters = [
+                {"can_id": self.response_base, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_soc, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_minmax_cell_volts, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_minmax_temp, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_fet, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_status, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_cell_volts, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_temp, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_cell_balance, "can_mask": 0xFFFFFFF},
+                {"can_id": self.response_alarm, "can_mask": 0xFFFFFFF},
+            ]
+            self.can_bus = can.Bus(
+                interface="socketcan",
+                channel=self.port,
+                receive_own_messages=False,
+                can_filters=can_filters,
+            )
+            # get settings to check if the data is valid and the connection is working
+            result = self.get_settings()
+            # get the rest of the data to be sure, that all data is valid and the correct battery type is recognized
+            # only read next data if the first one was successful, this saves time when checking multiple battery types
+            result = result and self.read_status_data(self.can_bus)
 
-        # TODO handle errors?
-        can_filters = [
-            {"can_id": self.response_base, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_soc, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_minmax_cell_volts, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_minmax_temp, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_fet, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_status, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_cell_volts, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_temp, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_cell_balance, "can_mask": 0xFFFFFFF},
-            {"can_id": self.response_alarm, "can_mask": 0xFFFFFFF},
-        ]
-        self.can_bus = can.Bus(
-            interface="socketcan",
-            channel=self.port,
-            receive_own_messages=False,
-            can_filters=can_filters,
-        )
-
-        result = self.read_status_data(self.can_bus)
-
-        result = result and self.read_soc_data(self.can_bus)
+            result = result and self.read_soc_data(self.can_bus)
+        except Exception:
+            (
+                exception_type,
+                exception_object,
+                exception_traceback,
+            ) = sys.exc_info()
+            file = exception_traceback.tb_frame.f_code.co_filename
+            line = exception_traceback.tb_lineno
+            logger.error(
+                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
+            )
+            result = False
 
         return result
 

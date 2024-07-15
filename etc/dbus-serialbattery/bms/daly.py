@@ -62,19 +62,20 @@ class Daly(Battery):
     TEMP_ZERO_CONSTANT = 40
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         result = False
         try:
             with open_serial_port(self.port, self.baud_rate) as ser:
                 result = self.read_status_data(ser)
                 # get first data to show in startup log, only if result is true
-                if result:
-                    self.read_soc_data(ser)
-                    self.read_battery_code(ser)
-                    self.read_capacity(ser)
-                    self.read_production_date(ser)
+                result = result and self.read_soc_data(ser)
+                result = result and self.read_battery_code(ser)
+                # returns always true
+                result = result and self.get_settings(ser)
 
         except Exception:
             (
@@ -95,11 +96,9 @@ class Daly(Battery):
 
         return result
 
-    def get_settings(self):
-        self.capacity = utils.BATTERY_CAPACITY if not None else 0.0
-        with open_serial_port(self.port, self.baud_rate) as ser:
-            self.read_capacity(ser)
-            self.read_production_date(ser)
+    def get_settings(self, ser):
+        self.read_capacity(ser)
+        self.read_production_date(ser)
 
         self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
         self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
@@ -122,6 +121,7 @@ class Daly(Battery):
                         + "s"
                     )
 
+                # result placed last to ensure all data is read anyway
                 result = self.read_fed_data(ser) and result
                 if self.runtime > 0.200:  # TROUBLESHOOTING for no reply errors
                     logger.debug(
@@ -132,6 +132,7 @@ class Daly(Battery):
                         + "s"
                     )
 
+                # result placed last to ensure all data is read anyway
                 result = self.read_cell_voltage_range_data(ser) and result
                 if self.runtime > 0.200:  # TROUBLESHOOTING for no reply errors
                     logger.debug(
@@ -152,6 +153,7 @@ class Daly(Battery):
                         + "s"
                     )
 
+                # result placed last to ensure all data is read anyway
                 result = self.read_alarm_data(ser) and result
                 if self.runtime > 0.200:  # TROUBLESHOOTING for no reply errors
                     logger.debug(
@@ -162,6 +164,7 @@ class Daly(Battery):
                         + "s"
                     )
 
+                # result placed last to ensure all data is read anyway
                 result = self.read_temperature_range_data(ser) and result
                 if self.runtime > 0.200:  # TROUBLESHOOTING for no reply errors
                     logger.debug(
@@ -172,6 +175,7 @@ class Daly(Battery):
                         + "s"
                     )
 
+                # result placed last to ensure all data is read anyway
                 result = self.read_balance_state(ser) and result
                 if self.runtime > 0.200:  # TROUBLESHOOTING for no reply errors
                     logger.debug(
@@ -182,6 +186,7 @@ class Daly(Battery):
                         + "s"
                     )
 
+                # result placed last to ensure all data is read anyway
                 result = self.read_cells_volts(ser) and result
                 if self.runtime > 0.200:  # TROUBLESHOOTING for no reply errors
                     logger.debug(
@@ -528,6 +533,7 @@ class Daly(Battery):
             self.capacity = capacity / 1000
             return True
         else:
+            self.capacity = utils.BATTERY_CAPACITY if not None else 0
             return False
 
     def read_production_date(self, ser):

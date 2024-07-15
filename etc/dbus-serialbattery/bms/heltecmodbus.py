@@ -34,9 +34,11 @@ class HeltecModbus(Battery):
         self.unique_identifier_tmp = ""
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         logger.debug("Testing on slave address " + str(self.address))
         found = False
         if self.address not in locks:

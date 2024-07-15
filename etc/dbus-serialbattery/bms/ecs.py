@@ -28,10 +28,11 @@ class Ecs(Battery):
     LiProCells = []
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
-
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         # Trying to find Green Meter ID
         result = False
         try:
@@ -54,8 +55,7 @@ class Ecs(Battery):
                 result = self.get_settings()
 
                 # get first data to show in startup log, only if result is true
-                if result:
-                    self.refresh_data()
+                result = result and self.refresh_data()
 
         except IOError:
             result = False

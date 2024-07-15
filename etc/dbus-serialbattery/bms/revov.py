@@ -49,13 +49,18 @@ class Revov(Battery):
     command_two = b"\x7C\x01\x01\x00\x02\x0D"  # returns a ton of data
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         result = False
         try:
-            result = self.read_gen_data()
-            # get first data to show in startup log
+            # get settings to check if the data is valid and the connection is working
+            result = self.get_settings()
+            # get the rest of the data to be sure, that all data is valid and the correct battery type is recognized
+            # only read next data if the first one was successful, this saves time when checking multiple battery types
+            result = result and self.read_gen_data()
             result = result and self.refresh_data()
         except Exception:
             (

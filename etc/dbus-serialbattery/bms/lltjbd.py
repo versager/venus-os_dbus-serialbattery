@@ -261,9 +261,11 @@ class LltJbd(Battery):
     command_hardware = readCmd(REG_HARDWARE)  # b"\xDD\xA5\x05\x00\xFF\xFB\x77"
 
     def test_connection(self):
-        # call a function that will connect to the battery, send a command and retrieve the result.
-        # The result or call should be unique to this BMS. Battery name or version, etc.
-        # Return True if success, False for failure
+        """
+        call a function that will connect to the battery, send a command and retrieve the result.
+        The result or call should be unique to this BMS. Battery name or version, etc.
+        Return True if success, False for failure
+        """
         result = False
         try:
             # 1) Read name of BMS
