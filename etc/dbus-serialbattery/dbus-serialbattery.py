@@ -170,24 +170,30 @@ def main():
     # else the error throw a lot of timeouts
     sleep(16)
 
-    if port.endswith("_Ble") and len(sys.argv) > 2:
+    if port.endswith("_Ble"):
         """
         Import ble classes only, if it's a ble port, else the driver won't start due to missing python modules
         This prevent problems when using the driver only with a serial connection
         """
-        if port == "Jkbms_Ble":
-            # noqa: F401 --> ignore flake "imported but unused" error
-            from bms.jkbms_ble import Jkbms_Ble  # noqa: F401
 
-        if port == "LltJbd_Ble":
-            # noqa: F401 --> ignore flake "imported but unused" error
-            from bms.lltjbd_ble import LltJbd_Ble  # noqa: F401
+        if len(sys.argv) <= 2:
+            logger.error("missing bluetooth address")
+        else:
+            ble_address = sys.argv[2]
+        
+            if port == "Jkbms_Ble":
+                # noqa: F401 --> ignore flake "imported but unused" error
+                from bms.jkbms_ble import Jkbms_Ble  # noqa: F401
 
-        class_ = eval(port)
-        testbms = class_("", 9600, sys.argv[2])
-        if testbms.test_connection():
-            logger.info("Connection established to " + testbms.__class__.__name__)
-            battery = testbms
+            if port == "LltJbd_Ble":
+                # noqa: F401 --> ignore flake "imported but unused" error
+                from bms.lltjbd_ble import LltJbd_Ble  # noqa: F401
+
+            class_ = eval(port)
+            testbms = class_("ble_" + ble_address.replace(":", "").lower(), 9600, ble_address)
+            if testbms.test_connection():
+                logger.info("Connection established to " + testbms.__class__.__name__)
+                battery = testbms
 
     elif port.startswith("can"):
         """
