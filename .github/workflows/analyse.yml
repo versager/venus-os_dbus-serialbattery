@@ -3,7 +3,10 @@ name: "CodeChecks"
 on:
   push:
     branches:
+      # include
       - '**'
+      # exclude
+      - '!docusaurus'
 
     # Run on changes in the etc folder
     paths:
@@ -11,7 +14,7 @@ on:
 
 jobs:
   analyse:
-    name: Analyze Using GitHub CodeQL
+    name: Analyze using GitHub CodeQL
     runs-on: ubuntu-latest
 
     steps:
