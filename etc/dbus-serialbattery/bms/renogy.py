@@ -48,7 +48,11 @@ class Renogy(Battery):
         if self.serial_number is not None:
             return self.serial_number
         else:
-            return Battery.unique_identifier(self)
+            return self.port + (
+                "__" + utils.bytearray_to_string(self.address).replace("\\", "0")
+                if self.address is not None
+                else ""
+            )
 
     def test_connection(self):
         """
