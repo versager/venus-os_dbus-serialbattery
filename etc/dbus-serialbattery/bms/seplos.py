@@ -168,7 +168,7 @@ class Seplos(Battery):
     def decode_alarm_data(self, data: bytes):
         logger.debug("alarm info decoded {}".format(data))
         voltage_alarm_byte = data[30]
-        self.protection.voltage_cell_low = Seplos.decode_alarm_byte(
+        self.protection.low_cell_voltage = Seplos.decode_alarm_byte(
             data_byte=voltage_alarm_byte, alarm_bit=3, warn_bit=2
         )
         # cell high voltage is actually unused because DBUS does not seem to support it, decoding anyway
@@ -176,37 +176,37 @@ class Seplos(Battery):
         self.protection.voltage_cell_high = Seplos.decode_alarm_byte(
             data_byte=voltage_alarm_byte, alarm_bit=1, warn_bit=0
         )
-        self.protection.voltage_low = Seplos.decode_alarm_byte(
+        self.protection.low_voltage = Seplos.decode_alarm_byte(
             data_byte=voltage_alarm_byte, alarm_bit=7, warn_bit=6
         )
-        self.protection.voltage_high = Seplos.decode_alarm_byte(
+        self.protection.high_voltage = Seplos.decode_alarm_byte(
             data_byte=voltage_alarm_byte, alarm_bit=5, warn_bit=4
         )
 
         temperature_alarm_byte = data[31]
-        self.protection.temp_low_charge = Seplos.decode_alarm_byte(
+        self.protection.low_charge_temp = Seplos.decode_alarm_byte(
             data_byte=temperature_alarm_byte, alarm_bit=3, warn_bit=2
         )
-        self.protection.temp_high_charge = Seplos.decode_alarm_byte(
+        self.protection.high_charge_temp = Seplos.decode_alarm_byte(
             data_byte=temperature_alarm_byte, alarm_bit=1, warn_bit=0
         )
-        self.protection.temp_low_discharge = Seplos.decode_alarm_byte(
+        self.protection.low_temperature = Seplos.decode_alarm_byte(
             data_byte=temperature_alarm_byte, alarm_bit=7, warn_bit=6
         )
-        self.protection.temp_high_discharge = Seplos.decode_alarm_byte(
+        self.protection.high_temperature = Seplos.decode_alarm_byte(
             data_byte=temperature_alarm_byte, alarm_bit=5, warn_bit=4
         )
 
         current_alarm_byte = data[33]
-        self.protection.current_over = Seplos.decode_alarm_byte(
+        self.protection.high_charge_current = Seplos.decode_alarm_byte(
             data_byte=current_alarm_byte, alarm_bit=1, warn_bit=0
         )
-        self.protection.current_under = Seplos.decode_alarm_byte(
+        self.protection.high_discharge_current = Seplos.decode_alarm_byte(
             data_byte=current_alarm_byte, alarm_bit=3, warn_bit=2
         )
 
         soc_alarm_byte = data[34]
-        self.protection.soc_low = Seplos.decode_alarm_byte(
+        self.protection.low_soc = Seplos.decode_alarm_byte(
             data_byte=soc_alarm_byte, alarm_bit=3, warn_bit=2
         )
 

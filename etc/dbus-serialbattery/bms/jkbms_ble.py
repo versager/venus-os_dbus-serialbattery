@@ -231,7 +231,7 @@ class Jkbms_Ble(Battery):
                 self.cells[c].balance = False
 
         # protection bits
-        # self.protection.soc_low = 2 if status["cell_info"]["battery_soc"] < 10.0 else 0
+        # self.protection.low_soc = 2 if status["cell_info"]["battery_soc"] < 10.0 else 0
 
         # trigger cell imbalance warning when delta is to great
         if st["cell_info"]["delta_cell_voltage"] > min(
@@ -245,10 +245,10 @@ class Jkbms_Ble(Battery):
         else:
             self.protection.cell_imbalance = 0
 
-        self.protection.voltage_high = 2 if st["warnings"]["cell_overvoltage"] else 0
-        self.protection.voltage_low = 2 if st["warnings"]["cell_undervoltage"] else 0
+        self.protection.high_voltage = 2 if st["warnings"]["cell_overvoltage"] else 0
+        self.protection.low_voltage = 2 if st["warnings"]["cell_undervoltage"] else 0
 
-        self.protection.current_over = (
+        self.protection.high_charge_current = (
             2
             if (
                 st["warnings"]["charge_overcurrent"]
@@ -259,9 +259,9 @@ class Jkbms_Ble(Battery):
         self.protection.set_IC_inspection = (
             2 if st["cell_info"]["temperature_mos"] > 80 else 0
         )
-        self.protection.temp_high_charge = 2 if st["warnings"]["charge_overtemp"] else 0
-        self.protection.temp_low_charge = 2 if st["warnings"]["charge_undertemp"] else 0
-        self.protection.temp_high_discharge = (
+        self.protection.high_charge_temp = 2 if st["warnings"]["charge_overtemp"] else 0
+        self.protection.low_charge_temp = 2 if st["warnings"]["charge_undertemp"] else 0
+        self.protection.high_temperature = (
             2 if st["warnings"]["discharge_overtemp"] else 0
         )
         return True

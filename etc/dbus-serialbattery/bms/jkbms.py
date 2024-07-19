@@ -306,25 +306,25 @@ class Jkbms(Battery):
         # logger.debug(tmp)
 
         # low capacity alarm
-        self.protection.soc_low = 2 if is_bit_set(tmp[pos - 0]) else 0
+        self.protection.low_soc = 2 if is_bit_set(tmp[pos - 0]) else 0
         # MOSFET temperature alarm
-        self.protection.temp_high_internal = 2 if is_bit_set(tmp[pos - 1]) else 0
+        self.protection.high_internal_temp = 2 if is_bit_set(tmp[pos - 1]) else 0
         # charge over voltage alarm
         # TODO: check if "self.soc_reset_requested is False" works,
         # else use "self.soc_reset_last_reached < int(time()) - (60 * 60)"
-        self.protection.voltage_high = 2 if is_bit_set(tmp[pos - 2]) else 0
+        self.protection.high_voltage = 2 if is_bit_set(tmp[pos - 2]) else 0
         # discharge under voltage alarm
-        self.protection.voltage_low = 2 if is_bit_set(tmp[pos - 3]) else 0
+        self.protection.low_voltage = 2 if is_bit_set(tmp[pos - 3]) else 0
         # charge overcurrent alarm
-        self.protection.current_over = 1 if is_bit_set(tmp[pos - 5]) else 0
+        self.protection.high_charge_current = 1 if is_bit_set(tmp[pos - 5]) else 0
         # discharge over current alarm
-        self.protection.current_under = 1 if is_bit_set(tmp[pos - 6]) else 0
+        self.protection.high_discharge_current = 1 if is_bit_set(tmp[pos - 6]) else 0
         # core differential pressure alarm OR unit overvoltage alarm
         self.protection.cell_imbalance = (
             2 if is_bit_set(tmp[pos - 7]) else 1 if is_bit_set(tmp[pos - 10]) else 0
         )
         # unit undervoltage alarm
-        self.protection.voltage_cell_low = 1 if is_bit_set(tmp[pos - 11]) else 0
+        self.protection.low_cell_voltage = 1 if is_bit_set(tmp[pos - 11]) else 0
         # battery overtemperature alarm OR overtemperature alarm in the battery box
         alarm_temp_high = (
             1 if is_bit_set(tmp[pos - 4]) or is_bit_set(tmp[pos - 8]) else 0
@@ -332,17 +332,17 @@ class Jkbms(Battery):
         # battery low temperature alarm
         alarm_temp_low = 1 if is_bit_set(tmp[pos - 9]) else 0
         # check if low/high temp alarm arise during charging
-        self.protection.temp_high_charge = (
+        self.protection.high_charge_temp = (
             1 if self.current > 0 and alarm_temp_high == 1 else 0
         )
-        self.protection.temp_low_charge = (
+        self.protection.low_charge_temp = (
             1 if self.current > 0 and alarm_temp_low == 1 else 0
         )
         # check if low/high temp alarm arise during discharging
-        self.protection.temp_high_discharge = (
+        self.protection.high_temperature = (
             1 if self.current <= 0 and alarm_temp_high == 1 else 0
         )
-        self.protection.temp_low_discharge = (
+        self.protection.low_temperature = (
             1 if self.current <= 0 and alarm_temp_low == 1 else 0
         )
 

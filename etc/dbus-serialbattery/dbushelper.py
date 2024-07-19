@@ -1049,25 +1049,25 @@ class DbusHelper:
         self._dbusservice["/Balancing"] = self.battery.get_balancing()
 
         # Update the alarms
-        self._dbusservice["/Alarms/LowVoltage"] = self.battery.protection.voltage_low
+        self._dbusservice["/Alarms/LowVoltage"] = self.battery.protection.low_voltage
         self._dbusservice["/Alarms/LowCellVoltage"] = (
-            self.battery.protection.voltage_cell_low
+            self.battery.protection.low_cell_voltage
         )
         # disable high voltage warning temporarly, if loading to bulk voltage and bulk voltage reached is 30 minutes ago
         self._dbusservice["/Alarms/HighVoltage"] = (
-            self.battery.protection.voltage_high
+            self.battery.protection.high_voltage
             if (
                 self.battery.soc_reset_requested is False
                 and self.battery.soc_reset_last_reached < int(time()) - (60 * 30)
             )
             else 0
         )
-        self._dbusservice["/Alarms/LowSoc"] = self.battery.protection.soc_low
+        self._dbusservice["/Alarms/LowSoc"] = self.battery.protection.low_soc
         self._dbusservice["/Alarms/HighChargeCurrent"] = (
-            self.battery.protection.current_over
+            self.battery.protection.high_charge_current
         )
         self._dbusservice["/Alarms/HighDischargeCurrent"] = (
-            self.battery.protection.current_under
+            self.battery.protection.high_discharge_current
         )
         self._dbusservice["/Alarms/CellImbalance"] = (
             self.battery.protection.cell_imbalance
@@ -1076,22 +1076,22 @@ class DbusHelper:
             self.battery.protection.internal_failure
         )
         self._dbusservice["/Alarms/HighChargeTemperature"] = (
-            self.battery.protection.temp_high_charge
+            self.battery.protection.high_charge_temp
         )
         self._dbusservice["/Alarms/LowChargeTemperature"] = (
-            self.battery.protection.temp_low_charge
+            self.battery.protection.low_charge_temp
         )
         self._dbusservice["/Alarms/HighTemperature"] = (
-            self.battery.protection.temp_high_discharge
+            self.battery.protection.high_temperature
         )
         self._dbusservice["/Alarms/LowTemperature"] = (
-            self.battery.protection.temp_low_discharge
+            self.battery.protection.low_temperature
         )
         self._dbusservice["/Alarms/BmsCable"] = (
             2 if self.battery.block_because_disconnect else 0
         )
         self._dbusservice["/Alarms/HighInternalTemperature"] = (
-            self.battery.protection.temp_high_internal
+            self.battery.protection.high_internal_temp
         )
         self._dbusservice["/Alarms/FuseBlown"] = self.battery.protection.fuse_blown
 

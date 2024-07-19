@@ -142,15 +142,17 @@ class EG4_Lifepower(Battery):
 
         # Alarms
         # 4th bit: Over Current Protection
-        self.protection.current_over = 2 if (groups[5][1] & 0b00001000) > 0 else 0
+        self.protection.high_charge_current = (
+            2 if (groups[5][1] & 0b00001000) > 0 else 0
+        )
         # 5th bit: Over voltage protection
-        self.protection.voltage_high = 2 if (groups[5][1] & 0b00010000) > 0 else 0
+        self.protection.high_voltage = 2 if (groups[5][1] & 0b00010000) > 0 else 0
         # 6th bit: Under voltage protection
-        self.protection.voltage_low = 2 if (groups[5][1] & 0b00100000) > 0 else 0
+        self.protection.low_voltage = 2 if (groups[5][1] & 0b00100000) > 0 else 0
         # 7th bit: Charging over temp protection
-        self.protection.temp_high_charge = 2 if (groups[5][1] & 0b01000000) > 0 else 0
+        self.protection.high_charge_temp = 2 if (groups[5][1] & 0b01000000) > 0 else 0
         # 8th bit: Charging under temp protection
-        self.protection.temp_low_charge = 2 if (groups[5][1] & 0b10000000) > 0 else 0
+        self.protection.low_charge_temp = 2 if (groups[5][1] & 0b10000000) > 0 else 0
 
         # Cycle counter
         self.history.charge_cycles = groups[6][0]

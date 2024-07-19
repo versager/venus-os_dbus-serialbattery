@@ -216,93 +216,93 @@ class Daly_Can(Battery):
 
         if al_volt & 48:
             # High voltage levels - Alarm
-            self.voltage_high = 2
+            self.protection.high_voltage = 2
         elif al_volt & 15:
             # High voltage Warning levels - Pre-alarm
-            self.voltage_high = 1
+            self.protection.high_voltage = 1
         else:
-            self.voltage_high = 0
+            self.protection.high_voltage = 0
 
         if al_volt & 128:
             # Low voltage level - Alarm
-            self.voltage_low = 2
+            self.protection.low_voltage = 2
         elif al_volt & 64:
             # Low voltage Warning level - Pre-alarm
-            self.voltage_low = 1
+            self.protection.low_voltage = 1
         else:
-            self.voltage_low = 0
+            self.protection.low_voltage = 0
 
         if al_temp & 2:
             # High charge temp - Alarm
-            self.temp_high_charge = 2
+            self.protection.high_charge_temp = 2
         elif al_temp & 1:
             # High charge temp - Pre-alarm
-            self.temp_high_charge = 1
+            self.protection.high_charge_temp = 1
         else:
-            self.temp_high_charge = 0
+            self.protection.high_charge_temp = 0
 
         if al_temp & 8:
             # Low charge temp - Alarm
-            self.temp_low_charge = 2
+            self.protection.low_charge_temp = 2
         elif al_temp & 4:
             # Low charge temp - Pre-alarm
-            self.temp_low_charge = 1
+            self.protection.low_charge_temp = 1
         else:
-            self.temp_low_charge = 0
+            self.protection.low_charge_temp = 0
 
         if al_temp & 32:
             # High discharge temp - Alarm
-            self.temp_high_discharge = 2
+            self.protection.high_temperature = 2
         elif al_temp & 16:
             # High discharge temp - Pre-alarm
-            self.temp_high_discharge = 1
+            self.protection.high_temperature = 1
         else:
-            self.temp_high_discharge = 0
+            self.protection.high_temperature = 0
 
         if al_temp & 128:
             # Low discharge temp - Alarm
-            self.temp_low_discharge = 2
+            self.protection.low_temperature = 2
         elif al_temp & 64:
             # Low discharge temp - Pre-alarm
-            self.temp_low_discharge = 1
+            self.protection.low_temperature = 1
         else:
-            self.temp_low_discharge = 0
+            self.protection.low_temperature = 0
 
         # if al_crnt_soc & 2:
         #    # High charge current - Alarm
-        #    self.current_over = 2
+        #    self.protection.high_charge_current = 2
         # elif al_crnt_soc & 1:
         #    # High charge current - Pre-alarm
-        #    self.current_over = 1
+        #    self.protection.high_charge_current = 1
         # else:
-        #    self.current_over = 0
+        #    self.protection.high_charge_current = 0
 
         # if al_crnt_soc & 8:
         #    # High discharge current - Alarm
-        #    self.current_over = 2
+        #    self.protection.high_charge_current = 2
         # elif al_crnt_soc & 4:
         #    # High discharge current - Pre-alarm
-        #    self.current_over = 1
+        #    self.protection.high_charge_current = 1
         # else:
-        #    self.current_over = 0
+        #    self.protection.high_charge_current = 0
 
         if al_crnt_soc & 2 or al_crnt_soc & 8:
             # High charge/discharge current - Alarm
-            self.current_over = 2
+            self.protection.high_charge_current = 2
         elif al_crnt_soc & 1 or al_crnt_soc & 4:
             # High charge/discharge current - Pre-alarm
-            self.current_over = 1
+            self.protection.high_charge_current = 1
         else:
-            self.current_over = 0
+            self.protection.high_charge_current = 0
 
         if al_crnt_soc & 128:
             # Low SoC - Alarm
-            self.soc_low = 2
+            self.protection.low_soc = 2
         elif al_crnt_soc & 64:
             # Low SoC Warning level - Pre-alarm
-            self.soc_low = 1
+            self.protection.low_soc = 1
         else:
-            self.soc_low = 0
+            self.protection.low_soc = 0
 
         return True
 

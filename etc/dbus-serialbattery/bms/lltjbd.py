@@ -193,22 +193,22 @@ def writeCmd(reg, data=None):
 class LltJbdProtection(Protection):
     def __init__(self):
         super(LltJbdProtection, self).__init__()
-        self.voltage_high_cell = False
-        self.voltage_low_cell = False
+        self.voltage_cell_high = False
+        self.voltage_cell_low = False
         self.short = False
         self.IC_inspection = False
         self.software_lock = False
 
-    def set_voltage_high_cell(self, value):
-        self.voltage_high_cell = value
+    def set_voltage_cell_high(self, value):
+        self.voltage_cell_high = value
         self.cell_imbalance = (
-            2 if self.voltage_low_cell or self.voltage_high_cell else 0
+            2 if self.voltage_cell_low or self.voltage_cell_high else 0
         )
 
-    def set_voltage_low_cell(self, value):
-        self.voltage_low_cell = value
+    def set_voltage_cell_low(self, value):
+        self.voltage_cell_low = value
         self.cell_imbalance = (
-            2 if self.voltage_low_cell or self.voltage_high_cell else 0
+            2 if self.voltage_cell_low or self.voltage_cell_high else 0
         )
 
     def set_short(self, value):
@@ -486,25 +486,25 @@ class LltJbd(Battery):
     def to_protection_bits(self, byte_data):
         tmp = bin(byte_data)[2:].rjust(13, utils.ZERO_CHAR)
 
-        self.protection.voltage_high = 2 if is_bit_set(tmp[10]) else 0
-        self.protection.voltage_low = 2 if is_bit_set(tmp[9]) else 0
-        self.protection.temp_high_charge = 1 if is_bit_set(tmp[8]) else 0
-        self.protection.temp_low_charge = 1 if is_bit_set(tmp[7]) else 0
-        self.protection.temp_high_discharge = 1 if is_bit_set(tmp[6]) else 0
-        self.protection.temp_low_discharge = 1 if is_bit_set(tmp[5]) else 0
-        self.protection.current_over = 1 if is_bit_set(tmp[4]) else 0
-        self.protection.current_under = 1 if is_bit_set(tmp[3]) else 0
+        self.protection.high_voltage = 2 if is_bit_set(tmp[10]) else 0
+        self.protection.low_voltage = 2 if is_bit_set(tmp[9]) else 0
+        self.protection.high_charge_temp = 1 if is_bit_set(tmp[8]) else 0
+        self.protection.low_charge_temp = 1 if is_bit_set(tmp[7]) else 0
+        self.protection.high_temperature = 1 if is_bit_set(tmp[6]) else 0
+        self.protection.low_temperature = 1 if is_bit_set(tmp[5]) else 0
+        self.protection.high_charge_current = 1 if is_bit_set(tmp[4]) else 0
+        self.protection.high_discharge_current = 1 if is_bit_set(tmp[3]) else 0
 
         # Software implementations for low soc
-        self.protection.soc_low = (
+        self.protection.low_soc = (
             2
             if self.soc < utils.SOC_LOW_ALARM
             else 1 if self.soc < utils.SOC_LOW_WARNING else 0
         )
 
         # extra protection flags for LltJbd
-        self.protection.set_voltage_low_cell = is_bit_set(tmp[11])
-        self.protection.set_voltage_high_cell = is_bit_set(tmp[12])
+        self.protection.set_voltage_cell_low = is_bit_set(tmp[11])
+        self.protection.set_voltage_cell_high = is_bit_set(tmp[12])
         self.protection.set_software_lock = is_bit_set(tmp[0])
         self.protection.set_IC_inspection = is_bit_set(tmp[1])
         self.protection.set_short = is_bit_set(tmp[2])

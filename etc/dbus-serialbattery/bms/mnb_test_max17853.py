@@ -234,39 +234,39 @@ def err_dec(st_wd1, st_wd2, fema1, self):
     if st_wd1 & 0x80 > 0:
         err_no = 8
         err_msg = "Battery Over Temp"
-        self.protection.temp_high_charge = True
+        self.protection.high_charge_temp = True
     else:
-        self.protection.temp_high_charge = False
+        self.protection.high_charge_temp = False
     if st_wd1 & 0x100 > 0:
         err_no = 7
         err_msg = "Battery Under Temp"
-        self.protection.temp_low_charge
+        self.protection.low_charge_temp
     else:
-        self.protection.temp_low_charge = False
+        self.protection.low_charge_temp = False
     if st_wd1 & 0x200 > 0:
         err_no = 6
         err_msg = "Battery Undervoltage"
-        self.protection.voltage_low = True
+        self.protection.low_voltage = True
     else:
-        self.protection.voltage_low = False
+        self.protection.low_voltage = False
     if st_wd1 & 0x400 > 0:
         err_no = 5
         err_msg = "Battery Overvoltage"
-        self.protection.voltage_high = True
+        self.protection.high_voltage = True
     else:
-        self.protection.voltage_high = False
+        self.protection.high_voltage = False
     if st_wd1 & 0x800 > 0:
         err_no = 4
         err_msg = "Cell Undervoltage"
-        self.protection.voltage_low = True
+        self.protection.low_voltage = True
     else:
-        self.protection.voltage_low = False
+        self.protection.low_voltage = False
     if st_wd1 & 0x1000 > 0:
         err_no = 3  # overvoltage
         err_msg = "Cell Overvoltage"
-        self.protection.voltage_high = True
+        self.protection.high_voltage = True
     else:
-        self.protection.voltage_high = False
+        self.protection.high_voltage = False
     if st_wd1 & 0x2000 > 0:
         err_no = 2  # cell mismatch Dv too high
         err_msg = "Cell voltage mismatch"

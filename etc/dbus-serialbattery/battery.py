@@ -12,7 +12,9 @@ import sys
 
 class Protection(object):
     """
-    This class holds warning and alarm states for different types of checks
+    This class holds warning and alarm states for different types of checks.
+    The alarm name in the GUI is the same as the variable name.
+
     They are of type integer
 
     2 = alarm
@@ -25,20 +27,19 @@ class Protection(object):
     OK = 0
 
     def __init__(self):
-        # TODO: rework variable names, since they are not reflecting the correct state, see dbushelper.py
-        self.voltage_high: int = None
-        self.voltage_low: int = None
-        self.voltage_cell_low: int = None
-        self.soc_low: int = None
-        self.current_over: int = None
-        self.current_under: int = None
+        self.high_voltage: int = None
+        self.low_voltage: int = None
+        self.low_cell_voltage: int = None
+        self.low_soc: int = None
+        self.high_charge_current: int = None
+        self.high_discharge_current: int = None
         self.cell_imbalance: int = None
         self.internal_failure: int = None
-        self.temp_high_charge: int = None
-        self.temp_low_charge: int = None
-        self.temp_high_discharge: int = None
-        self.temp_low_discharge: int = None
-        self.temp_high_internal: int = None
+        self.high_charge_temp: int = None
+        self.low_charge_temp: int = None
+        self.high_temperature: int = None
+        self.low_temperature: int = None
+        self.high_internal_temp: int = None
         self.fuse_blown: int = None
 
 

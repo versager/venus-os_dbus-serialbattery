@@ -234,21 +234,21 @@ class Seplosv3(Battery):
         try:
             self.protection = Protection()
             #   ALARM = 2 , WARNING = 1 , OK = 0
-            self.protection.voltage_high = (
+            self.protection.high_voltage = (
                 2 if sfa[0x05] == 0 else 1 if sfa[0x04] == 0 else 0
             )
-            self.protection.voltage_low = (
+            self.protection.low_voltage = (
                 2 if sfa[0x06] == 0 else 1 if sfa[0x06] == 0 else 0
             )
             # self.protection.voltage_cell_high =  1 if  sfa[0x00] == 0 else 0 + 1 if  sfa[0x01] == 0 else 0
-            self.protection.voltage_cell_low = (
+            self.protection.low_cell_voltage = (
                 2 if sfa[0x03] == 0 else 1 if sfa[0x02] == 0 else 0
             )
-            self.protection.soc_low = 2 if sfa[0x30] == 0 else 0
-            self.protection.current_over = (
+            self.protection.low_soc = 2 if sfa[0x30] == 0 else 0
+            self.protection.high_charge_current = (
                 2 if sfa[0x21] == 0 else 1 if sfa[0x20] == 0 else 0
             )
-            self.protection.current_under = (
+            self.protection.high_discharge_current = (
                 2 if sfa[0x24] == 0 else 1 if sfa[0x23] == 0 else 0
             )
             self.protection.internal_failure = (
@@ -257,19 +257,19 @@ class Seplosv3(Battery):
                 < 5
                 else 0
             )
-            self.protection.temp_high_charge = (
+            self.protection.high_charge_temp = (
                 2 if sfa[0x09] == 0 else 1 if sfa[0x08] == 0 else 0
             )
-            self.protection.temp_low_charge = (
+            self.protection.low_charge_temp = (
                 2 if sfa[0x0B] == 0 else 1 if sfa[0x0A] == 0 else 0
             )
-            self.protection.temp_high_discharge = (
+            self.protection.high_temperature = (
                 2 if sfa[0x0D] == 0 else 1 if sfa[0x0C] == 0 else 0
             )
-            self.protection.temp_low_discharge = (
+            self.protection.low_temperature = (
                 2 if sfa[0x0F] == 0 else 1 if sfa[0x0E] == 0 else 0
             )
-            self.protection.temp_high_internal = (
+            self.protection.high_internal_temp = (
                 2 if sfa[0x15] == 0 else 1 if sfa[0x14] == 0 else 0
             )
         except Exception as e:

@@ -17,22 +17,22 @@ import sys
 class MNBProtection(Protection):
     def __init__(self):
         super(MNBProtection, self).__init__()
-        self.voltage_high_cell = False
-        self.voltage_low_cell = False
+        self.voltage_cell_high = False
+        self.voltage_cell_low = False
         self.short = False
         self.IC_inspection = False
         self.software_lock = False
 
-    def set_voltage_high_cell(self, value):
-        self.voltage_high_cell = value
+    def set_voltage_cell_high(self, value):
+        self.voltage_cell_high = value
         self.set_cell_imbalance(
-            2 if self.voltage_low_cell or self.voltage_high_cell else 0
+            2 if self.voltage_cell_low or self.voltage_cell_high else 0
         )
 
-    def set_voltage_low_cell(self, value):
-        self.voltage_low_cell = value
+    def set_voltage_cell_low(self, value):
+        self.voltage_cell_low = value
         self.set_cell_imbalance(
-            2 if self.voltage_low_cell or self.voltage_high_cell else 0
+            2 if self.voltage_cell_low or self.voltage_cell_high else 0
         )
 
     def set_short(self, value):

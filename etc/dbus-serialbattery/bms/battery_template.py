@@ -214,22 +214,22 @@ class BatteryTemplate(Battery):
         # PROTECTION values
         # 2 = alarm, 1 = warningm 0 = ok
         # high battery voltage alarm (int)
-        self.protection.voltage_high = VALUE_FROM_BMS
+        self.protection.high_voltage = VALUE_FROM_BMS
 
         # low battery voltage alarm (int)
-        self.protection.voltage_low = VALUE_FROM_BMS
+        self.protection.low_voltage = VALUE_FROM_BMS
 
         # low cell voltage alarm (int)
-        self.protection.voltage_cell_low = VALUE_FROM_BMS
+        self.protection.low_cell_voltage = VALUE_FROM_BMS
 
         # low SOC alarm (int)
-        self.protection.soc_low = VALUE_FROM_BMS
+        self.protection.low_soc = VALUE_FROM_BMS
 
         # high charge current alarm (int)
-        self.protection.current_over = VALUE_FROM_BMS
+        self.protection.high_charge_current = VALUE_FROM_BMS
 
         # high discharge current alarm (int)
-        self.protection.current_under = VALUE_FROM_BMS
+        self.protection.high_discharge_current = VALUE_FROM_BMS
 
         # cell imbalance alarm (int)
         self.protection.cell_imbalance = VALUE_FROM_BMS
@@ -238,19 +238,19 @@ class BatteryTemplate(Battery):
         self.protection.internal_failure = VALUE_FROM_BMS
 
         # high charge temperature alarm (int)
-        self.protection.temp_high_charge = VALUE_FROM_BMS
+        self.protection.high_charge_temp = VALUE_FROM_BMS
 
         # low charge temperature alarm (int)
-        self.protection.temp_low_charge = VALUE_FROM_BMS
+        self.protection.low_charge_temp = VALUE_FROM_BMS
 
         # high temperature alarm (int)
-        self.protection.temp_high_discharge = VALUE_FROM_BMS
+        self.protection.high_temperature = VALUE_FROM_BMS
 
         # low temperature alarm (int)
-        self.protection.temp_low_discharge = VALUE_FROM_BMS
+        self.protection.low_temperature = VALUE_FROM_BMS
 
         # high internal temperature alarm (int)
-        self.protection.temp_high_internal = VALUE_FROM_BMS
+        self.protection.high_internal_temp = VALUE_FROM_BMS
 
         # fuse blown alarm (int)
         self.protection.fuse_blown = VALUE_FROM_BMS

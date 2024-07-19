@@ -295,71 +295,71 @@ class HeltecModbus(Battery):
                     if (warnings & (1 << 3)) or (
                         warnings & (1 << 15)
                     ):  # 15 is full protection, 3 is total overvoltage
-                        self.voltage_high = 2
+                        self.protection.high_voltage = 2
                     else:
-                        self.voltage_high = 0
+                        self.protection.high_voltage = 0
 
                     if warnings & (1 << 0):
                         self.protection.voltage_cell_high = 2
                         # we handle a single cell OV as total OV, as long as cell_high is not explicitly handled
-                        self.protection.voltage_high = 1
+                        self.protection.high_voltage = 1
                     else:
                         self.protection.voltage_cell_high = 0
 
                     if warnings & (1 << 1):
-                        self.protection.voltage_cell_low = 2
+                        self.protection.low_cell_voltage = 2
                     else:
-                        self.protection.voltage_cell_low = 0
+                        self.protection.low_cell_voltage = 0
 
                     if warnings & (1 << 4):
-                        self.protection.voltage_low = 2
+                        self.protection.low_voltage = 2
                     else:
-                        self.protection.voltage_low = 0
+                        self.protection.low_voltage = 0
 
                     if warnings & (1 << 5):
-                        self.protection.current_over = 2
+                        self.protection.high_charge_current = 2
                     else:
-                        self.protection.current_over = 0
+                        self.protection.high_charge_current = 0
 
                     if warnings & (1 << 7):
-                        self.protection.current_under = 2
+                        self.protection.high_discharge_current = 2
                     elif warnings & (1 << 6):
-                        self.protection.current_under = 1
+                        self.protection.high_discharge_current = 1
                     else:
-                        self.protection.current_under = 0
+                        self.protection.high_discharge_current = 0
 
                     if warnings & (1 << 8):  # this is a short circuit
-                        self.protection.current_over = 2
+                        self.protection.high_charge_current = 2
 
                     if warnings & (1 << 9):
-                        self.protection.temp_high_charge = 2
+                        self.protection.high_charge_temp = 2
                     else:
-                        self.protection.temp_high_charge = 0
+                        self.protection.high_charge_temp = 0
 
                     if warnings & (1 << 10):
-                        self.protection.temp_low_charge = 2
+                        self.protection.low_charge_temp = 2
                     else:
-                        self.protection.temp_low_charge = 0
+                        self.protection.low_charge_temp = 0
 
                     if warnings & (1 << 11):
-                        self.protection.temp_high_discharge = 2
+                        self.protection.high_temperature = 2
                     else:
-                        self.protection.temp_high_discharge = 0
+                        self.protection.high_temperature = 0
 
                     if warnings & (1 << 12):
-                        self.protection.temp_low_discharge = 2
+                        self.protection.low_temperature = 2
                     else:
-                        self.protection.temp_low_discharge = 0
+                        self.protection.low_temperature = 0
 
                     if warnings & (1 << 13):  # MOS overtemp
-                        self.protection.temp_high_internal = 2
+                        self.protection.high_internal_temp = 2
                     else:
-                        self.protection.temp_high_internal = 0
+                        self.protection.high_internal_temp = 0
 
                     if warnings & (1 << 14):  # SOC low
-                        self.protection.soc_low = 2
+                        self.protection.low_soc = 2
                     else:
-                        self.protection.soc_low = 0
+                        self.protection.low_soc = 0
 
                     if warnings & (0xFFFF0000):  # any other fault
                         self.protection.internal_failure = 2

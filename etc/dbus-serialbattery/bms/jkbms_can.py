@@ -127,35 +127,39 @@ class Jkbms_Can(Battery):
         pos = len(tmp)
         logger.debug(tmp)
         self.protection.cell_overvoltage = 2 if int(tmp[pos - 2 : pos], 2) > 0 else 0
-        self.protection.voltage_cell_low = (
+        self.protection.low_cell_voltage = (
             2 if int(tmp[pos - 4 : pos - 2], 2) > 0 else 0
         )
-        self.protection.voltage_high = 2 if int(tmp[pos - 6 : pos - 4], 4) > 0 else 0
-        self.protection.voltage_low = 2 if int(tmp[pos - 8 : pos - 6], 2) > 0 else 0
+        self.protection.high_voltage = 2 if int(tmp[pos - 6 : pos - 4], 4) > 0 else 0
+        self.protection.low_voltage = 2 if int(tmp[pos - 8 : pos - 6], 2) > 0 else 0
         self.protection.cell_imbalance = 2 if int(tmp[pos - 10 : pos - 8], 2) > 0 else 0
-        self.protection.current_under = 2 if int(tmp[pos - 12 : pos - 10], 2) > 0 else 0
-        self.protection.current_over = 2 if int(tmp[pos - 14 : pos - 12], 2) > 0 else 0
+        self.protection.high_discharge_current = (
+            2 if int(tmp[pos - 12 : pos - 10], 2) > 0 else 0
+        )
+        self.protection.high_charge_current = (
+            2 if int(tmp[pos - 14 : pos - 12], 2) > 0 else 0
+        )
 
         # there is just a BMS and Battery temp alarm (not for charg and discharge)
-        self.protection.temp_high_charge = (
+        self.protection.high_charge_temp = (
             2 if int(tmp[pos - 16 : pos - 14], 2) > 0 else 0
         )
-        self.protection.temp_high_discharge = (
+        self.protection.high_temperature = (
             2 if int(tmp[pos - 16 : pos - 14], 2) > 0 else 0
         )
-        self.protection.temp_low_charge = (
+        self.protection.low_charge_temp = (
             2 if int(tmp[pos - 18 : pos - 16], 2) > 0 else 0
         )
-        self.protection.temp_low_discharge = (
+        self.protection.low_temperature = (
             2 if int(tmp[pos - 18 : pos - 16], 2) > 0 else 0
         )
-        self.protection.temp_high_charge = (
+        self.protection.high_charge_temp = (
             2 if int(tmp[pos - 20 : pos - 18], 2) > 0 else 0
         )
-        self.protection.temp_high_discharge = (
+        self.protection.high_temperature = (
             2 if int(tmp[pos - 20 : pos - 18], 2) > 0 else 0
         )
-        self.protection.soc_low = 2 if int(tmp[pos - 22 : pos - 20], 2) > 0 else 0
+        self.protection.low_soc = 2 if int(tmp[pos - 22 : pos - 20], 2) > 0 else 0
         self.protection.internal_failure = (
             2 if int(tmp[pos - 24 : pos - 22], 2) > 0 else 0
         )
@@ -171,21 +175,21 @@ class Jkbms_Can(Battery):
 
     def reset_protection_bits(self):
         self.protection.cell_overvoltage = 0
-        self.protection.voltage_cell_low = 0
-        self.protection.voltage_high = 0
-        self.protection.voltage_low = 0
+        self.protection.low_cell_voltage = 0
+        self.protection.high_voltage = 0
+        self.protection.low_voltage = 0
         self.protection.cell_imbalance = 0
-        self.protection.current_under = 0
-        self.protection.current_over = 0
+        self.protection.high_discharge_current = 0
+        self.protection.high_charge_current = 0
 
         # there is just a BMS and Battery temp alarm (not for charg and discharge)
-        self.protection.temp_high_charge = 0
-        self.protection.temp_high_discharge = 0
-        self.protection.temp_low_charge = 0
-        self.protection.temp_low_discharge = 0
-        self.protection.temp_high_charge = 0
-        self.protection.temp_high_discharge = 0
-        self.protection.soc_low = 0
+        self.protection.high_charge_temp = 0
+        self.protection.high_temperature = 0
+        self.protection.low_charge_temp = 0
+        self.protection.low_temperature = 0
+        self.protection.high_charge_temp = 0
+        self.protection.high_temperature = 0
+        self.protection.low_soc = 0
         self.protection.internal_failure = 0
         self.protection.internal_failure = 0
         self.protection.internal_failure = 0

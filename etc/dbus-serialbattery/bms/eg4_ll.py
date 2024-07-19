@@ -251,87 +251,87 @@ class EG4_LL(Battery):
             warning_alarm = f"No Warnings - {warning_hex}"
         elif warning_hex == "0001":
             warning_alarm = f"Warning: {warning_hex} - Pack Over Voltage"
-            self.voltage_high = 1
+            self.protection.high_voltage = 1
         elif warning_hex == "0002":
             warning_alarm = f"Warning: {warning_hex} - Cell Over Voltage"
-            self.voltage_cell_high = 1
+            self.protection.voltage_cell_high = 1
         elif warning_hex == "0004":
             warning_alarm = f"Warning: {warning_hex} - Pack Under Voltage"
-            self.voltage_low = 1
+            self.protection.low_voltage = 1
         elif warning_hex == "0008":
             warning_alarm = f"Warning: {warning_hex} - Cell Under Voltage"
-            self.voltage_cell_low = 1
+            self.protection.low_cell_voltage = 1
         elif warning_hex == "0010":
             warning_alarm = f"Warning: {warning_hex} - Charge Over Current"
-            self.current_over = 1
+            self.protection.high_charge_current = 1
         elif warning_hex == "0020":
             warning_alarm = f"Warning: {warning_hex} - Discharge Over Current"
-            self.current_over = 1
+            self.protection.high_charge_current = 1
         elif warning_hex == "0040":
             warning_alarm = f"Warning: {warning_hex} - Ambient High Temp"
-            self.temp_high_internal = 1
+            self.protection.high_internal_temp = 1
         elif warning_hex == "0080":
             warning_alarm = f"Warning: {warning_hex} - Mosfets High Temp"
-            self.temp_high_internal = 1
+            self.protection.high_internal_temp = 1
         elif warning_hex == "0100":
             warning_alarm = f"Warning: {warning_hex} - Charge Over Temp"
-            self.temp_high_charge = 1
+            self.protection.high_charge_temp = 1
         elif warning_hex == "0200":
             warning_alarm = f"Warning: {warning_hex} - Discharge Over Temp"
-            self.temp_high_discharge = 1
+            self.protection.high_temperature = 1
         elif warning_hex == "0400":
             warning_alarm = f"Warning: {warning_hex} - Charge Under Temp"
-            self.temp_low_charge = 1
+            self.protection.low_charge_temp = 1
         elif warning_hex == "1000":
             warning_alarm = f"Warning: {warning_hex} - Low Capacity"
-            self.soc_low = 1
+            self.protection.low_soc = 1
         elif warning_hex == "2000":
             warning_alarm = f"Warning: {warning_hex} - Float Stoped"
         elif warning_hex == "4000":
             warning_alarm = f"Warning: {warning_hex} - UNKNOWN"
-            self.internal_failure = 1
+            self.protection.internal_failure = 1
 
         if protection_hex == "0000":
             protection_alarm = f"No Protection Events - {protection_hex}"
         elif protection_hex == "0001":
             protection_alarm = f"Protection: {protection_hex} - Pack Over Voltage"
-            self.voltage_high = 2
+            self.protection.high_voltage = 2
         elif protection_hex == "0002":
             protection_alarm = f"Protection: {protection_hex} - Cell Over Voltage"
-            self.voltage_cell_high = 2
+            self.protection.voltage_cell_high = 2
         elif protection_hex == "0004":
             protection_alarm = f"Protection: {protection_hex} - Pack Under Voltage"
-            self.voltage_low = 2
+            self.protection.low_voltage = 2
         elif protection_hex == "0008":
             protection_alarm = f"Protection: {protection_hex} - Cell Under Voltage"
-            self.voltage_cell_low = 2
+            self.protection.low_cell_voltage = 2
         elif protection_hex == "0010":
             protection_alarm = f"Protection: {protection_hex} - Charge Over Current"
-            self.current_over = 2
+            self.protection.high_charge_current = 2
         elif protection_hex == "0020":
             protection_alarm = f"Protection: {protection_hex} - Discharge Over Current"
-            self.current_over = 2
+            self.protection.high_charge_current = 2
         elif protection_hex == "0040":
             protection_alarm = f"Protection: {protection_hex} - High Ambient Temp"
-            self.temp_high_internal = 2
+            self.protection.high_internal_temp = 2
         elif protection_hex == "0080":
             protection_alarm = f"Protection: {protection_hex} - Mosfets High Temp"
-            self.temp_high_internal = 2
+            self.protection.high_internal_temp = 2
         elif protection_hex == "0100":
             protection_alarm = f"Protection: {protection_hex} - Charge Over Temp"
-            self.temp_high_charge = 2
+            self.protection.high_charge_temp = 2
         elif protection_hex == "0200":
             protection_alarm = f"Protection: {protection_hex} - Discharge Over Temp"
-            self.temp_high_discharge = 2
+            self.protection.high_temperature = 2
         elif protection_hex == "0400":
             protection_alarm = f"Protection: {protection_hex} - Charge Under Temp"
-            self.temp_low_charge = 2
+            self.protection.low_charge_temp = 2
         elif protection_hex == "0800":
             protection_alarm = f"Protection: {protection_hex} - Discharge Under Temp"
-            self.temp_low_charge = 2
+            self.protection.low_charge_temp = 2
         elif protection_hex == "1000":
             protection_alarm = f"Protection: {protection_hex} - Low Capacity"
-            self.soc_low = 2
+            self.protection.low_soc = 2
         elif protection_hex == "2000":
             protection_alarm = f"Protection: {protection_hex} - Discharge SC"
 

@@ -146,21 +146,21 @@ class HLPdataBMS4S(Battery):
 
         beep = int(par[11])
         if beep == 2:
-            self.protection.temp_low_charge = 1
+            self.protection.low_charge_temp = 1
         else:
-            self.protection.temp_low_charge = 0
+            self.protection.low_charge_temp = 0
         if beep == 3:
-            self.protection.temp_high_charge = 1
+            self.protection.high_charge_temp = 1
         else:
-            self.protection.temp_high_charge = 0
+            self.protection.high_charge_temp = 0
         if beep == 4:
-            self.protection.voltage_low = 2
+            self.protection.low_voltage = 2
         else:
-            self.protection.voltage_low = 0
+            self.protection.low_voltage = 0
         if beep == 5:
-            self.protection.voltage_high = 2
+            self.protection.high_voltage = 2
         else:
-            self.protection.voltage_high = 0
+            self.protection.high_voltage = 0
 
         if len(par) > 13:
             nb = 0

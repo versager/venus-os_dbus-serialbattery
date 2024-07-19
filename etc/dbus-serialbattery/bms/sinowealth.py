@@ -130,28 +130,28 @@ class Sinowealth(Battery):
         # Battery status command layout (from screenshot)
         # [0]     -       CTO     AFE_SC  AFE_OV  UTD     UTC     OTD     OTC
         # [1]     -       -       -       -       OCD     OC      UV      OV
-        self.protection.voltage_high = (
+        self.protection.high_voltage = (
             2 if bool(battery_status[1] & int(1)) else 0
         )  # OV
-        self.protection.voltage_low = (
+        self.protection.low_voltage = (
             2 if bool(battery_status[1] >> 1 & int(1)) else 0
         )  # UV
-        self.protection.current_over = (
+        self.protection.high_charge_current = (
             2
             if bool(battery_status[1] >> 2 & int(1))
             or bool(battery_status[1] >> 3 & int(1))
             else 0
         )  # OC (OCC?)| OCD
-        self.protection.temp_high_charge = (
+        self.protection.high_charge_temp = (
             2 if bool(battery_status[0] & int(1)) else 0
         )  # OTC
-        self.protection.temp_high_discharge = (
+        self.protection.high_temperature = (
             2 if bool(battery_status[0] >> 1 & int(1)) else 0
         )  # OTD
-        self.protection.temp_low_charge = (
+        self.protection.low_charge_temp = (
             2 if bool(battery_status[0] >> 2 & int(1)) else 0
         )  # UTC
-        self.protection.temp_low_discharge = (
+        self.protection.low_temperature = (
             2 if bool(battery_status[0] >> 3 & int(1)) else 0
         )  # UTD
         return True

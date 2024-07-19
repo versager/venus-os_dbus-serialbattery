@@ -322,27 +322,27 @@ class Jkbms_pb(Battery):
         """
 
         # low capacity alarm
-        self.protection.soc_low = (byte_data & 0x00001000) * 2
+        self.protection.low_soc = (byte_data & 0x00001000) * 2
         # MOSFET temperature alarm
-        self.protection.temp_high_internal = (byte_data & 0x00000002) * 2
+        self.protection.high_internal_temp = (byte_data & 0x00000002) * 2
         # charge over voltage alarm
-        self.protection.voltage_high = (byte_data & 0x00000020) * 2
+        self.protection.high_voltage = (byte_data & 0x00000020) * 2
         # discharge under voltage alarm
-        self.protection.voltage_low = (byte_data & 0x00000800) * 2
+        self.protection.low_voltage = (byte_data & 0x00000800) * 2
         # charge overcurrent alarm
-        self.protection.current_over = (byte_data & 0x00000040) * 2
+        self.protection.high_charge_current = (byte_data & 0x00000040) * 2
         # discharge over current alarm
-        self.protection.current_under = (byte_data & 0x00002000) * 2
+        self.protection.high_discharge_current = (byte_data & 0x00002000) * 2
         # core differential pressure alarm OR unit overvoltage alarm
         self.protection.cell_imbalance = 0
         # unit undervoltage alarm
-        self.protection.voltage_cell_low = (byte_data & 0x00001000) * 2
+        self.protection.low_cell_voltage = (byte_data & 0x00001000) * 2
         # battery overtemperature alarm OR overtemperature alarm in the battery box
-        self.protection.temp_high_charge = (byte_data & 0x00000100) * 2
-        self.protection.temp_low_charge = (byte_data & 0x00000200) * 2
+        self.protection.high_charge_temp = (byte_data & 0x00000100) * 2
+        self.protection.low_charge_temp = (byte_data & 0x00000200) * 2
         # check if low/high temp alarm arise during discharging
-        self.protection.temp_high_discharge = (byte_data & 0x00008000) * 2
-        self.protection.temp_low_discharge = 0
+        self.protection.high_temperature = (byte_data & 0x00008000) * 2
+        self.protection.low_temperature = 0
 
     def read_serial_data_jkbms_pb(self, command: str, length: int) -> bool:
         """

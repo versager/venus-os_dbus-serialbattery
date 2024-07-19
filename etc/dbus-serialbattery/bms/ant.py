@@ -111,23 +111,23 @@ class ANT(Battery):
         self.hardware_version = "ANT BMS " + str(self.cell_count) + "S"
 
         # Alarms
-        self.protection.voltage_high = 2 if self.charge_fet == 2 else 0
-        self.protection.voltage_low = (
+        self.protection.high_voltage = 2 if self.charge_fet == 2 else 0
+        self.protection.low_voltage = (
             2 if self.discharge_fet == 2 or self.discharge_fet == 5 else 0
         )
-        self.protection.voltage_cell_low = (
+        self.protection.low_cell_voltage = (
             2
             if self.cell_min_voltage < utils.MIN_CELL_VOLTAGE - 0.1
             else 1 if self.cell_min_voltage < utils.MIN_CELL_VOLTAGE else 0
         )
-        self.protection.temp_high_charge = (
+        self.protection.high_charge_temp = (
             1 if self.charge_fet == 3 or self.charge_fet == 6 else 0
         )
-        self.protection.temp_high_discharge = (
+        self.protection.high_temperature = (
             1 if self.discharge_fet == 7 or self.discharge_fet == 6 else 0
         )
-        self.protection.current_over = 2 if self.charge_fet == 3 else 0
-        self.protection.current_under = 2 if self.discharge_fet == 3 else 0
+        self.protection.high_charge_current = 2 if self.charge_fet == 3 else 0
+        self.protection.high_discharge_current = 2 if self.discharge_fet == 3 else 0
 
         return True
 
