@@ -592,11 +592,18 @@ class LltJbd(Battery):
         self.voltage = voltage / 100
         self.current = current / 100
 
-        # https://github.com/Louisvdw/dbus-serialbattery/issues/769#issuecomment-1720805325
-        if not self.cycle_capacity or self.cycle_capacity < capacity_remain:
-            self.cycle_capacity = capacity
+        # Some requested, that the SOC is calculated by using the cycle_capacity and capacity_remain
+        # but this is not possible, because the values do not match and are very random
+        # See https://github.com/mr-manuel/venus-os_dbus-serialbattery/issues/47#issuecomment-2239210663
 
-        self.soc = round(100 * capacity_remain / self.cycle_capacity, 2)
+        # https://github.com/Louisvdw/dbus-serialbattery/issues/769#issuecomment-1720805325
+        # if not self.cycle_capacity or self.cycle_capacity < capacity_remain:
+        #     self.cycle_capacity = capacity
+
+        # self.soc = round(100 * capacity_remain / capacity, 2)
+
+        self.soc = soc
+
         self.capacity_remain = capacity_remain / 100
         self.capacity = capacity / 100
         self.to_cell_bits(balance, balance2)

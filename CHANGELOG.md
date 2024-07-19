@@ -70,6 +70,7 @@
 * Changed: Fixed problem with battery status and error code by @mr-manuel
 * Changed: JKBMS BLE - Fixes wrong max battery voltage https://github.com/Louisvdw/dbus-serialbattery/issues/1094 by @mr-manuel
 * Changed: JKBMS PB Model fixes by @KoljaWindeler
+* Changed: LLT/JBS BMS - Fix bug in SOC calculation and use SOC comming from BMS. Fixes https://github.com/mr-manuel/venus-os_dbus-serialbattery/issues/47 by @mr-manuel
 * Changed: Reworked, documented and cleaned up a lot of code by @mr-manuel
 * Changed: Set default charge/discharge current from utils in main battery class by @mr-manuel
 * Changed: The setting `HELTEC_MODBUS_ADDR` was replaced by `MODBUS_ADDRESSES` in the `config.default.ini` by @mr-manuel
