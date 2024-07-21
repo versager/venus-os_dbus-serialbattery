@@ -164,6 +164,10 @@ class Battery(ABC):
         self.online: bool = True
         self.hardware_version: str = None
         self.cell_count: int = None
+        self.start_time: int = int(time())
+        """
+        Timestamp of when the battery was initialized
+        """
         # max battery charge/discharge current
         self.max_battery_charge_current: float = utils.MAX_BATTERY_CHARGE_CURRENT
         self.max_battery_discharge_current: float = utils.MAX_BATTERY_DISCHARGE_CURRENT

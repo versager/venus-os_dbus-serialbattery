@@ -58,7 +58,7 @@ class Daly_Can(Battery):
     response_cell_balance = 0x18974001
     response_alarm = 0x18984001
 
-    BATTERYTYPE = "Daly_Can"
+    BATTERYTYPE = "Daly CAN"
     LENGTH_CHECK = 4
     LENGTH_POS = 3
     CURRENT_ZERO_CONSTANT = 30000
@@ -112,6 +112,9 @@ class Daly_Can(Battery):
             result = False
 
         return result
+
+    def connection_name(self) -> str:
+        return "CAN " + self.port
 
     def get_settings(self):
         self.capacity = BATTERY_CAPACITY

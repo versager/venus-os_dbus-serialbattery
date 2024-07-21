@@ -14,7 +14,7 @@ import serial
 
 
 # CONSTANTS
-DRIVER_VERSION: str = "1.4.20240719dev"
+DRIVER_VERSION: str = "1.4.20240721dev"
 """
 current version of the driver
 """
@@ -413,6 +413,8 @@ TEMP_1_NAME: str = config["DEFAULT"]["TEMP_1_NAME"]
 TEMP_2_NAME: str = config["DEFAULT"]["TEMP_2_NAME"]
 TEMP_3_NAME: str = config["DEFAULT"]["TEMP_3_NAME"]
 TEMP_4_NAME: str = config["DEFAULT"]["TEMP_4_NAME"]
+
+TELEMETRY: bool = "True" == config["DEFAULT"]["TELEMETRY"]
 
 GUI_PARAMETERS_SHOW_ADDITIONAL_INFO: bool = (
     "True" == config["DEFAULT"]["GUI_PARAMETERS_SHOW_ADDITIONAL_INFO"]

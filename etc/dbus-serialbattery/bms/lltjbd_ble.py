@@ -22,7 +22,7 @@ MAX_RESPONSE_SIZE = 256
 
 
 class LltJbd_Ble(LltJbd):
-    BATTERYTYPE = "LltJbd_Ble"
+    BATTERYTYPE = "LLT/JBD BLE"
 
     def __init__(self, port: Optional[str], baud: Optional[int], address: str):
         super(LltJbd_Ble, self).__init__(port, -1, address)

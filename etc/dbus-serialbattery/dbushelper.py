@@ -8,10 +8,13 @@ from time import sleep, time
 from utils import logger, publish_config_variables
 import utils
 from xml.etree import ElementTree
+import requests
+import threading
 
 # add path to velib_python
 sys.path.insert(1, os.path.join(os.path.dirname(__file__), "ext", "velib_python"))
 from vedbus import VeDbusService  # noqa: E402
+from ve_utils import get_vrm_portal_id  # noqa: E402
 from settingsdevice import SettingsDevice  # noqa: E402
 
 
@@ -58,6 +61,10 @@ class DbusHelper:
                 self.battery.soc_calc if self.battery.soc_calc is not None else ""
             ),
         }
+        self.telemetry_upload_error_count: int = 0
+        self.telemetry_upload_interval: int = 60 * 60 * 24 * 7  # 1 week
+        self.telemetry_upload_last: int = 0
+        self.telemetry_upload_running: bool = False
 
     def create_pid_file(self) -> None:
         """
@@ -874,6 +881,9 @@ class DbusHelper:
             # publish all the data from the battery object to dbus
             self.publish_dbus()
 
+            # upload telemetry data
+            self.telemetry_upload()
+
         except Exception:
             traceback.print_exc()
             loop.quit()
@@ -1420,3 +1430,103 @@ class DbusHelper:
             )
 
         return result
+
+    def telemetry_upload(self) -> None:
+        """
+        Check if telemetry should be uploaded
+        """
+        if utils.TELEMETRY:
+            # check if telemetry should be uploaded
+            if (
+                not self.telemetry_upload_running
+                and self.telemetry_upload_last + self.telemetry_upload_interval
+                < int(time())
+            ):
+                self.telemetry_upload_thread = threading.Thread(
+                    target=self.telemetry_upload_async
+                )
+                self.telemetry_upload_thread.start()
+
+    def telemetry_upload_async(self) -> None:
+        """
+        Run telemetry upload in a separate thread
+        """
+        self.telemetry_upload_running = True
+
+        # logger.info("Uploading telemetry data")
+
+        # read the version of Venus OS
+        with open("/opt/victronenergy/version", "r") as f:
+            venus_version = f.readline().strip()
+
+        # assemble the data to be uploaded
+        data = {
+            "vrm_id": get_vrm_portal_id(),
+            "venus_os_version": venus_version,
+            "driver_version": utils.DRIVER_VERSION,
+            "device_instance": self.instance,
+            "bms_type": self.battery.type,
+            "cell_count": self.battery.cell_count,
+            "connection_type": self.battery.connection_name(),
+            "driver_runtime": int(time()) - self.battery.start_time,
+            "error_code": (
+                self.battery.error_code if self.battery.error_code is not None else 0
+            ),
+        }
+
+        # post data to the server as json
+        try:
+            response = requests.post(
+                "https://github.md0.eu/venus-os_dbus-serialbattery/telemetry.php",
+                data=data,
+                timeout=60,
+                # verify=False,
+            )
+            response.raise_for_status()
+
+            self.telemetry_upload_error_count = 0
+            self.telemetry_upload_last = int(time())
+
+            # logger.info(f"Telemetry uploaded: {response.text}")
+
+        except Exception:
+            self.telemetry_upload_error_count += 1
+
+            """
+            (
+                exception_type,
+                exception_object,
+                exception_traceback,
+            ) = sys.exc_info()
+            file = exception_traceback.tb_frame.f_code.co_filename
+            line = exception_traceback.tb_lineno
+            logger.error(
+                "Non blocking exception occurred: "
+                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
+            )
+            """
+
+            if self.telemetry_upload_error_count >= 5:
+                self.telemetry_upload_error_count = 0
+                self.telemetry_upload_last = int(time())
+
+                # logger.error(
+                #     "Failed to upload telemetry 5 times."
+                #     + f"Retry on next interval in {self.telemetry_upload_interval} s."
+                # )
+            else:
+
+                # Check if the main thread is still alive
+                #
+                main_thread = threading.main_thread()
+
+                # Wait 59 minutes before retrying
+                sleep_time = 60 * 59
+                sleep_count = 0
+
+                while main_thread.is_alive() and sleep_count < sleep_time:
+                    # wait 14 minutes before retrying, 1 minute request timeout, 14 minutes sleep
+                    sleep(1)
+                    sleep_count += 1
+
+        self.telemetry_upload_running = False

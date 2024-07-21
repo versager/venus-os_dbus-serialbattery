@@ -13,7 +13,7 @@ import sys
 
 
 class Jkbms_Ble(Battery):
-    BATTERYTYPE = "Jkbms_Ble"
+    BATTERYTYPE = "JKBMS BLE"
     resetting = False
 
     def __init__(self, port, baud, address):

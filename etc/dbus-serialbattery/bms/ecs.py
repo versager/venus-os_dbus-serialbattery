@@ -12,7 +12,7 @@ class Ecs(Battery):
         super(Ecs, self).__init__(port, baud, address)
         self.type = self.BATTERYTYPE
 
-    BATTERYTYPE = "ECS_LiPro"
+    BATTERYTYPE = "ECS LiPro"
     GREENMETER_ID_500A = 500
     GREENMETER_ID_250A = 501
     GREENMETER_ID_125A = 502

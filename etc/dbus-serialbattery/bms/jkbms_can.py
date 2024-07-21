@@ -36,7 +36,7 @@ class Jkbms_Can(Battery):
             self.can_bus = False
             logger.debug("bus shutdown")
 
-    BATTERYTYPE = "Jkbms_Can"
+    BATTERYTYPE = "JKBMS CAN"
     CAN_BUS_TYPE = "socketcan"
 
     CURRENT_ZERO_CONSTANT = 400
@@ -56,6 +56,9 @@ class Jkbms_Can(Battery):
         CELL_TEMP: [0x05F4, 0x05F5],
         ALM_INFO: [0x07F4, 0x07F5],
     }
+
+    def connection_name(self) -> str:
+        return "CAN " + self.port
 
     def test_connection(self):
         """
