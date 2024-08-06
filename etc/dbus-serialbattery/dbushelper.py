@@ -520,6 +520,10 @@ class DbusHelper:
         self._dbusservice.add_path(
             "/DeviceName", self.battery.custom_field, writeable=True
         )
+
+        self._dbusservice.add_path("/Manufacturer", self.battery.type)
+        self._dbusservice.add_path("/Family", self.battery.hardware_version)
+
         self._dbusservice.add_path("/State", self.battery.state, writeable=True)
         self._dbusservice.add_path(
             "/ErrorCode", self.battery.error_code, writeable=True
