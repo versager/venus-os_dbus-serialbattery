@@ -265,9 +265,8 @@ class DbusHelper:
                                     else False
                                 )
                             except Exception:
-                                # set state to error, to show in the GUI that something is wrong
-                                self.battery.state = 10
-                                self.battery.error_code = 8
+                                # set error code, to show in the GUI that something is wrong
+                                self.battery.manage_error_code(8)
 
                                 logger.error(
                                     "AllowMaxVoltage could not be converted to type int: "
@@ -288,9 +287,8 @@ class DbusHelper:
                                     value["MaxVoltageStartTime"]
                                 )
                             except Exception:
-                                # set state to error, to show in the GUI that something is wrong
-                                self.battery.state = 10
-                                self.battery.error_code = 8
+                                # set error code, to show in the GUI that something is wrong
+                                self.battery.manage_error_code(8)
 
                                 logger.error(
                                     "MaxVoltageStartTime could not be converted to type int: "
@@ -307,9 +305,8 @@ class DbusHelper:
                                         f"Soc_calc read from dbus: {self.battery.soc_calc}"
                                     )
                                 except Exception:
-                                    # set state to error, to show in the GUI that something is wrong
-                                    self.battery.state = 10
-                                    self.battery.error_code = 8
+                                    # set error code, to show in the GUI that something is wrong
+                                    self.battery.manage_error_code(8)
 
                                     logger.error(
                                         "SocCalc could not be converted to type float: "
@@ -328,9 +325,8 @@ class DbusHelper:
                                     value["SocResetLastReached"]
                                 )
                             except Exception:
-                                # set state to error, to show in the GUI that something is wrong
-                                self.battery.state = 10
-                                self.battery.error_code = 8
+                                # set error code, to show in the GUI that something is wrong
+                                self.battery.manage_error_code(8)
 
                                 logger.error(
                                     "SocResetLastReached could not be converted to type int: "
@@ -865,6 +861,14 @@ class DbusHelper:
             # This is to manage CCL\DCL
             self.battery.manage_charge_current()
 
+            # Manage battery error code reset
+            # Check if the error code should be reset every hour
+            if self.battery.error_code_last_reset_check < int(time()) - 3600:
+                # Check if the error code should be reset
+                self.battery.manage_error_code_reset()
+                # Update the last check time
+                self.battery.error_code_last_reset_check = int(time())
+
             # Manage battery state, if not set to error (10)
             # change state from initializing to running, if there is no error
             if self.battery.state == 0:
@@ -1140,9 +1144,8 @@ class DbusHelper:
                     3,
                 )
             except Exception:
-                # set state to error, to show in the GUI that something is wrong
-                self.battery.state = 10
-                self.battery.error_code = 8
+                # set error code, to show in the GUI that something is wrong
+                self.battery.manage_error_code(8)
 
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 file = exception_traceback.tb_frame.f_code.co_filename
@@ -1218,9 +1221,8 @@ class DbusHelper:
                         )
 
         except Exception:
-            # set state to error, to show in the GUI that something is wrong
-            self.battery.state = 10
-            self.battery.error_code = 8
+            # set error code, to show in the GUI that something is wrong
+            self.battery.manage_error_code(8)
 
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
@@ -1274,9 +1276,8 @@ class DbusHelper:
                         if not recursive:
                             return value
                     except dbus.exceptions.DBusException as e:
-                        # set state to error, to show in the GUI that something is wrong
-                        self.battery.state = 10
-                        self.battery.error_code = 8
+                        # set error code, to show in the GUI that something is wrong
+                        self.battery.manage_error_code(8)
 
                         logger.error(
                             f"getSettingsWithValues(): Failed to get value: {e}"
@@ -1301,9 +1302,8 @@ class DbusHelper:
             logger.debug(f"Setted setting {object_path}/{setting_name} to {value}")
             return True if method(value) == 0 else False
         except dbus.exceptions.DBusException as e:
-            # set state to error, to show in the GUI that something is wrong
-            self.battery.state = 10
-            self.battery.error_code = 8
+            # set error code, to show in the GUI that something is wrong
+            self.battery.manage_error_code(8)
 
             logger.error(f"Failed to set setting: {e}")
 
@@ -1320,9 +1320,8 @@ class DbusHelper:
             logger.debug(f"Removed setting at {object_path}")
             return True if method(setting_name) == 0 else False
         except dbus.exceptions.DBusException as e:
-            # set state to error, to show in the GUI that something is wrong
-            self.battery.state = 10
-            self.battery.error_code = 8
+            # set error code, to show in the GUI that something is wrong
+            self.battery.manage_error_code(8)
 
             logger.error(f"Failed to remove setting: {e}")
 

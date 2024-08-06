@@ -348,6 +348,7 @@ def main():
         battery[key_address].log_settings()
 
     # check config, if there are any invalid values trigger "settings incorrect" error
+    # and set the battery in error state to prevent chargin/discharging
     if not utils.validate_config_values():
         for key_address in battery:
             battery[key_address].state = 10
