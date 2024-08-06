@@ -291,9 +291,6 @@ def main():
                 + str(key_address)
             )
 
-    # get first key from battery dict
-    first_key = list(battery.keys())[0]
-
     if not battery_found:
         logger.error(
             "ERROR >>> No battery connection at "
@@ -329,6 +326,9 @@ def main():
             )
             sys.exit(1)
 
+    # get first key from battery dict
+    first_key = list(battery.keys())[0]
+
     # try using active callback on this battery (normally only used for Bluetooth BMS)
     if not battery[first_key].use_callback(lambda: poll_battery(mainloop)):
         # change poll interval if set in config
@@ -354,28 +354,12 @@ def main():
             battery[key_address].error_code = 119
 
     # use external current sensor if configured
-    try:
-        if (
-            utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE is not None
-            and utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH is not None
-            and battery[0] is not None
-        ):
-            battery[0].monitor_external_current()
-    except Exception:
-        # set to None to avoid crashing, fallback to battery current
-        utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE = None
-        utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH = None
-        (
-            exception_type,
-            exception_object,
-            exception_traceback,
-        ) = sys.exc_info()
-        file = exception_traceback.tb_frame.f_code.co_filename
-        line = exception_traceback.tb_lineno
-        logger.error(
-            "Exception occurred: "
-            + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-        )
+    if (
+        utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE is not None
+        and utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH is not None
+    ):
+        for key_address in battery:
+            battery[key_address].monitor_external_current()
 
     # Run the main loop
     try:

@@ -2024,18 +2024,35 @@ class Battery(ABC):
         }
 
         # start monitoring
-        self._dbusmonitor = DbusMonitor(
-            dbus_tree, valueChangedCallback=self._dbus_value_changed
-        )
+        try:
+            self._dbusmonitor = DbusMonitor(
+                dbus_tree, valueChangedCallback=self._dbus_value_changed
+            )
+        except Exception:
+            # set to None to avoid crashing, fallback to battery current
+            utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE = None
+            utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH = None
+            (
+                exception_type,
+                exception_object,
+                exception_traceback,
+            ) = sys.exc_info()
+            file = exception_traceback.tb_frame.f_code.co_filename
+            line = exception_traceback.tb_lineno
+            logger.error(
+                "Exception occurred: "
+                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
+            )
 
     def _dbus_value_changed(
         self, dbusServiceName, dbusPath, dict, changes, deviceInstance
     ):
+        # check for external current changes
         if (
             dbusServiceName == utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE
             and dbusPath == utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH
         ):
-            self.current_external = round(changes["Value"], 2)
+            self.current_external = round(changes["Value"], 3)
             logger.debug(
                 f"dbusServiceName: {dbusServiceName} - dbusPath: {dbusPath} - value: {changes['Value']}"
             )
@@ -2045,6 +2062,9 @@ class Battery(ABC):
         Get the current from the battery.
         If an external current sensor is connected, use that value.
         """
+        logger.debug(
+            f"current: {self.current} - current_external: {self.current_external}"
+        )
         if self.current_external is not None:
             return self.current_external
         return self.current

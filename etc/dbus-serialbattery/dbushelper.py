@@ -33,6 +33,10 @@ def get_bus() -> dbus.bus.BusConnection:
 
 
 class DbusHelper:
+    """
+    This class is used to handle all the dbus communication.
+    """
+
     EMPTY_DICT = {}
 
     def __init__(self, battery, bms_address=None):
@@ -500,9 +504,8 @@ class DbusHelper:
 
         # Create the mandatory objects
         self._dbusservice.add_path("/DeviceInstance", self.instance)
-        self._dbusservice.add_path(
-            "/ProductId", 0xBA77
-        )  # set to "BATT", little gimmick
+        # this product ID was reserved by Victron Energy for the dbus-serialbattery driver
+        self._dbusservice.add_path("/ProductId", 0xBA77)
         self._dbusservice.add_path("/ProductName", self.battery.product_name())
         self._dbusservice.add_path("/FirmwareVersion", str(utils.DRIVER_VERSION))
         self._dbusservice.add_path("/HardwareVersion", self.battery.hardware_version)

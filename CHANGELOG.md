@@ -66,6 +66,7 @@
 
 * Added: `History()` class that holds all BMS history values by @mr-manuel
 * Added: Automatically increase polling time, if polling take too long by @mr-manuel
+* Added: Daren BMS by @cpttinkering
 * Added: Multiple BMS on one USB to RS485/Modbus adapter now possible. The BMS needs to be able to set different addresses to each battery by @mr-manuel
 * Added: Send telemetry data to see which driver versions and BMS are used the most. Can be disabled in the `config.ini` by @mr-manuel
 * Changed: Call `get_settings()` in `test_connection()` for all battery classes, removed `get_settings()` call from `setup_vedbus()` by @mr-manuel
