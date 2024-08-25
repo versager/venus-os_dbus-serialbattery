@@ -80,7 +80,7 @@
 * Changed: Renogy BMS - Use port as unique identifier, since it's not possible to change any values on this BMS by @mr-manuel
 * Changed: Reworked, documented and cleaned up a lot of code by @mr-manuel
 * Changed: Set default charge/discharge current from utils in main battery class by @mr-manuel
-* Changed: Show non blocking errors only, if more than 100 occured in the last 24 hours and do not block inverting/charging by @mr-manuel
+* Changed: Show non blocking errors only, if more than 180 occured in the last 3 hours (1 per minute) and do not block inverting/charging by @mr-manuel
 * Changed: The setting `HELTEC_MODBUS_ADDR` was replaced by `MODBUS_ADDRESSES` in the `config.default.ini` by @mr-manuel
 * Changed: Updated `battery_template.py` and added tons of descriptions by @mr-manuel
 
