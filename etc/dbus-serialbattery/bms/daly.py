@@ -230,7 +230,7 @@ class Daly(Battery):
 
         try:
             (
-                self.cell_count,
+                cell_count,
                 self.temp_sensors,
                 self.charger_connected,
                 self.load_connected,
@@ -240,17 +240,24 @@ class Daly(Battery):
         except Exception:
             return False
 
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
+        if cell_count > 0:
+            self.cell_count = cell_count
 
-        self.hardware_version = (
-            "DalyBMS "
-            + str(self.cell_count)
-            + "S"
-            + (" (" + self.production + ")" if self.production else "")
-        )
-        logger.debug(self.hardware_version)
-        return True
+            self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
+            self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
+
+            self.hardware_version = (
+                "DalyBMS "
+                + str(self.cell_count)
+                + "S"
+                + (" (" + self.production + ")" if self.production else "")
+            )
+
+            logger.debug(self.hardware_version)
+
+            return True
+
+        return False
 
     def read_soc_data(self, ser):
 
