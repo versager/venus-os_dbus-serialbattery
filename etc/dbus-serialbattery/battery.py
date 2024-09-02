@@ -190,6 +190,45 @@ class Battery(ABC):
         self.control_allow_charge: bool = None
         self.control_allow_discharge: bool = None
 
+        self.current_avg: float = None
+        self.current_avg_lst: list = []
+        self.current_external: float = None
+        self.capacity_remain: float = None
+        self.capacity: float = None
+        self.production = None
+        self.protection = Protection()
+        self.history = History()
+        self.version = None
+        self.time_to_soc_update: int = 0
+        self.temp_sensors: int = None
+        self.temp1: float = None
+        self.temp2: float = None
+        self.temp3: float = None
+        self.temp4: float = None
+        self.temp_mos: float = None
+        self.cells: List[Cell] = []
+        self.control_voltage: float = None
+        self.soc_reset_requested: bool = False
+        self.soc_reset_last_reached: int = 0  # save state to preserve on restart
+        self.soc_reset_battery_voltage: int = None
+        self.max_battery_voltage: float = None
+        self.min_battery_voltage: float = None
+        self.allow_max_voltage: bool = True  # save state to preserve on restart
+        self.max_voltage_start_time: int = None  # save state to preserve on restart
+        self.transition_start_time: int = None
+        self.charge_mode: str = None
+        self.charge_mode_debug: str = ""
+        self.charge_mode_debug_float: str = ""
+        self.charge_mode_debug_bulk: str = ""
+        self.charge_limitation: str = None
+        self.discharge_limitation: str = None
+        self.linear_cvl_last_set: int = 0
+        self.linear_ccl_last_set: int = 0
+        self.linear_dcl_last_set: int = 0
+
+        # list of available callbacks, in order to display the buttons in the GUI
+        self.available_callbacks: List[str] = []
+
         # display errors in the GUI
         # https://github.com/victronenergy/veutil/blob/master/inc/veutil/ve_regs_payload.h
         # https://github.com/victronenergy/veutil/blob/master/src/qt/bms_error.cpp
@@ -230,44 +269,7 @@ class Battery(ABC):
         """
         self.voltage: float = None
         self.current: float = None
-        self.current_avg: float = None
-        self.current_avg_lst: list = []
         self.current_corrected: float = None
-        self.current_external: float = None
-        self.capacity_remain: float = None
-        self.capacity: float = None
-        self.production = None
-        self.protection = Protection()
-        self.history = History()
-        self.version = None
-        self.time_to_soc_update: int = 0
-        self.temp_sensors: int = None
-        self.temp1: float = None
-        self.temp2: float = None
-        self.temp3: float = None
-        self.temp4: float = None
-        self.temp_mos: float = None
-        self.cells: List[Cell] = []
-        self.control_voltage: float = None
-        self.soc_reset_requested: bool = False
-        self.soc_reset_last_reached: int = 0  # save state to preserve on restart
-        self.soc_reset_battery_voltage: int = None
-        self.max_battery_voltage: float = None
-        self.min_battery_voltage: float = None
-        self.allow_max_voltage: bool = True  # save state to preserve on restart
-        self.max_voltage_start_time: int = None  # save state to preserve on restart
-        self.transition_start_time: int = None
-        self.charge_mode: str = None
-        self.charge_mode_debug: str = ""
-        self.charge_mode_debug_float: str = ""
-        self.charge_mode_debug_bulk: str = ""
-        self.charge_limitation: str = None
-        self.discharge_limitation: str = None
-        self.linear_cvl_last_set: int = 0
-        self.linear_ccl_last_set: int = 0
-        self.linear_dcl_last_set: int = 0
-        # list of available callbacks, in order to display the buttons in the GUI
-        self.available_callbacks: List[str] = []
 
     @abstractmethod
     def test_connection(self) -> bool:
@@ -1719,6 +1721,13 @@ class Battery(ABC):
         :param only_number: Whether to return only the seconds
         :return: The time to reach the target SoC
         """
+        if (
+            self.get_current() is None
+            or soc_target is None
+            or percent_per_second is None
+        ):
+            return None
+
         if self.get_current() > 0:
             soc_diff = soc_target - self.soc_calc
         else:
