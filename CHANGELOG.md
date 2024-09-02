@@ -75,6 +75,7 @@
 * Changed: Fixed alarms for some BMS and cleaned up `Protection()` class
 * Changed: Fixed how `velib_python` was integrated in this driver by @mr-manuel
 * Changed: Fixed problem with battery status and error code by @mr-manuel
+* Changed: GUIv1 cell voltage page design by @mr-manuel
 * Changed: JKBMS BLE - Fixes wrong max battery voltage https://github.com/Louisvdw/dbus-serialbattery/issues/1094 by @mr-manuel
 * Changed: JKBMS PB Model fixes by @KoljaWindeler
 * Changed: LLT/JBS BMS - Fix bug in SOC calculation and use SOC comming from BMS. Fixes https://github.com/mr-manuel/venus-os_dbus-serialbattery/issues/47 by @mr-manuel
