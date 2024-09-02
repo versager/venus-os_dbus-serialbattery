@@ -59,6 +59,8 @@ class EG4_Lifepower(Battery):
         # After successful connection get_settings() will be called to set up the battery
         # Set the current limits, populate cell count, etc
         # Return True if success, False for failure
+        result = False
+
         hardware_version = self.read_serial_data_eg4(self.command_hardware_version)
         if hardware_version:
             # I get some characters that I'm not able to figure out the encoding, probably chinese so I discard it
@@ -70,17 +72,25 @@ class EG4_Lifepower(Battery):
             )
             logger.info("Hardware Version:" + self.hardware_version)
 
-        version = self.read_serial_data_eg4(self.command_firmware_version)
-        if version:
-            self.version = re.sub(
-                r"[^a-zA-Z0-9-._ ]", "", str(version, encoding="utf-8", errors="ignore")
-            )
-            logger.info("Firmware Version:" + self.version)
+            result = True
+
+        if result:
+            version = self.read_serial_data_eg4(self.command_firmware_version)
+            if version:
+                self.version = re.sub(
+                    r"[^a-zA-Z0-9-._ ]",
+                    "",
+                    str(version, encoding="utf-8", errors="ignore"),
+                )
+                logger.info("Firmware Version:" + self.version)
+
+            result = True
 
         # polling every second seems to create some error messages
         # change to 2 seconds
         self.poll_interval = 2000
-        return True
+
+        return result
 
     def refresh_data(self):
         # call all functions that will refresh the battery data.

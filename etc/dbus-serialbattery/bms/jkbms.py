@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from battery import Battery, Cell
-from utils import is_bit_set, read_serial_data, logger
-import utils
+from utils import bytearray_to_string, is_bit_set, read_serial_data, logger, ZERO_CHAR
 from struct import unpack_from
 from re import sub
 import sys
@@ -246,7 +245,7 @@ class Jkbms(Battery):
         return self.unique_identifier_tmp
 
     def to_fet_bits(self, byte_data):
-        tmp = bin(byte_data)[2:].rjust(3, utils.ZERO_CHAR)
+        tmp = bin(byte_data)[2:].rjust(3, ZERO_CHAR)
         self.charge_fet = is_bit_set(tmp[2])
         self.discharge_fet = is_bit_set(tmp[1])
         self.balancing = is_bit_set(tmp[0])
@@ -300,7 +299,7 @@ class Jkbms(Battery):
         Bit 13:309_B protection: 1 alarm, 0 nomal
         """
         pos = 13
-        tmp = bin(byte_data)[15 - pos :].rjust(pos + 1, utils.ZERO_CHAR)
+        tmp = bin(byte_data)[15 - pos :].rjust(pos + 1, ZERO_CHAR)
         # logger.debug(tmp)
 
         # low capacity alarm
@@ -367,7 +366,7 @@ class Jkbms(Battery):
 
         s = sum(data[0:-4])
 
-        logger.debug("bytearray: " + utils.bytearray_to_string(data))
+        logger.debug("bytearray: " + bytearray_to_string(data))
 
         if start == 0x4E57 and end == 0x68 and s == crc_lo:
             return data[10 : length - 7]

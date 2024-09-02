@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from battery import Battery, Cell
 from typing import Callable
-from utils import logger
-import utils
+from utils import logger, AUTO_RESET_SOC
 from time import sleep, time
 from bms.jkbms_brn import Jkbms_Brn
 import os
@@ -285,7 +284,7 @@ class Jkbms_Ble(Battery):
         return 1 if self.balancing else 0
 
     def trigger_soc_reset(self):
-        if utils.AUTO_RESET_SOC:
+        if AUTO_RESET_SOC:
             self.jk.max_cell_voltage = self.get_max_cell_voltage()
             self.jk.trigger_soc_reset = True
         return

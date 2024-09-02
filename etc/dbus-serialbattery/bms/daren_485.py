@@ -78,6 +78,7 @@ class Daren485(Battery):
                         result = self.get_serial(ser)
 
                         result = result and self.get_cells_params(ser)
+
                         if result:
                             # init the cell array once
                             if len(self.cells) == 0:
@@ -98,10 +99,11 @@ class Daren485(Battery):
             logger.warning("Couldn't open serial port")
 
         if not result:  # TROUBLESHOOTING for no reply errors
-            logger.info(
+            logger.debug(
                 f"get_settings: result: {result}."
                 + " If you don't see this warning very often, you can ignore it."
             )
+            logger.error(">>> ERROR: No reply - returning")
 
         return result
 
@@ -170,7 +172,7 @@ class Daren485(Battery):
             else:
                 logger.error("get_serial response length error!")
         else:
-            logger.error("get_serial response error!")
+            logger.debug("get_serial response error!")
 
         return result
 
@@ -540,8 +542,8 @@ class Daren485(Battery):
         try:
             CID2 = buff[7:9]
             if self.CID2_decode(CID2) == -1:
-                logger.error("CID2_Decode error!")
-                logger.error("Buffer contents: {}".format(buff))
+                logger.debug("CID2_Decode error!")
+                logger.debug("Buffer contents: {}".format(buff))
                 return False
         except Exception as e:
             logger.error("read_response Data invalid!: {}".format(e))
