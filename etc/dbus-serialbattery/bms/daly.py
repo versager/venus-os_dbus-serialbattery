@@ -243,9 +243,6 @@ class Daly(Battery):
         if cell_count > 0:
             self.cell_count = cell_count
 
-            self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-            self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
-
             self.hardware_version = (
                 "DalyBMS "
                 + str(self.cell_count)

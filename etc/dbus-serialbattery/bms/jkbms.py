@@ -56,8 +56,6 @@ class Jkbms(Battery):
         # After successful connection get_settings() will be called to set up the battery
         # Set the current limits, populate cell count, etc
         # Return True if success, False for failure
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
 
         # init the cell array once
         # if len(self.cells) == 0:

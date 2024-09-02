@@ -105,8 +105,6 @@ class Ecs(Battery):
 
         # Uncomment if BMS does not supply capacity
         self.cell_count = utils.LIPRO_CELL_COUNT
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
         self.temp_sensors = 2
 
         return self.read_status_data()

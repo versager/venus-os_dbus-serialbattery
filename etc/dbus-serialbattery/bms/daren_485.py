@@ -9,7 +9,6 @@
 # avoid importing wildcards, remove unused imports
 from battery import Battery, Cell
 from utils import open_serial_port, logger
-import utils
 from time import sleep
 from struct import unpack
 from re import findall
@@ -84,14 +83,6 @@ class Daren485(Battery):
                             if len(self.cells) == 0:
                                 for _ in range(self.cell_count):
                                     self.cells.append(Cell(False))
-
-                            # init battery voltages
-                            self.max_battery_voltage = (
-                                utils.MAX_CELL_VOLTAGE * self.cell_count
-                            )
-                            self.min_battery_voltage = (
-                                utils.MIN_CELL_VOLTAGE * self.cell_count
-                            )
 
                         result = result and self.get_realtime_data(ser)
 

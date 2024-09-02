@@ -81,8 +81,6 @@ class ANT(Battery):
         self.current = 0.0 if current == 0 else current / -10
 
         self.cell_count = unpack_from(">b", status_data, 123)[0]
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
 
         cell_max_no, cell_max_voltage, cell_min_no, cell_min_voltage = unpack_from(
             ">bhbh", status_data, 115

@@ -612,8 +612,6 @@ class LltJbd(Battery):
         )
         self.to_fet_bits(fet)
         self.to_protection_bits(protection)
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
 
         # 0 = MOS, 1 = temp 1, 2 = temp 2
         for t in range(self.temp_sensors):

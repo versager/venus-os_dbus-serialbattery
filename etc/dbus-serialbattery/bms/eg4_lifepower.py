@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+
+# Notes
+# Added by https://github.com/dchiquito
+# https://github.com/Louisvdw/dbus-serialbattery/pull/212
+
 from __future__ import absolute_import, division, print_function, unicode_literals
 from battery import Battery, Cell
 from utils import read_serial_data, logger
-import utils
 from struct import unpack_from
 import re
 import sys
@@ -112,8 +116,6 @@ class EG4_Lifepower(Battery):
 
         # Cells
         self.cell_count = len(groups[0])
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
 
         self.cells = [Cell(True) for _ in range(0, self.cell_count)]
         for i, cell in enumerate(self.cells):

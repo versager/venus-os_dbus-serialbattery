@@ -6,7 +6,6 @@
 
 from battery import Protection, Battery, Cell
 from utils import logger
-import utils
 import serial
 import sys
 
@@ -122,9 +121,6 @@ class Seplos(Battery):
         # BMS does not provide max charge-/discharge, so we have to use hardcoded/config values
         # self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
         # self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
-
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
 
         # init the cell array
         for _ in range(self.cell_count):

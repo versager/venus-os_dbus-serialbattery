@@ -407,6 +407,24 @@ class Battery(ABC):
         else:
             self.soc_calc = self.soc
 
+        # set min and max battery voltage if cell count is known
+        if self.cell_count is not None:
+            # set min battery voltage once
+            if self.min_battery_voltage is None:
+                self.min_battery_voltage = round(
+                    utils.MIN_CELL_VOLTAGE * self.cell_count, 2
+                )
+
+            # set max battery voltage once
+            if self.max_battery_voltage is None:
+                self.max_battery_voltage = round(
+                    utils.MAX_CELL_VOLTAGE * self.cell_count, 2
+                )
+        else:
+            logger.debug(
+                "Cell count is not known yet. Can't set min and max battery voltage."
+            )
+
         # enable soc reset voltage management only if needed
         if utils.SOC_RESET_AFTER_DAYS is not False:
             self.soc_reset_voltage_management()
@@ -581,9 +599,6 @@ class Battery(ABC):
             self.max_battery_voltage = round(
                 utils.MAX_CELL_VOLTAGE * self.cell_count, 2
             )
-
-        # TO DO: probably not needed, since it's set from the individual battery classes
-        # self.min_battery_voltage = round(utils.MIN_CELL_VOLTAGE * self.cell_count, 2)
 
     def manage_charge_voltage_linear(self) -> None:
         """
