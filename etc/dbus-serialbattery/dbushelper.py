@@ -524,6 +524,7 @@ class DbusHelper:
         self._dbusservice.add_path(
             "/ErrorCode", self.battery.error_code, writeable=True
         )
+        self._dbusservice.add_path("/ConnectionInformation", "")
 
         # Create static battery info
         self._dbusservice.add_path(
@@ -810,6 +811,7 @@ class DbusHelper:
                 # reset error variables
                 self.error["count"] = 0
                 self.battery.online = True
+                self.battery.connection_info = "Connected"
 
                 # unblock charge/discharge, if it was blocked when battery went offline
                 if utils.BLOCK_ON_DISCONNECT:
@@ -949,6 +951,7 @@ class DbusHelper:
         # https://github.com/victronenergy/veutil/blob/master/inc/veutil/ve_regs_payload.h
         # https://github.com/victronenergy/veutil/blob/master/src/qt/bms_error.cpp
         self._dbusservice["/ErrorCode"] = self.battery.error_code
+        self._dbusservice["/ConnectionInformation"] = self.battery.connection_info
 
         self._dbusservice["/History/DeepestDischarge"] = (
             self.battery.history.deepest_discharge

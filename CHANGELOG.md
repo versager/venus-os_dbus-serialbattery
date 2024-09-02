@@ -66,6 +66,7 @@
 
 * Added: `History()` class that holds all BMS history values by @mr-manuel
 * Added: Automatically increase polling time, if polling take too long by @mr-manuel
+* Added: Connection Information field which was recently added by Victron on the details page by @mr-manuel
 * Added: Daren BMS with https://github.com/mr-manuel/venus-os_dbus-serialbattery/pull/65 by @cpttinkering
 * Added: Multiple BMS on one USB to RS485/Modbus adapter now possible. The BMS needs to be able to set different addresses to each battery by @mr-manuel
 * Added: Send telemetry data to see which driver versions and BMS are used the most. Can be disabled in the `config.ini` by @mr-manuel
