@@ -97,31 +97,43 @@ class Jkbms(Battery):
         )[0]
 
         offset = cellbyte_count + 30
-        self.cell_count = unpack_from(
-            ">H", self.get_data(status_data, b"\x8A", offset, 2)
-        )[0]
+        cell_count = unpack_from(">H", self.get_data(status_data, b"\x8A", offset, 2))[
+            0
+        ]
+        # check if the cell count is valid
+        if cell_count > 0:
+            self.cell_count = cell_count
 
         if cellbyte_count == 3 * self.cell_count and self.cell_count == len(self.cells):
             offset = 1
             celldata = self.get_data(status_data, b"\x79", offset, 1 + cellbyte_count)
+
             for c in range(self.cell_count):
-                self.cells[c].voltage = (
-                    unpack_from(">xH", celldata, c * 3 + 1)[0] / 1000
-                )
+                cell_voltage = unpack_from(">xH", celldata, c * 3 + 1)[0] / 1000
+
+                # check if the cell voltage is valid
+                if cell_voltage > 0:
+                    self.cells[c].voltage = cell_voltage
 
         # MOSFET temperature
         offset = cellbyte_count + 3
         temp_mos = unpack_from(">H", self.get_data(status_data, b"\x80", offset, 2))[0]
-        self.to_temp(0, temp_mos if temp_mos < 99 else (100 - temp_mos))
+        # check if the mosfet temperature is valid
+        if temp_mos >= 0:
+            self.to_temp(0, temp_mos if temp_mos < 99 else (100 - temp_mos))
 
         # Temperature sensors
         offset = cellbyte_count + 6
         temp1 = unpack_from(">H", self.get_data(status_data, b"\x81", offset, 2))[0]
+        # check if the temperature is valid
+        if temp1 >= 0:
+            self.to_temp(1, temp1 if temp1 < 99 else (100 - temp1))
 
         offset = cellbyte_count + 9
         temp2 = unpack_from(">H", self.get_data(status_data, b"\x82", offset, 2))[0]
-        self.to_temp(1, temp1 if temp1 < 99 else (100 - temp1))
-        self.to_temp(2, temp2 if temp2 < 99 else (100 - temp2))
+        # check if the temperature is valid
+        if temp2 >= 0:
+            self.to_temp(2, temp2 if temp2 < 99 else (100 - temp2))
 
         offset = cellbyte_count + 12
         voltage = unpack_from(">H", self.get_data(status_data, b"\x83", offset, 2))[0]
@@ -137,33 +149,46 @@ class Jkbms(Battery):
 
         # Continued discharge current
         offset = cellbyte_count + 66
-        self.max_battery_discharge_current = float(
+        max_battery_discharge_current = float(
             unpack_from(">H", self.get_data(status_data, b"\x97", offset, 2))[0]
         )
+        # check if the max discharge current is valid
+        if max_battery_discharge_current >= 0:
+            self.max_battery_discharge_current = max_battery_discharge_current
 
         # Continued charge current
         offset = cellbyte_count + 72
-        self.max_battery_charge_current = float(
+        max_battery_charge_current = float(
             unpack_from(">H", self.get_data(status_data, b"\x99", offset, 2))[0]
         )
+        # check if the max charge current is valid
+        if max_battery_charge_current >= 0:
+            self.max_battery_charge_current = max_battery_charge_current
 
         # the JKBMS resets to
         # 95% SoC, if all cell voltages are above or equal to OVPR (Over Voltage Protection Recovery)
         # 100% Soc, if all cell voltages are above or equal to OVP (Over Voltage Protection)
         offset = cellbyte_count + 18
-        self.soc = unpack_from(">B", self.get_data(status_data, b"\x85", offset, 1))[0]
+        soc = unpack_from(">B", self.get_data(status_data, b"\x85", offset, 1))[0]
+        # check if the soc is valid
+        if soc >= 0 and soc <= 100:
+            self.soc = soc
 
         offset = cellbyte_count + 22
-        self.history.charge_cycles = unpack_from(
+        charge_cycles = unpack_from(
             ">H", self.get_data(status_data, b"\x87", offset, 2)
         )[0]
+        # check if the charge cycles are valid
+        if charge_cycles >= 0:
+            self.history.charge_cycles = charge_cycles
 
         # offset = cellbyte_count + 25
         # self.capacity_remain = unpack_from('>L', self.get_data(status_data, b'\x89', offset, 4))[0]
         offset = cellbyte_count + 121
-        self.capacity = unpack_from(
-            ">L", self.get_data(status_data, b"\xAA", offset, 4)
-        )[0]
+        capacity = unpack_from(">L", self.get_data(status_data, b"\xAA", offset, 4))[0]
+        # check if the capacity is valid
+        if capacity >= 0:
+            self.capacity = capacity
 
         offset = cellbyte_count + 33
         self.to_protection_bits(
