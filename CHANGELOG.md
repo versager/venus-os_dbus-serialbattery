@@ -62,7 +62,7 @@
   * `BULK_AFTER_DAYS` -> `SOC_RESET_AFTER_DAYS`
 
 
-## v1.4.x
+## v1.4.20240928
 
 * Added: `History()` class that holds all BMS history values by @mr-manuel
 * Added: Automatically increase polling time, if polling take too long by @mr-manuel
