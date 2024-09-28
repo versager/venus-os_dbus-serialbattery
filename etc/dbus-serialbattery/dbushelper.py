@@ -860,7 +860,7 @@ class DbusHelper:
                         < utils.BLOCK_ON_DISCONNECT_VOLTAGE_MAX
                         else False
                     )
-                    logger.debug(
+                    logger.info(
                         f"cell_voltages_good: {self.cell_voltages_good} - "
                         + f"min: {self.battery.get_min_cell_voltage()} > {utils.BLOCK_ON_DISCONNECT_VOLTAGE_MIN} - "
                         + f"max: {self.battery.get_max_cell_voltage()} < {utils.BLOCK_ON_DISCONNECT_VOLTAGE_MAX}"
