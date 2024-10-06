@@ -887,6 +887,33 @@ class DbusHelper:
                 ):
                     loop.quit()
 
+            # Check if external current sensor is still connected
+            if (
+                utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE is not None
+                and utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH is not None
+            ):
+                # Check if external current sensor was and is still connected
+                if (
+                    self.battery.dbus_external_objects is not None
+                    and utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE
+                    not in get_bus().list_names()
+                ):
+                    logger.error(
+                        "External current sensor was disconnected, falling back to internal sensor"
+                    )
+                    self.battery.dbus_external_objects = None
+
+                # Check if external current sensor was not connected and is now connected
+                elif (
+                    self.battery.dbus_external_objects is None
+                    and utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE
+                    in get_bus().list_names()
+                ):
+                    logger.info(
+                        "External current sensor was connected, switching to external sensor"
+                    )
+                    self.battery.setup_external_current_sensor()
+
             # This is to manage CVCL
             self.battery.manage_charge_voltage()
 
