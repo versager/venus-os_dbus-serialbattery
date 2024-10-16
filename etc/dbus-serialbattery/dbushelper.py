@@ -48,7 +48,11 @@ class DbusHelper:
         self._dbusname = (
             "com.victronenergy.battery."
             + self.battery.port[self.battery.port.rfind("/") + 1 :]
-            + ("__" + str(bms_address) if bms_address is not None else "")
+            + (
+                "__" + str(bms_address)
+                if bms_address is not None and bms_address != 0
+                else ""
+            )
         )
         self._dbusservice = VeDbusService(self._dbusname, get_bus(), register=False)
         self.bms_id = "".join(
