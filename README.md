@@ -26,6 +26,7 @@ If you are using this driver and you are happy with it, please make a donation t
 * [Introduction](https://mr-manuel.github.io/venus-os_dbus-serialbattery_docs/)
 * [Features](https://mr-manuel.github.io/venus-os_dbus-serialbattery_docs/general/features)
 * [Supported BMS](https://mr-manuel.github.io/venus-os_dbus-serialbattery_docs/general/supported-bms)
+* [How to connect and prepare the battery/BMS](https://mr-manuel.github.io/venus-os_dbus-serialbattery_docs/general/connect)
 * [How to install, update, disable, enable and uninstall](https://mr-manuel.github.io/venus-os_dbus-serialbattery_docs/general/install)
 * [How to troubleshoot](https://mr-manuel.github.io/venus-os_dbus-serialbattery_docs/troubleshoot/)
 * [FAQ](https://mr-manuel.github.io/venus-os_dbus-serialbattery_docs/faq/)
