@@ -270,8 +270,8 @@ def main():
 
         # only try CAN BMS on CAN port
         supported_bms_types = [
-            {"bms": Daly_Can, "baud": 250000},
-            {"bms": Jkbms_Can, "baud": 250000},
+            {"bms": Daly_Can, "baud": utils.CAN_SPEED},
+            {"bms": Jkbms_Can, "baud": utils.CAN_SPEED},
         ]
 
         expected_bms_types = [

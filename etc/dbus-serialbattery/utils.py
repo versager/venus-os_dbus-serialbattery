@@ -14,7 +14,7 @@ import serial
 
 
 # CONSTANTS
-DRIVER_VERSION: str = "1.5.20241006dev"
+DRIVER_VERSION: str = "1.5.20241016dev"
 """
 current version of the driver
 """
@@ -146,6 +146,12 @@ if SOC_RESET_AFTER_DAYS and SOC_RESET_VOLTAGE < MAX_CELL_VOLTAGE:
         + "To ensure that the driver still works correctly, SOC_RESET_VOLTAGE was set to MAX_CELL_VOLTAGE. Please check the configuration."
     )
     SOC_RESET_VOLTAGE = MAX_CELL_VOLTAGE
+
+# --------- CAN BMS ---------
+CAN_SPEED: int = int(config["DEFAULT"]["CAN_SPEED"]) * 1000
+"""
+Speed of the CAN bus in bps
+"""
 
 # --------- Modbus (multiple BMS on one serial adapter) ---------
 MODBUS_ADDRESSES: list = _get_list_from_config(
