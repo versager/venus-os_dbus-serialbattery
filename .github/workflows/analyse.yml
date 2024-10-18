@@ -5,8 +5,6 @@ on:
     branches:
       # include
       - '**'
-      # exclude
-      - '!docusaurus'
 
     # Run on changes in the etc folder
     paths:
@@ -24,7 +22,7 @@ jobs:
     - name: Set up Python environment
       uses: actions/setup-python@v5
       with:
-        python-version: "3.8.18"
+        python-version: "3.10"
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
