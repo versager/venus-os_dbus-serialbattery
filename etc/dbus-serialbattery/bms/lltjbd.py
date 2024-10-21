@@ -239,10 +239,11 @@ class LltJbdProtection(Protection):
 
 
 class LltJbd(Battery):
-    def __init__(self, port, baud, address):
+    def __init__(self, port, baud, address=b"\x00"):
         super(LltJbd, self).__init__(port, baud, address)
         self.protection = LltJbdProtection()
         self.type = self.BATTERYTYPE
+        self.address = address
         self._product_name: str = ""
         self.has_settings = False
         self.reset_soc = 100
@@ -276,6 +277,10 @@ class LltJbd(Battery):
         """
         result = False
         try:
+            # LLT/JBD does not seem to support addresses, so launch only on address 0x00
+            if self.address != b"\x00":
+                return False
+
             # 1) Read name of BMS
             # 2) Try read BMS settings
             # 3) Refresh general data
