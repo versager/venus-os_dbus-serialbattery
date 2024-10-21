@@ -1116,9 +1116,10 @@ class Battery(ABC):
                 + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
             )
 
-    def manage_charge_current(self) -> None:
+    def manage_charge_and_discharge_current(self) -> None:
         """
-        Manages the charge current by setting `self.control_charge_current`.
+        Manages the charge and discharge current by setting `self.control_charge_current`
+        and `self.control_discharge_current`.
 
         :return: None
         """

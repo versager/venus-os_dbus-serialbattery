@@ -191,7 +191,7 @@ class HLPdataBMS4S(Battery):
         self.allow_max_voltage = True
         self.control_voltage = self.max_battery_voltage
 
-    def manage_charge_current(self):
+    def manage_charge_and_discharge_current(self):
         self.control_charge_current = 1000
         self.control_discharge_current = 1000
 

@@ -922,7 +922,7 @@ class DbusHelper:
             self.battery.manage_charge_voltage()
 
             # This is to manage CCL\DCL
-            self.battery.manage_charge_current()
+            self.battery.manage_charge_and_discharge_current()
 
             # Manage battery error code reset
             # Check if the error code should be reset every hour

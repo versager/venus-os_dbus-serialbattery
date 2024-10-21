@@ -160,7 +160,7 @@ class MNB(Battery):
 
         return True
 
-    def manage_charge_current(self):
+    def manage_charge_and_discharge_current(self):
         # Start with the current values
 
         # Change depending on the cell_max_voltage values
