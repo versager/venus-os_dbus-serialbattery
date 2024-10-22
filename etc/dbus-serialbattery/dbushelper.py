@@ -1255,14 +1255,82 @@ class DbusHelper:
 
                 # Update TimeToGo item
                 if utils.TIME_TO_GO_ENABLE and percent_per_seconds is not None:
+
+                    # Get settings from dbus
+                    settings_battery_life = self.getSettingsWithValues(
+                        get_bus(),
+                        "com.victronenergy.settings",
+                        "/Settings/CGwacs/BatteryLife",
+                    )
+                    settings_hub4mode = self.getSettingsWithValues(
+                        get_bus(),
+                        "com.victronenergy.settings",
+                        "/Settings/CGwacs/Hub4Mode",
+                    )
+
+                    hub4mode = (
+                        int(settings_hub4mode["Settings"]["CGwacs"]["Hub4Mode"])
+                        if "Settings" in settings_hub4mode
+                        else None
+                    )
+                    state = (
+                        int(
+                            settings_battery_life["Settings"]["CGwacs"]["BatteryLife"][
+                                "State"
+                            ]
+                        )
+                        if "Settings" in settings_battery_life
+                        and "State"
+                        in settings_battery_life["Settings"]["CGwacs"]["BatteryLife"]
+                        else None
+                    )
+
+                    if (
+                        hub4mode == 1
+                        and state != 9
+                        and "Settings" in settings_battery_life
+                        and "MinimumSocLimit"
+                        in settings_battery_life["Settings"]["CGwacs"]["BatteryLife"]
+                        and "SocLimit"
+                        in settings_battery_life["Settings"]["CGwacs"]["BatteryLife"]
+                    ):
+                        # Optimized without BatteryLife
+                        if state >= 10 and state <= 12:
+                            time_to_go_soc = int(
+                                float(
+                                    settings_battery_life["Settings"]["CGwacs"][
+                                        "BatteryLife"
+                                    ]["MinimumSocLimit"]
+                                )
+                            )
+                            logger.debug(
+                                f"Time-to-Go: Use /Settings/CGwacs/BatteryLife/MinimumSocLimit: {time_to_go_soc}"
+                            )
+                        # Optimized with BatteryLife
+                        else:
+                            time_to_go_soc = int(
+                                float(
+                                    settings_battery_life["Settings"]["CGwacs"][
+                                        "BatteryLife"
+                                    ]["SocLimit"]
+                                )
+                            )
+                            logger.debug(
+                                f"Time-to-Go: Use /Settings/CGwacs/BatteryLife/SocLimit: {time_to_go_soc}"
+                            )
+                    # External control
+                    # Keep batteries charged
+                    # all others fall back to default
+                    else:
+                        time_to_go_soc = utils.SOC_LOW_WARNING
+                        logger.debug(
+                            f"Time-to-Go: Use utils.SOC_LOW_WARNING: {time_to_go_soc}"
+                        )
+
                     # Update TimeToGo item, has to be a positive int since it's used from dbus-systemcalc-py
                     time_to_go = self.battery.get_timeToSoc(
                         # switch value depending on charging/discharging
-                        (
-                            utils.SOC_LOW_WARNING
-                            if self.battery.current_avg < 0
-                            else 100
-                        ),
+                        (time_to_go_soc if self.battery.current_avg < 0 else 100),
                         percent_per_seconds,
                         True,
                     )
