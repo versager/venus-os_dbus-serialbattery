@@ -58,9 +58,7 @@ class Jkbms_Ble(Battery):
                     self.jk.stop_scraping()
                     result = False
 
-                if result and not status["device_info"]["vendor_id"].startswith(
-                    ("JK-", "JK_")
-                ):
+                if result and not status["device_info"]["vendor_id"].startswith(("JK-", "JK_")):
                     self.jk.stop_scraping()
                     result = False
 
@@ -78,9 +76,7 @@ class Jkbms_Ble(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -106,9 +102,7 @@ class Jkbms_Ble(Battery):
         tmp = self.jk.get_status()["device_info"]["manufacturing_date"]
         self.production = "20" + tmp if tmp and tmp != "" else None
 
-        self.unique_identifier_tmp = self.jk.get_status()["device_info"][
-            "serial_number"
-        ]
+        self.unique_identifier_tmp = self.jk.get_status()["device_info"]["serial_number"]
 
         for c in range(self.cell_count):
             self.cells.append(Cell(False))
@@ -149,24 +143,16 @@ class Jkbms_Ble(Battery):
 
         last_update = int(time() - st["last_update"])
         if last_update >= 15 and last_update % 15 == 0:
-            logger.info(
-                f"Jkbms_Ble: Bluetooth connection interrupted. Got no fresh data since {last_update}s."
-            )
+            logger.info(f"Jkbms_Ble: Bluetooth connection interrupted. Got no fresh data since {last_update}s.")
             # show Bluetooth signal strength (RSSI)
-            bluetoothctl_info = os.popen(
-                "bluetoothctl info "
-                + self.address
-                + ' | grep -i -E "device|name|alias|pair|trusted|blocked|connected|rssi|power"'
-            )
+            bluetoothctl_info = os.popen("bluetoothctl info " + self.address + ' | grep -i -E "device|name|alias|pair|trusted|blocked|connected|rssi|power"')
             logger.info(bluetoothctl_info.read())
             bluetoothctl_info.close()
 
             # if the thread is still alive but data too old there is something
             # wrong with the bt-connection; restart whole stack
             if not self.resetting and last_update >= 60:
-                logger.error(
-                    "Jkbms_Ble: Bluetooth died. Restarting Bluetooth system driver."
-                )
+                logger.error("Jkbms_Ble: Bluetooth died. Restarting Bluetooth system driver.")
                 self.reset_bluetooth()
                 sleep(2)
                 self.jk.start_scraping()
@@ -178,15 +164,10 @@ class Jkbms_Ble(Battery):
 
         # update cell voltages
         for c in range(self.cell_count):
-            if (
-                st["cell_info"]["voltages"][c] >= 1
-                and st["cell_info"]["voltages"][c] <= 5
-            ):
+            if st["cell_info"]["voltages"][c] >= 1 and st["cell_info"]["voltages"][c] <= 5:
                 self.cells[c].voltage = st["cell_info"]["voltages"][c]
             else:
-                logger.warning(
-                    f"Jkbms_Ble: Cell {c} voltage out of range (1 - 5 V): {st['cell_info']['voltages'][c]}"
-                )
+                logger.warning(f"Jkbms_Ble: Cell {c} voltage out of range (1 - 5 V): {st['cell_info']['voltages'][c]}")
 
         temp_mos = st["cell_info"]["temperature_mos"]
         self.to_temp(0, temp_mos if temp_mos < 32767 else (65535 - temp_mos) * -1)
@@ -209,18 +190,13 @@ class Jkbms_Ble(Battery):
 
         self.balancing = False if st["cell_info"]["balancing_action"] == 0.000 else True
         self.balancing_current = (
-            st["cell_info"]["balancing_current"]
-            if st["cell_info"]["balancing_current"] < 32767
-            else (65535 / 1000 - st["cell_info"]["balancing_current"]) * -1
+            st["cell_info"]["balancing_current"] if st["cell_info"]["balancing_current"] < 32767 else (65535 / 1000 - st["cell_info"]["balancing_current"]) * -1
         )
         self.balancing_action = st["cell_info"]["balancing_action"]
 
         # show wich cells are balancing
         for c in range(self.cell_count):
-            if self.balancing and (
-                st["cell_info"]["min_voltage_cell"] == c
-                or st["cell_info"]["max_voltage_cell"] == c
-            ):
+            if self.balancing and (st["cell_info"]["min_voltage_cell"] == c or st["cell_info"]["max_voltage_cell"] == c):
                 self.cells[c].balance = True
             else:
                 self.cells[c].balance = False
@@ -229,13 +205,9 @@ class Jkbms_Ble(Battery):
         # self.protection.low_soc = 2 if status["cell_info"]["battery_soc"] < 10.0 else 0
 
         # trigger cell imbalance warning when delta is to great
-        if st["cell_info"]["delta_cell_voltage"] > min(
-            st["settings"]["cell_ovp"] * 0.05, 0.200
-        ):
+        if st["cell_info"]["delta_cell_voltage"] > min(st["settings"]["cell_ovp"] * 0.05, 0.200):
             self.protection.cell_imbalance = 2
-        elif st["cell_info"]["delta_cell_voltage"] > min(
-            st["settings"]["cell_ovp"] * 0.03, 0.120
-        ):
+        elif st["cell_info"]["delta_cell_voltage"] > min(st["settings"]["cell_ovp"] * 0.03, 0.120):
             self.protection.cell_imbalance = 1
         else:
             self.protection.cell_imbalance = 0
@@ -243,22 +215,11 @@ class Jkbms_Ble(Battery):
         self.protection.high_voltage = 2 if st["warnings"]["cell_overvoltage"] else 0
         self.protection.low_voltage = 2 if st["warnings"]["cell_undervoltage"] else 0
 
-        self.protection.high_charge_current = (
-            2
-            if (
-                st["warnings"]["charge_overcurrent"]
-                or st["warnings"]["discharge_overcurrent"]
-            )
-            else 0
-        )
-        self.protection.set_IC_inspection = (
-            2 if st["cell_info"]["temperature_mos"] > 80 else 0
-        )
+        self.protection.high_charge_current = 2 if (st["warnings"]["charge_overcurrent"] or st["warnings"]["discharge_overcurrent"]) else 0
+        self.protection.set_IC_inspection = 2 if st["cell_info"]["temperature_mos"] > 80 else 0
         self.protection.high_charge_temp = 2 if st["warnings"]["charge_overtemp"] else 0
         self.protection.low_charge_temp = 2 if st["warnings"]["charge_undertemp"] else 0
-        self.protection.high_temperature = (
-            2 if st["warnings"]["discharge_overtemp"] else 0
-        )
+        self.protection.high_temperature = 2 if st["warnings"]["discharge_overtemp"] else 0
         return True
 
     def reset_bluetooth(self):

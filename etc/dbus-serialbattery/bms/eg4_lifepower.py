@@ -48,9 +48,7 @@ class EG4_Lifepower(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -116,12 +114,7 @@ class EG4_Lifepower(Battery):
             group_len = status_data[i + 1]
             end = i + 2 + (group_len * 2)
             group_payload = status_data[i + 2 : end]
-            groups.append(
-                [
-                    unpack_from(">H", group_payload, i)[0]
-                    for i in range(0, len(group_payload), 2)
-                ]
-            )
+            groups.append([unpack_from(">H", group_payload, i)[0] for i in range(0, len(group_payload), 2)])
             i = end
 
         # Cells
@@ -154,9 +147,7 @@ class EG4_Lifepower(Battery):
 
         # Alarms
         # 4th bit: Over Current Protection
-        self.protection.high_charge_current = (
-            2 if (groups[5][1] & 0b00001000) > 0 else 0
-        )
+        self.protection.high_charge_current = 2 if (groups[5][1] & 0b00001000) > 0 else 0
         # 5th bit: Over voltage protection
         self.protection.high_voltage = 2 if (groups[5][1] & 0b00010000) > 0 else 0
         # 6th bit: Under voltage protection

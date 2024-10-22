@@ -59,9 +59,7 @@ class Sinowealth(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -126,30 +124,13 @@ class Sinowealth(Battery):
         # Battery status command layout (from screenshot)
         # [0]     -       CTO     AFE_SC  AFE_OV  UTD     UTC     OTD     OTC
         # [1]     -       -       -       -       OCD     OC      UV      OV
-        self.protection.high_voltage = (
-            2 if bool(battery_status[1] & int(1)) else 0
-        )  # OV
-        self.protection.low_voltage = (
-            2 if bool(battery_status[1] >> 1 & int(1)) else 0
-        )  # UV
-        self.protection.high_charge_current = (
-            2
-            if bool(battery_status[1] >> 2 & int(1))
-            or bool(battery_status[1] >> 3 & int(1))
-            else 0
-        )  # OC (OCC?)| OCD
-        self.protection.high_charge_temp = (
-            2 if bool(battery_status[0] & int(1)) else 0
-        )  # OTC
-        self.protection.high_temperature = (
-            2 if bool(battery_status[0] >> 1 & int(1)) else 0
-        )  # OTD
-        self.protection.low_charge_temp = (
-            2 if bool(battery_status[0] >> 2 & int(1)) else 0
-        )  # UTC
-        self.protection.low_temperature = (
-            2 if bool(battery_status[0] >> 3 & int(1)) else 0
-        )  # UTD
+        self.protection.high_voltage = 2 if bool(battery_status[1] & int(1)) else 0  # OV
+        self.protection.low_voltage = 2 if bool(battery_status[1] >> 1 & int(1)) else 0  # UV
+        self.protection.high_charge_current = 2 if bool(battery_status[1] >> 2 & int(1)) or bool(battery_status[1] >> 3 & int(1)) else 0  # OC (OCC?)| OCD
+        self.protection.high_charge_temp = 2 if bool(battery_status[0] & int(1)) else 0  # OTC
+        self.protection.high_temperature = 2 if bool(battery_status[0] >> 1 & int(1)) else 0  # OTD
+        self.protection.low_charge_temp = 2 if bool(battery_status[0] >> 2 & int(1)) else 0  # UTC
+        self.protection.low_temperature = 2 if bool(battery_status[0] >> 3 & int(1)) else 0  # UTD
         return True
 
     def read_soc(self):
@@ -194,16 +175,12 @@ class Sinowealth(Battery):
         return True
 
     def read_remaining_capacity(self):
-        remaining_capacity_data = self.read_serial_data_sinowealth(
-            self.command_remaining_capacity
-        )
+        remaining_capacity_data = self.read_serial_data_sinowealth(self.command_remaining_capacity)
         if remaining_capacity_data is False:
             return False
         remaining_capacity = unpack_from(">i", remaining_capacity_data[:-1])
         self.capacity_remain = remaining_capacity[0] / 1000
-        logger.debug(
-            ">>> INFO: remaining battery capacity: %f Ah", self.capacity_remain
-        )
+        logger.debug(">>> INFO: remaining battery capacity: %f Ah", self.capacity_remain)
         return True
 
     def read_capacity(self):
@@ -230,9 +207,7 @@ class Sinowealth(Battery):
             return False
         logger.debug(">>> INFO: Number of cells: %u", self.cell_count)
         temp_sens_mask = int(~(1 << 6))
-        self.temp_sensors = (
-            1 if (pack_config_data[1] & temp_sens_mask) else 2
-        )  # one means two
+        self.temp_sensors = 1 if (pack_config_data[1] & temp_sens_mask) else 2  # one means two
         logger.debug(">>> INFO: Number of temperatur sensors: %u", self.temp_sensors)
         return True
 
@@ -245,9 +220,7 @@ class Sinowealth(Battery):
         return True
 
     def read_cell_voltage(self, cell_index):
-        cell_data = self.read_serial_data_sinowealth(
-            cell_index.to_bytes(1, byteorder="little")
-        )
+        cell_data = self.read_serial_data_sinowealth(cell_index.to_bytes(1, byteorder="little"))
         if cell_data is False:
             return None
         cell_voltage = unpack_from(">H", cell_data[:-1])

@@ -65,11 +65,7 @@ if "MNB" in utils.BMS_TYPE:
 if "Sinowealth" in utils.BMS_TYPE:
     supported_bms_types.append({"bms": Sinowealth, "baud": 9600})
 
-expected_bms_types = [
-    battery_type
-    for battery_type in supported_bms_types
-    if battery_type["bms"].__name__ in utils.BMS_TYPE or len(utils.BMS_TYPE) == 0
-]
+expected_bms_types = [battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in utils.BMS_TYPE or len(utils.BMS_TYPE) == 0]
 
 logger.info("")
 logger.info("Starting dbus-serialbattery")
@@ -120,9 +116,7 @@ def main():
                 new_poll_interval = 60000
 
             battery[first_key].poll_interval = new_poll_interval
-            logger.warning(
-                f"Polling took too long. Set to {new_poll_interval/1000:.3f} s"
-            )
+            logger.warning(f"Polling took too long. Set to {new_poll_interval/1000:.3f} s")
 
         loop_count += 1
 
@@ -134,9 +128,7 @@ def main():
         retry = 1
         retries = 3
         while retry <= retries:
-            logger.info(
-                "-- Testing BMS: " + str(retry) + " of " + str(retries) + " rounds"
-            )
+            logger.info("-- Testing BMS: " + str(retry) + " of " + str(retries) + " rounds")
             # create a new battery object that can read the battery and run connection test
             for test in expected_bms_types:
                 # noinspection PyBroadException
@@ -152,23 +144,13 @@ def main():
                     logger.info(
                         "Testing "
                         + test["bms"].__name__
-                        + (
-                            ' at address "'
-                            + utils.bytearray_to_string(_bms_address)
-                            + '"'
-                            if _bms_address is not None
-                            else ""
-                        )
+                        + (' at address "' + utils.bytearray_to_string(_bms_address) + '"' if _bms_address is not None else "")
                     )
                     batteryClass = test["bms"]
                     baud = test["baud"]
-                    battery: Battery = batteryClass(
-                        port=_port, baud=baud, address=_bms_address
-                    )
+                    battery: Battery = batteryClass(port=_port, baud=baud, address=_bms_address)
                     if battery.test_connection() and battery.validate_data():
-                        logger.info(
-                            "Connection established to " + battery.__class__.__name__
-                        )
+                        logger.info("Connection established to " + battery.__class__.__name__)
                         return battery
                 except KeyboardInterrupt:
                     return None
@@ -180,10 +162,7 @@ def main():
                     ) = sys.exc_info()
                     file = exception_traceback.tb_frame.f_code.co_filename
                     line = exception_traceback.tb_lineno
-                    logger.error(
-                        "Non blocking exception occurred: "
-                        + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-                    )
+                    logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
                     # Ignore any malfunction test_function()
                     pass
             retry += 1
@@ -198,11 +177,7 @@ def main():
             if port not in utils.EXCLUDED_DEVICES:
                 return port
             else:
-                logger.debug(
-                    "Stopping dbus-serialbattery: "
-                    + str(port)
-                    + " is excluded trough the config file"
-                )
+                logger.debug("Stopping dbus-serialbattery: " + str(port) + " is excluded trough the config file")
                 sleep(60)
                 # exit with error in order that the serialstarter goes on
                 sys.exit(1)
@@ -249,9 +224,7 @@ def main():
             class_ = eval(port)
 
             # do not remove ble_ prefix, since the dbus service cannot be only numbers
-            testbms = class_(
-                "ble_" + ble_address.replace(":", "").lower(), 9600, ble_address
-            )
+            testbms = class_("ble_" + ble_address.replace(":", "").lower(), 9600, ble_address)
 
             if testbms.test_connection():
                 logger.info("Connection established to " + testbms.__class__.__name__)
@@ -272,10 +245,7 @@ def main():
         ]
 
         expected_bms_types = [
-            battery_type
-            for battery_type in supported_bms_types
-            if battery_type["bms"].__name__ in utils.BMS_TYPE
-            or len(utils.BMS_TYPE) == 0
+            battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in utils.BMS_TYPE or len(utils.BMS_TYPE) == 0
         ]
 
         battery[0] = get_battery(port)
@@ -287,19 +257,9 @@ def main():
                 checkbatt = get_battery(port, address)
                 if checkbatt is not None:
                     battery[address] = checkbatt
-                    logger.info(
-                        "Successful battery connection at "
-                        + port
-                        + " and this Modbus address "
-                        + str(address)
-                    )
+                    logger.info("Successful battery connection at " + port + " and this Modbus address " + str(address))
                 else:
-                    logger.warning(
-                        "No battery connection at "
-                        + port
-                        + " and this Modbus address "
-                        + str(address)
-                    )
+                    logger.warning("No battery connection at " + port + " and this Modbus address " + str(address))
         # use default address
         else:
             battery[0] = get_battery(port)
@@ -315,11 +275,7 @@ def main():
         logger.error(
             "ERROR >>> No battery connection at "
             + port
-            + (
-                " and this Modbus addresses: " + ", ".join(utils.MODBUS_ADDRESSES)
-                if utils.MODBUS_ADDRESSES
-                else ""
-            )
+            + (" and this Modbus addresses: " + ", ".join(utils.MODBUS_ADDRESSES) if utils.MODBUS_ADDRESSES else "")
         )
         sys.exit(1)
 
@@ -338,11 +294,7 @@ def main():
             logger.error(
                 "ERROR >>> Problem with battery set up at "
                 + port
-                + (
-                    " and this Modbus address: " + ", ".join(utils.MODBUS_ADDRESSES)
-                    if utils.MODBUS_ADDRESSES
-                    else ""
-                )
+                + (" and this Modbus address: " + ", ".join(utils.MODBUS_ADDRESSES) if utils.MODBUS_ADDRESSES else "")
             )
             sys.exit(1)
 
@@ -375,10 +327,7 @@ def main():
             battery[key_address].error_code = 119
 
     # check, if external current sensor should be used
-    if (
-        utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE is not None
-        and utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH is not None
-    ):
+    if utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE is not None and utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH is not None:
         for key_address in battery:
             battery[key_address].setup_external_current_sensor()
 

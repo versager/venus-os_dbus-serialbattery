@@ -144,9 +144,7 @@ class Jkbms_Brn:
     def __init__(self, addr, reset_bt_callback=None):
         self.address = addr
         self.bt_thread = None
-        self.bt_thread_monitor = threading.Thread(
-            target=self.monitor_scraping, name="Thread-JKBMS-Monitor"
-        )
+        self.bt_thread_monitor = threading.Thread(target=self.monitor_scraping, name="Thread-JKBMS-Monitor")
         self.bt_reset = reset_bt_callback
         self.should_be_scraping = False
         self.trigger_soc_reset = False
@@ -191,11 +189,7 @@ class Jkbms_Brn:
     def translate(self, fb, translation, o, f32s=False, i=0):
         if i == len(translation[0]) - 1:
             # keep things universal by using an n=1 list
-            kees = (
-                range(0, translation[0][i])
-                if isinstance(translation[0][i], int)
-                else [translation[0][i]]
-            )
+            kees = range(0, translation[0][i]) if isinstance(translation[0][i], int) else [translation[0][i]]
             offset = 0
             if f32s:
                 if translation[1] >= 112:
@@ -207,21 +201,10 @@ class Jkbms_Brn:
                 if isinstance(translation[2], int):
                     # handle raw bytes without unpack_from;
                     # 3. param gives no format but number of bytes
-                    val = bytearray(
-                        fb[
-                            translation[1]
-                            + i
-                            + offset : translation[1]
-                            + i
-                            + translation[2]
-                            + offset
-                        ]
-                    )
+                    val = bytearray(fb[translation[1] + i + offset : translation[1] + i + translation[2] + offset])
                     i += translation[2]
                 else:
-                    val = unpack_from(
-                        translation[2], bytearray(fb), translation[1] + i + offset
-                    )[0]
+                    val = unpack_from(translation[2], bytearray(fb), translation[1] + i + offset)[0]
                     # calculate stepping in case of array
                     i = i + calcsize(translation[2])
 
@@ -236,9 +219,7 @@ class Jkbms_Brn:
                 o[j] = val
         else:
             if translation[0][i] not in o:
-                if len(translation[0]) == i + 2 and isinstance(
-                    translation[0][i + 1], int
-                ):
+                if len(translation[0]) == i + 2 and isinstance(translation[0][i + 1], int):
                     o[translation[0][i]] = [None] * translation[0][i + 1]
                 else:
                     o[translation[0][i]] = {}
@@ -302,10 +283,7 @@ class Jkbms_Brn:
                 self.bms_status["last_update"] = time()
 
         elif info_type == 0x02:
-            if (
-                CELL_INFO_REFRESH_S == 0
-                or time() - self.last_cell_info > CELL_INFO_REFRESH_S
-            ):
+            if CELL_INFO_REFRESH_S == 0 or time() - self.last_cell_info > CELL_INFO_REFRESH_S:
                 self.last_cell_info = time()
                 logger.debug("processing frame with battery cell info")
                 if protocol_version == PROTOCOL_VERSION_JK02:
@@ -313,10 +291,7 @@ class Jkbms_Brn:
                     self.bms_status["last_update"] = time()
                 # power is calculated from voltage x current as
                 # register 122 contains unsigned power-value
-                self.bms_status["cell_info"]["power"] = (
-                    self.bms_status["cell_info"]["current"]
-                    * self.bms_status["cell_info"]["total_voltage"]
-                )
+                self.bms_status["cell_info"]["power"] = self.bms_status["cell_info"]["current"] * self.bms_status["cell_info"]["total_voltage"]
                 if self.waiting_for_response == "cell_info":
                     self.waiting_for_response = ""
 
@@ -334,14 +309,10 @@ class Jkbms_Brn:
         self._new_data_callback = callback
 
     def assemble_frame(self, data: bytearray):
-        logger.debug(
-            f"--> assemble_frame() -> self.frame_buffer (before extend) -> lenght:  {len(self.frame_buffer)}"
-        )
+        logger.debug(f"--> assemble_frame() -> self.frame_buffer (before extend) -> lenght:  {len(self.frame_buffer)}")
         logger.debug(self.frame_buffer)
         if len(self.frame_buffer) > MAX_RESPONSE_SIZE:
-            logger.debug(
-                "data dropped because it alone was longer than max frame length"
-            )
+            logger.debug("data dropped because it alone was longer than max frame length")
             self.frame_buffer = []
 
         if data[0] == 0x55 and data[1] == 0xAA and data[2] == 0xEB and data[3] == 0x90:
@@ -350,9 +321,7 @@ class Jkbms_Brn:
 
         self.frame_buffer.extend(data)
 
-        logger.debug(
-            f"--> assemble_frame() -> self.frame_buffer (after extend) -> lenght:  {len(self.frame_buffer)}"
-        )
+        logger.debug(f"--> assemble_frame() -> self.frame_buffer (after extend) -> lenght:  {len(self.frame_buffer)}")
         logger.debug(self.frame_buffer)
         if len(self.frame_buffer) >= MIN_RESPONSE_SIZE:
             # check crc; always at position 300, independent of
@@ -421,12 +390,8 @@ class Jkbms_Brn:
                 exception_object,
                 exception_traceback,
             ) = sys.exc_info()
-            logger.debug(
-                f'Error getting UUID "{CHAR_HANDLE}": {repr(exception_object)} -> failover'
-            )
-            await bleakC.write_gatt_char(
-                CHAR_HANDLE_FAILOVER, frame, response=awaitresponse
-            )
+            logger.debug(f'Error getting UUID "{CHAR_HANDLE}": {repr(exception_object)} -> failover')
+            await bleakC.write_gatt_char(CHAR_HANDLE_FAILOVER, frame, response=awaitresponse)
 
         if awaitresponse:
             await asyncio.sleep(5)
@@ -460,10 +425,7 @@ class Jkbms_Brn:
 
     # self.bt_thread
     async def asy_connect_and_scrape(self):
-        logger.debug(
-            "--> asy_connect_and_scrape(): Connect and scrape on address: "
-            + self.address
-        )
+        logger.debug("--> asy_connect_and_scrape(): Connect and scrape on address: " + self.address)
         self.run = True
         while self.run and self.main_thread.is_alive():  # autoreconnect
             client = BleakClient(self.address)
@@ -475,18 +437,14 @@ class Jkbms_Brn:
 
                 # try to get MODEL_NBR_UUID, since not all JKBMS send it
                 try:
-                    self.bms_status["model_nbr"] = (
-                        await client.read_gatt_char(MODEL_NBR_UUID)
-                    ).decode("utf-8")
+                    self.bms_status["model_nbr"] = (await client.read_gatt_char(MODEL_NBR_UUID)).decode("utf-8")
                 except exc.BleakError:
                     (
                         exception_type,
                         exception_object,
                         exception_traceback,
                     ) = sys.exc_info()
-                    logger.debug(
-                        f'Error getting UUID "{MODEL_NBR_UUID}": {repr(exception_object)} -> failover'
-                    )
+                    logger.debug(f'Error getting UUID "{MODEL_NBR_UUID}": {repr(exception_object)} -> failover')
                     self.bms_status["model_nbr"] = "JK-BMS-Unknown-Model"
 
                 # some JKBMS trow an error
@@ -501,9 +459,7 @@ class Jkbms_Brn:
                         exception_object,
                         exception_traceback,
                     ) = sys.exc_info()
-                    logger.debug(
-                        f'Error getting UUID "{CHAR_HANDLE}": {repr(exception_object)} -> failover'
-                    )
+                    logger.debug(f'Error getting UUID "{CHAR_HANDLE}": {repr(exception_object)} -> failover')
                     await client.start_notify(CHAR_HANDLE_FAILOVER, self.ncallback)
 
                 await self.request_bt("device_info", client)
@@ -518,9 +474,7 @@ class Jkbms_Brn:
                     await asyncio.sleep(0.01)
 
             except exc.BleakDeviceNotFoundError:
-                logger.info(
-                    f"--> asy_connect_and_scrape(): device not found: {self.address}"
-                )
+                logger.info(f"--> asy_connect_and_scrape(): device not found: {self.address}")
                 self.run = False
 
             except Exception:
@@ -559,16 +513,9 @@ class Jkbms_Brn:
 
     def monitor_scraping(self):
         while self.should_be_scraping is True:
-            self.bt_thread = threading.Thread(
-                target=self.connect_and_scrape, name="Thread-JKBMS-Connect-and-Scrape"
-            )
+            self.bt_thread = threading.Thread(target=self.connect_and_scrape, name="Thread-JKBMS-Connect-and-Scrape")
             self.bt_thread.start()
-            logger.debug(
-                "scraping thread started -> main thread id: "
-                + str(self.main_thread.ident)
-                + " scraping thread: "
-                + str(self.bt_thread.ident)
-            )
+            logger.debug("scraping thread started -> main thread id: " + str(self.main_thread.ident) + " scraping thread: " + str(self.bt_thread.ident))
             self.bt_thread.join()
             if self.should_be_scraping is True:
                 logger.debug("scraping thread ended: reseting bluetooth and restarting")
@@ -619,12 +566,8 @@ class Jkbms_Brn:
         # That will trigger a High Voltage Alert and resets SOC to 100%
         ovp_trigger = round(self.max_cell_voltage - 0.05, 3)
         ovpr_trigger = round(self.max_cell_voltage - 0.10, 3)
-        await self.write_register(
-            JK_REGISTER_OVPR, self.jk_float_to_hex_little(ovpr_trigger), 0x04, c, True
-        )
-        await self.write_register(
-            JK_REGISTER_OVP, self.jk_float_to_hex_little(ovp_trigger), 0x04, c, True
-        )
+        await self.write_register(JK_REGISTER_OVPR, self.jk_float_to_hex_little(ovpr_trigger), 0x04, c, True)
+        await self.write_register(JK_REGISTER_OVP, self.jk_float_to_hex_little(ovp_trigger), 0x04, c, True)
 
         # Give BMS some time to recognize
         await asyncio.sleep(5)

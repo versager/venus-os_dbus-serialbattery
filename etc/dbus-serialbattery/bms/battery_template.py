@@ -50,9 +50,7 @@ class BatteryTemplate(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -340,9 +338,7 @@ class BatteryTemplate(Battery):
 
     def read_serial_data_template(self, command):
         # use the read_serial_data() function to read the data and then do BMS spesific checks (crc, start bytes, etc)
-        data = read_serial_data(
-            command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK
-        )
+        data = read_serial_data(command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK)
         if data is False:
             logger.error(">>> ERROR: No reply - returning")
             return False

@@ -161,15 +161,11 @@ def init_max(self):
     spi_xfer_MAX17(0, 0x2A, buvc << 2)  # block uv cl thr 0.9907/0.201mV <<2
     buvs = int((self.min_battery_voltage) / 0.001934)  # max battery volt
     spi_xfer_MAX17(0, 0x2B, buvs << 2)  # block uv set thr 0.9407/0.201mV <<2
-    tovc = xtemp(
-        self.T_C_min + 5
-    )  # Aux under temp clear T cell min + 5c - Neg temp coeff!!
+    tovc = xtemp(self.T_C_min + 5)  # Aux under temp clear T cell min + 5c - Neg temp coeff!!
     spi_xfer_MAX17(0, 0x30, tovc << 2)  # Aux undertemp clear thr V/3.967mV <<2
     tovs = xtemp(self.T_C_min)  # Aux under temp set T cell min
     spi_xfer_MAX17(0, 0x31, tovs)  # Aux under temp set thr V/3.967mV <<2
-    tuvc = xtemp(
-        self.T_C_max - 5
-    )  # Aux over temp clear T cell max - 5c - Neg temp coeff!!
+    tuvc = xtemp(self.T_C_max - 5)  # Aux over temp clear T cell max - 5c - Neg temp coeff!!
     spi_xfer_MAX17(0, 0x32, tuvc << 2)  # Aux uv cl thr V/3.967mV <<2
     tuvs = xtemp(self.T_C_max)  # Aux over temp set T cell max  - Neg temp coeff!!
     spi_xfer_MAX17(0, 0x33, tuvs << 2)  # Aux uv set thr 20.8V/3.967mV <<2

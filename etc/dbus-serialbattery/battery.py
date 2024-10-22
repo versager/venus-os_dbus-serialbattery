@@ -298,17 +298,9 @@ class Battery(ABC):
         :return: the unique identifier
         """
         if utils.USE_PORT_AS_UNIQUE_ID:
-            return self.port + (
-                "__" + utils.bytearray_to_string(self.address).replace("\\", "0")
-                if self.address is not None
-                else ""
-            )
+            return self.port + ("__" + utils.bytearray_to_string(self.address).replace("\\", "0") if self.address is not None else "")
         else:
-            string = (
-                "".join(filter(str.isalnum, str(self.hardware_version))) + "_"
-                if self.hardware_version is not None and self.hardware_version != ""
-                else ""
-            )
+            string = "".join(filter(str.isalnum, str(self.hardware_version))) + "_" if self.hardware_version is not None and self.hardware_version != "" else ""
             string += str(self.capacity) + "Ah"
             return string
 
@@ -318,15 +310,7 @@ class Battery(ABC):
 
         :return: the connection name
         """
-        return (
-            "Serial "
-            + self.port
-            + (
-                "__" + utils.bytearray_to_string(self.address).replace("\\", "0")
-                if self.address is not None
-                else ""
-            )
-        )
+        return "Serial " + self.port + ("__" + utils.bytearray_to_string(self.address).replace("\\", "0") if self.address is not None else "")
 
     def custom_name(self) -> str:
         """
@@ -415,19 +399,13 @@ class Battery(ABC):
         if self.cell_count is not None:
             # set min battery voltage once
             if self.min_battery_voltage is None:
-                self.min_battery_voltage = round(
-                    utils.MIN_CELL_VOLTAGE * self.cell_count, 2
-                )
+                self.min_battery_voltage = round(utils.MIN_CELL_VOLTAGE * self.cell_count, 2)
 
             # set max battery voltage once
             if self.max_battery_voltage is None:
-                self.max_battery_voltage = round(
-                    utils.MAX_CELL_VOLTAGE * self.cell_count, 2
-                )
+                self.max_battery_voltage = round(utils.MAX_CELL_VOLTAGE * self.cell_count, 2)
         else:
-            logger.debug(
-                "Cell count is not known yet. Can't set min and max battery voltage."
-            )
+            logger.debug("Cell count is not known yet. Can't set min and max battery voltage.")
 
         # enable soc reset voltage management only if needed
         if utils.SOC_RESET_AFTER_DAYS is not False:
@@ -483,18 +461,13 @@ class Battery(ABC):
                 self.current_corrected = self.get_current()
 
             self.soc_calc_capacity_remain = (
-                self.soc_calc_capacity_remain
-                + self.current_corrected
-                * (current_time - self.soc_calc_capacity_remain_lasttime)
-                / 3600
+                self.soc_calc_capacity_remain + self.current_corrected * (current_time - self.soc_calc_capacity_remain_lasttime) / 3600
             )
 
             # limit soc_calc_capacity_remain to capacity and zero
             # in case 100% is reached and the battery is not fully charged
             # in case 0% is reached and the battery is not fully discharged
-            self.soc_calc_capacity_remain = round(
-                max(min(self.soc_calc_capacity_remain, self.capacity), 0), 3
-            )
+            self.soc_calc_capacity_remain = round(max(min(self.soc_calc_capacity_remain, self.capacity), 0), 3)
             self.soc_calc_capacity_remain_lasttime = current_time
 
             # execute checks only if one cell reaches max voltage
@@ -510,9 +483,7 @@ class Battery(ABC):
                     # and (self.max_battery_voltage - utils.VOLTAGE_DROP <= voltage_sum)
                 ):
                     # set soc to 100%, if SOC_RESET_TIME is reached and soc_calc is not rounded 100% anymore
-                    if (
-                        int(current_time) - self.soc_calc_reset_starttime
-                    ) > utils.SOC_RESET_TIME and round(self.soc_calc, 0) != 100:
+                    if (int(current_time) - self.soc_calc_reset_starttime) > utils.SOC_RESET_TIME and round(self.soc_calc, 0) != 100:
                         logger.info("SOC set to 100%")
                         self.soc_calc_capacity_remain = self.capacity
                         self.soc_calc_reset_starttime = None
@@ -526,9 +497,7 @@ class Battery(ABC):
                 # check if battery is still being discharged
                 if self.get_current() < 0 and self.soc_calc_reset_starttime:
                     # set soc to 0%, if SOC_RESET_TIME is reached and soc_calc is not rounded 0% anymore
-                    if (
-                        int(current_time) - self.soc_calc_reset_starttime
-                    ) > utils.SOC_RESET_TIME and round(self.soc_calc, 0) != 0:
+                    if (int(current_time) - self.soc_calc_reset_starttime) > utils.SOC_RESET_TIME and round(self.soc_calc, 0) != 0:
                         logger.info("SOC set to 0%")
                         self.soc_calc_capacity_remain = 0
                         self.soc_calc_reset_starttime = None
@@ -540,9 +509,7 @@ class Battery(ABC):
                 # if there is a SOC from the BMS then use it
                 if self.soc is not None:
                     self.soc_calc_capacity_remain = self.capacity * self.soc / 100
-                    logger.debug(
-                        "SOC initialized from BMS and set to " + str(self.soc) + "%"
-                    )
+                    logger.debug("SOC initialized from BMS and set to " + str(self.soc) + "%")
                 # else set it to 100%
                 # this is currently (2024.04.13) not possible, since then the driver won't start, if there is no SOC
                 # but leave it in case a BMS without SOC should be added
@@ -551,19 +518,13 @@ class Battery(ABC):
                     logger.debug("SOC initialized and set to 100%")
             # else initialize it from dbus
             else:
-                self.soc_calc_capacity_remain = (
-                    self.capacity * self.soc_calc / 100 if self.soc > 0 else 0
-                )
-                logger.debug(
-                    "SOC initialized from dbus and set to " + str(self.soc_calc) + "%"
-                )
+                self.soc_calc_capacity_remain = self.capacity * self.soc_calc / 100 if self.soc > 0 else 0
+                logger.debug("SOC initialized from dbus and set to " + str(self.soc_calc) + "%")
 
             self.soc_calc_capacity_remain_lasttime = current_time
 
         # calculate the SOC based on remaining capacity
-        self.soc_calc = round(
-            max(min((self.soc_calc_capacity_remain / self.capacity) * 100, 100), 0), 2
-        )
+        self.soc_calc = round(max(min((self.soc_calc_capacity_remain / self.capacity) * 100, 100), 0), 2)
 
     def soc_reset_voltage_management(self) -> None:
         """
@@ -574,11 +535,7 @@ class Battery(ABC):
         :return: None
         """
 
-        soc_reset_last_reached_days_ago = (
-            0
-            if self.soc_reset_last_reached == 0
-            else (((int(time()) - self.soc_reset_last_reached) / 60 / 60 / 24))
-        )
+        soc_reset_last_reached_days_ago = 0 if self.soc_reset_last_reached == 0 else (((int(time()) - self.soc_reset_last_reached) / 60 / 60 / 24))
 
         # set soc_reset_requested to True, if the days are over
         # it gets set to False once the bulk voltage was reached once
@@ -586,23 +543,16 @@ class Battery(ABC):
             utils.SOC_RESET_AFTER_DAYS is not False
             and self.soc_reset_requested is False
             and self.allow_max_voltage
-            and (
-                self.soc_reset_last_reached == 0
-                or utils.SOC_RESET_AFTER_DAYS < soc_reset_last_reached_days_ago
-            )
+            and (self.soc_reset_last_reached == 0 or utils.SOC_RESET_AFTER_DAYS < soc_reset_last_reached_days_ago)
         ):
             self.soc_reset_requested = True
 
-        self.soc_reset_battery_voltage = round(
-            utils.SOC_RESET_VOLTAGE * self.cell_count, 2
-        )
+        self.soc_reset_battery_voltage = round(utils.SOC_RESET_VOLTAGE * self.cell_count, 2)
 
         if self.soc_reset_requested:
             self.max_battery_voltage = self.soc_reset_battery_voltage
         else:
-            self.max_battery_voltage = round(
-                utils.MAX_CELL_VOLTAGE * self.cell_count, 2
-            )
+            self.max_battery_voltage = round(utils.MAX_CELL_VOLTAGE * self.cell_count, 2)
 
     def manage_charge_voltage_linear(self) -> None:
         """
@@ -628,48 +578,34 @@ class Battery(ABC):
                     voltage_sum += voltage
 
                     # calculate penalty sum to prevent single cell overcharge by using current cell voltage
-                    if (
-                        self.max_battery_voltage != self.soc_reset_battery_voltage
-                        and voltage > utils.MAX_CELL_VOLTAGE
-                    ):
+                    if self.max_battery_voltage != self.soc_reset_battery_voltage and voltage > utils.MAX_CELL_VOLTAGE:
                         # found_high_cell_voltage: reset to False is not needed, since it is recalculated every second
                         found_high_cell_voltage = True
                         penalty_sum += voltage - utils.MAX_CELL_VOLTAGE
-                    elif (
-                        self.max_battery_voltage == self.soc_reset_battery_voltage
-                        and voltage > utils.SOC_RESET_VOLTAGE
-                    ):
+                    elif self.max_battery_voltage == self.soc_reset_battery_voltage and voltage > utils.SOC_RESET_VOLTAGE:
                         # found_high_cell_voltage: reset to False is not needed, since it is recalculated every second
                         found_high_cell_voltage = True
                         penalty_sum += voltage - utils.SOC_RESET_VOLTAGE
 
-            voltage_cell_diff = (
-                self.get_max_cell_voltage() - self.get_min_cell_voltage()
-            )
+            voltage_cell_diff = self.get_max_cell_voltage() - self.get_min_cell_voltage()
 
             if self.max_voltage_start_time is None:
                 # start timer, if max voltage is reached and cells are balanced
                 if (
                     (self.max_battery_voltage - utils.VOLTAGE_DROP) <= voltage_sum
-                    and voltage_cell_diff
-                    <= utils.CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_UNTIL
+                    and voltage_cell_diff <= utils.CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_UNTIL
                     and self.allow_max_voltage
                 ):
                     self.max_voltage_start_time = current_time
                 # allow max voltage again, if cells are unbalanced or SoC threshold is reached
                 elif (
-                    utils.SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT > self.soc_calc
-                    or voltage_cell_diff
-                    >= utils.CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT
+                    utils.SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT > self.soc_calc or voltage_cell_diff >= utils.CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT
                 ) and not self.allow_max_voltage:
                     self.allow_max_voltage = True
                 else:
                     pass
             else:
-                if (
-                    voltage_cell_diff
-                    > utils.CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_TIME_RESTART
-                ):
+                if voltage_cell_diff > utils.CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_TIME_RESTART:
                     self.max_voltage_start_time = current_time
 
                 time_diff = current_time - self.max_voltage_start_time
@@ -692,10 +628,7 @@ class Battery(ABC):
 
                 # we don't forget to reset max_voltage_start_time wenn we going to bulk(dynamic) mode
                 # regardless of whether we were in absorption mode or not
-                if (
-                    voltage_sum
-                    < self.max_battery_voltage - measurement_tolerance_variation
-                ):
+                if voltage_sum < self.max_battery_voltage - measurement_tolerance_variation:
                     self.max_voltage_start_time = None
 
             # Bulk or Absorption mode
@@ -711,11 +644,7 @@ class Battery(ABC):
                             - (
                                 (
                                     self.get_max_cell_voltage()
-                                    - (
-                                        utils.SOC_RESET_VOLTAGE
-                                        if self.soc_reset_requested
-                                        else utils.MAX_CELL_VOLTAGE
-                                    )
+                                    - (utils.SOC_RESET_VOLTAGE if self.soc_reset_requested else utils.MAX_CELL_VOLTAGE)
                                     - utils.CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_UNTIL
                                 )
                                 * utils.CVL_ICONTROLLER_FACTOR
@@ -750,20 +679,14 @@ class Battery(ABC):
 
                 self.control_voltage = control_voltage
 
-                self.charge_mode = (
-                    "Bulk" if self.max_voltage_start_time is None else "Absorption"
-                )
+                self.charge_mode = "Bulk" if self.max_voltage_start_time is None else "Absorption"
                 if found_high_cell_voltage:
                     self.charge_mode += " Dynamic"
 
                 if self.max_battery_voltage == self.soc_reset_battery_voltage:
                     self.charge_mode += " & SoC Reset"
 
-                if (
-                    self.get_balancing()
-                    and voltage_cell_diff
-                    >= utils.CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT
-                ):
+                if self.get_balancing() and voltage_cell_diff >= utils.CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT:
                     self.charge_mode += " + Balancing"
             # Float mode
             else:
@@ -778,10 +701,7 @@ class Battery(ABC):
 
                 if self.control_voltage:
                     # check if battery changed from bulk/absoprtion to float
-                    if (
-                        self.charge_mode is not None
-                        and not self.charge_mode.startswith("Float")
-                    ):
+                    if self.charge_mode is not None and not self.charge_mode.startswith("Float"):
                         self.transition_start_time = current_time
                         self.initial_control_voltage = self.control_voltage
                         charge_mode = "Float Transition"
@@ -795,9 +715,7 @@ class Battery(ABC):
                             VOLTAGE_REDUCTION_PER_SECOND * elapsed_time,
                             self.initial_control_voltage - float_voltage,
                         )
-                        self.control_voltage = (
-                            self.initial_control_voltage - voltage_reduction
-                        )
+                        self.control_voltage = self.initial_control_voltage - voltage_reduction
 
                         if self.control_voltage <= float_voltage:
                             self.control_voltage = float_voltage
@@ -812,16 +730,10 @@ class Battery(ABC):
             self.charge_mode += " (Linear Mode)"
 
             # debug information
-            if utils.GUI_PARAMETERS_SHOW_ADDITIONAL_INFO or logger.isEnabledFor(
-                logging.DEBUG
-            ):
+            if utils.GUI_PARAMETERS_SHOW_ADDITIONAL_INFO or logger.isEnabledFor(logging.DEBUG):
 
-                soc_reset_days_ago = round(
-                    (current_time - self.soc_reset_last_reached) / 60 / 60 / 24, 2
-                )
-                soc_reset_in_days = round(
-                    utils.SOC_RESET_AFTER_DAYS - soc_reset_days_ago, 2
-                )
+                soc_reset_days_ago = round((current_time - self.soc_reset_last_reached) / 60 / 60 / 24, 2)
+                soc_reset_in_days = round(utils.SOC_RESET_AFTER_DAYS - soc_reset_days_ago, 2)
 
                 self.charge_mode_debug = (
                     f"max_battery_voltage: {(self.max_battery_voltage):.2f} V • "
@@ -833,16 +745,8 @@ class Battery(ABC):
                     + f"max_cell_voltage: {self.get_max_cell_voltage()} V • penalty_sum: {penalty_sum:.3f} V\n"
                     + f"soc: {self.soc}% • soc_calc: {self.soc_calc}%\n"
                     + f"current: {self.current:.2f}A"
-                    + (
-                        f" • current_corrected: {self.current_corrected:.2f} A • "
-                        if self.current_corrected is not None
-                        else ""
-                    )
-                    + (
-                        f"current_external: {self.current_external:.2f} A\n"
-                        if self.current_external is not None
-                        else "\n"
-                    )
+                    + (f" • current_corrected: {self.current_corrected:.2f} A • " if self.current_corrected is not None else "")
+                    + (f"current_external: {self.current_external:.2f} A\n" if self.current_external is not None else "\n")
                     + f"current_time: {current_time}\n"
                     + f"linear_cvl_last_set: {self.linear_cvl_last_set}\n"
                     + f"charge_fet: {self.charge_fet} • control_allow_charge: {self.control_allow_charge}\n"
@@ -850,11 +754,7 @@ class Battery(ABC):
                     + f"control_allow_discharge: {self.control_allow_discharge}\n"
                     + f"block_because_disconnect: {self.block_because_disconnect}\n"
                     + "soc_reset_last_reached: "
-                    + (
-                        "Never"
-                        if self.soc_reset_last_reached == 0
-                        else f"{soc_reset_days_ago}"
-                    )
+                    + ("Never" if self.soc_reset_last_reached == 0 else f"{soc_reset_days_ago}")
                     + f" d ago, next in {soc_reset_in_days} d\n"
                     + (
                         f"soc_calc_capacity_remain: {self.soc_calc_capacity_remain:.3f}/{self.capacity} Ah\n"
@@ -862,11 +762,7 @@ class Battery(ABC):
                         else ""
                     )
                     + "soc_calc_reset_starttime: "
-                    + (
-                        f"{int(current_time - self.soc_calc_reset_starttime)}/{utils.SOC_RESET_TIME}"
-                        if self.soc_calc_reset_starttime is not None
-                        else "None"
-                    )
+                    + (f"{int(current_time - self.soc_calc_reset_starttime)}/{utils.SOC_RESET_TIME}" if self.soc_calc_reset_starttime is not None else "None")
                 )
 
                 self.charge_mode_debug_float = (
@@ -896,9 +792,7 @@ class Battery(ABC):
                 )
 
         except TypeError:
-            self.control_voltage = round(
-                (utils.FLOAT_CELL_VOLTAGE * self.cell_count), 2
-            )
+            self.control_voltage = round((utils.FLOAT_CELL_VOLTAGE * self.cell_count), 2)
             self.charge_mode = "Error, please check the logs!"
 
             # set error code, to show in the GUI that something is wrong
@@ -907,10 +801,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                "Non blocking exception occurred: "
-                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
 
     def set_cvl_linear(self, control_voltage: float) -> bool:
         """
@@ -922,21 +813,10 @@ class Battery(ABC):
         :return: The status, if the CVL was set
         """
         current_time = int(time())
-        diff = (
-            abs(self.control_voltage - control_voltage)
-            if self.control_voltage is not None
-            else 0
-        )
+        diff = abs(self.control_voltage - control_voltage) if self.control_voltage is not None else 0
 
-        if (
-            utils.LINEAR_RECALCULATION_EVERY <= current_time - self.linear_cvl_last_set
-            or (
-                diff
-                >= self.control_voltage
-                * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE
-                / 100
-                / 10  # for more precision, since the changes are small in this case
-            )
+        if utils.LINEAR_RECALCULATION_EVERY <= current_time - self.linear_cvl_last_set or (
+            diff >= self.control_voltage * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE / 100 / 10  # for more precision, since the changes are small in this case
         ):
             self.control_voltage = control_voltage
             self.linear_cvl_last_set = current_time
@@ -961,24 +841,17 @@ class Battery(ABC):
                 if voltage:
                     voltage_sum += voltage
 
-            voltage_cell_diff = (
-                self.get_max_cell_voltage() - self.get_min_cell_voltage()
-            )
+            voltage_cell_diff = self.get_max_cell_voltage() - self.get_min_cell_voltage()
 
             if self.max_voltage_start_time is None:
                 # check if max voltage is reached and start timer to keep max voltage
-                if (
-                    self.max_battery_voltage - utils.VOLTAGE_DROP
-                ) <= voltage_sum and self.allow_max_voltage:
+                if (self.max_battery_voltage - utils.VOLTAGE_DROP) <= voltage_sum and self.allow_max_voltage:
                     # example 2
                     self.max_voltage_start_time = current_time
 
                 # check if reset soc is greater than battery soc
                 # this prevents flapping between max and float voltage
-                elif (
-                    utils.SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT > self.soc_calc
-                    and not self.allow_max_voltage
-                ):
+                elif utils.SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT > self.soc_calc and not self.allow_max_voltage:
                     self.allow_max_voltage = True
 
                 # do nothing
@@ -997,23 +870,17 @@ class Battery(ABC):
 
             if self.allow_max_voltage:
                 self.control_voltage = self.max_battery_voltage
-                self.charge_mode = (
-                    "Bulk" if self.max_voltage_start_time is None else "Absorption"
-                )
+                self.charge_mode = "Bulk" if self.max_voltage_start_time is None else "Absorption"
 
                 if self.max_battery_voltage == self.soc_reset_battery_voltage:
                     self.charge_mode += " & SoC Reset"
 
             else:
                 # check if battery changed from bulk/absoprtion to float
-                if self.charge_mode is not None and not self.charge_mode.startswith(
-                    "Float"
-                ):
+                if self.charge_mode is not None and not self.charge_mode.startswith("Float"):
                     # Assume battery SOC ist 100% at this stage
                     self.trigger_soc_reset()
-                self.control_voltage = round(
-                    utils.FLOAT_CELL_VOLTAGE * self.cell_count, 2
-                )
+                self.control_voltage = round(utils.FLOAT_CELL_VOLTAGE * self.cell_count, 2)
                 self.charge_mode = "Float"
                 # reset bulk when going into float
                 if self.soc_reset_requested:
@@ -1024,16 +891,10 @@ class Battery(ABC):
             self.charge_mode += " (Step Mode)"
 
             # debug information
-            if utils.GUI_PARAMETERS_SHOW_ADDITIONAL_INFO or logger.isEnabledFor(
-                logging.DEBUG
-            ):
+            if utils.GUI_PARAMETERS_SHOW_ADDITIONAL_INFO or logger.isEnabledFor(logging.DEBUG):
 
-                soc_reset_days_ago = round(
-                    (current_time - self.soc_reset_last_reached) / 60 / 60 / 24, 2
-                )
-                soc_reset_in_days = round(
-                    utils.SOC_RESET_AFTER_DAYS - soc_reset_days_ago, 2
-                )
+                soc_reset_days_ago = round((current_time - self.soc_reset_last_reached) / 60 / 60 / 24, 2)
+                soc_reset_in_days = round(utils.SOC_RESET_AFTER_DAYS - soc_reset_days_ago, 2)
 
                 self.charge_mode_debug = (
                     f"max_battery_voltage: {(self.max_battery_voltage):.2f} V • "
@@ -1045,16 +906,8 @@ class Battery(ABC):
                     + f"max_cell_voltage: {self.get_max_cell_voltage()} V\n"
                     + f"soc: {self.soc}% • soc_calc: {self.soc_calc}%\n"
                     + f"current: {self.current:.2f}A"
-                    + (
-                        f" • current_corrected: {self.current_corrected:.2f} A • "
-                        if self.current_corrected is not None
-                        else ""
-                    )
-                    + (
-                        f"current_external: {self.current_external:.2f} A\n"
-                        if self.current_external is not None
-                        else "\n"
-                    )
+                    + (f" • current_corrected: {self.current_corrected:.2f} A • " if self.current_corrected is not None else "")
+                    + (f"current_external: {self.current_external:.2f} A\n" if self.current_external is not None else "\n")
                     + f"current_time: {current_time}\n"
                     + f"linear_cvl_last_set: {self.linear_cvl_last_set}\n"
                     + f"charge_fet: {self.charge_fet} • control_allow_charge: {self.control_allow_charge}\n"
@@ -1062,11 +915,7 @@ class Battery(ABC):
                     + f"control_allow_discharge: {self.control_allow_discharge}\n"
                     + f"block_because_disconnect: {self.block_because_disconnect}\n"
                     + "soc_reset_last_reached: "
-                    + (
-                        "Never"
-                        if self.soc_reset_last_reached == 0
-                        else f"{soc_reset_days_ago}"
-                    )
+                    + ("Never" if self.soc_reset_last_reached == 0 else f"{soc_reset_days_ago}")
                     + f" d ago, next in {soc_reset_in_days} d\n"
                     + (
                         f"soc_calc_capacity_remain: {self.soc_calc_capacity_remain:.3f}/{self.capacity} Ah\n"
@@ -1074,11 +923,7 @@ class Battery(ABC):
                         else ""
                     )
                     + "soc_calc_reset_starttime: "
-                    + (
-                        f"{int(current_time - self.soc_calc_reset_starttime)}/{utils.SOC_RESET_TIME}"
-                        if self.soc_calc_reset_starttime is not None
-                        else "None"
-                    )
+                    + (f"{int(current_time - self.soc_calc_reset_starttime)}/{utils.SOC_RESET_TIME}" if self.soc_calc_reset_starttime is not None else "None")
                 )
 
                 self.charge_mode_debug_float = (
@@ -1100,9 +945,7 @@ class Battery(ABC):
                 )
 
         except TypeError:
-            self.control_voltage = round(
-                (utils.FLOAT_CELL_VOLTAGE * self.cell_count), 2
-            )
+            self.control_voltage = round((utils.FLOAT_CELL_VOLTAGE * self.cell_count), 2)
             self.charge_mode = "Error, please check the logs!"
 
             # set error code, to show in the GUI that something is wrong
@@ -1111,10 +954,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                "Non blocking exception occurred: "
-                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
 
     def manage_charge_and_discharge_current(self) -> None:
         """
@@ -1128,10 +968,7 @@ class Battery(ABC):
 
         # if BMS limit is lower then config limit and therefore the values are not the same,
         # then the limit was also read from the BMS
-        if (
-            isinstance(self.max_battery_charge_current, (int, float))
-            and utils.MAX_BATTERY_CHARGE_CURRENT > self.max_battery_charge_current
-        ):
+        if isinstance(self.max_battery_charge_current, (int, float)) and utils.MAX_BATTERY_CHARGE_CURRENT > self.max_battery_charge_current:
             charge_limits.update({self.max_battery_charge_current: "BMS Settings"})
 
         if utils.CCCM_CV_ENABLE:
@@ -1140,9 +977,7 @@ class Battery(ABC):
                 if tmp in charge_limits:
                     # do not add string, if global limitation is applied
                     if charge_limits[tmp] != "Max Battery Charge Current":
-                        charge_limits.update(
-                            {tmp: charge_limits[tmp] + ", Cell Voltage"}
-                        )
+                        charge_limits.update({tmp: charge_limits[tmp] + ", Cell Voltage"})
                     else:
                         pass
                 else:
@@ -1186,20 +1021,11 @@ class Battery(ABC):
         - if CCL changes more than LINEAR_RECALCULATION_ON_PERC_CHANGE
         """
         ccl = round(min(charge_limits), 3)
-        diff = (
-            abs(self.control_charge_current - ccl)
-            if self.control_charge_current is not None
-            else 0
-        )
+        diff = abs(self.control_charge_current - ccl) if self.control_charge_current is not None else 0
         if (
             int(time()) - self.linear_ccl_last_set >= utils.LINEAR_RECALCULATION_EVERY
             or ccl == 0
-            or (
-                diff
-                >= self.control_charge_current
-                * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE
-                / 100
-            )
+            or (diff >= self.control_charge_current * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE / 100)
         ):
             self.linear_ccl_last_set = int(time())
 
@@ -1209,10 +1035,7 @@ class Battery(ABC):
                 self.charge_limitation = charge_limits[min(charge_limits)]
             else:
                 # Allow recovery only if the new allowed current is greater than 1% of the previous allowed current
-                if (
-                    self.control_charge_current == 0
-                    and ccl > self.control_charge_current * 0.01
-                ):
+                if self.control_charge_current == 0 and ccl > self.control_charge_current * 0.01:
                     self.control_charge_current = ccl
                     self.charge_limitation = charge_limits[min(charge_limits)]
                 elif self.control_charge_current != 0:
@@ -1230,19 +1053,12 @@ class Battery(ABC):
         #####
 
         # Manage Discharge Current Limitations
-        discharge_limits = {
-            utils.MAX_BATTERY_DISCHARGE_CURRENT: "Max Battery Discharge Current"
-        }
+        discharge_limits = {utils.MAX_BATTERY_DISCHARGE_CURRENT: "Max Battery Discharge Current"}
 
         # if BMS limit is lower then config limit and therefore the values are not the same,
         # then the limit was also read from the BMS
-        if (
-            isinstance(self.max_battery_discharge_current, (int, float))
-            and utils.MAX_BATTERY_DISCHARGE_CURRENT > self.max_battery_discharge_current
-        ):
-            discharge_limits.update(
-                {self.max_battery_discharge_current: "BMS Settings"}
-            )
+        if isinstance(self.max_battery_discharge_current, (int, float)) and utils.MAX_BATTERY_DISCHARGE_CURRENT > self.max_battery_discharge_current:
+            discharge_limits.update({self.max_battery_discharge_current: "BMS Settings"})
 
         if utils.DCCM_CV_ENABLE:
             tmp = self.calcMaxDischargeCurrentReferringToCellVoltage()
@@ -1250,9 +1066,7 @@ class Battery(ABC):
                 if tmp in discharge_limits:
                     # do not add string, if global limitation is applied
                     if discharge_limits[tmp] != "Max Battery Discharge Current":
-                        discharge_limits.update(
-                            {tmp: discharge_limits[tmp] + ", Cell Voltage"}
-                        )
+                        discharge_limits.update({tmp: discharge_limits[tmp] + ", Cell Voltage"})
                     else:
                         pass
                 else:
@@ -1296,20 +1110,11 @@ class Battery(ABC):
         - if DCL changes more than LINEAR_RECALCULATION_ON_PERC_CHANGE
         """
         dcl = round(min(discharge_limits), 3)
-        diff = (
-            abs(self.control_discharge_current - dcl)
-            if self.control_discharge_current is not None
-            else 0
-        )
+        diff = abs(self.control_discharge_current - dcl) if self.control_discharge_current is not None else 0
         if (
             int(time()) - self.linear_dcl_last_set >= utils.LINEAR_RECALCULATION_EVERY
             or dcl == 0
-            or (
-                diff
-                >= self.control_discharge_current
-                * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE
-                / 100
-            )
+            or (diff >= self.control_discharge_current * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE / 100)
         ):
             self.linear_dcl_last_set = int(time())
 
@@ -1319,22 +1124,14 @@ class Battery(ABC):
                 self.discharge_limitation = discharge_limits[min(discharge_limits)]
             else:
                 # Allow recovery only if the new allowed current is greater than 1% of the previous allowed current
-                if (
-                    self.control_discharge_current == 0
-                    and dcl > self.control_discharge_current * 0.01
-                ):
+                if self.control_discharge_current == 0 and dcl > self.control_discharge_current * 0.01:
                     self.control_discharge_current = dcl
                     self.discharge_limitation = discharge_limits[min(discharge_limits)]
                 elif self.control_discharge_current != 0:
                     self.control_discharge_current = dcl
                     self.discharge_limitation = discharge_limits[min(discharge_limits)]
-                elif (
-                    self.discharge_limitation
-                    != discharge_limits[min(discharge_limits)] + " *"
-                ):
-                    self.discharge_limitation = (
-                        discharge_limits[min(discharge_limits)] + " *"
-                    )
+                elif self.discharge_limitation != discharge_limits[min(discharge_limits)] + " *":
+                    self.discharge_limitation = discharge_limits[min(discharge_limits)] + " *"
 
         # set allow to discharge to no, if DCL is 0
         if self.control_discharge_current == 0:
@@ -1387,10 +1184,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                "Non blocking exception occurred: "
-                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
     def calcMaxDischargeCurrentReferringToCellVoltage(self) -> float:
@@ -1424,10 +1218,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error(
-                "calcMaxChargeCurrentReferringToCellVoltage(): Error while executing,"
-                + " using default current instead."
-            )
+            logger.error("calcMaxChargeCurrentReferringToCellVoltage(): Error while executing," + " using default current instead.")
             logger.error(
                 f"get_min_cell_voltage: {self.get_min_cell_voltage()}"
                 + f" • CELL_VOLTAGES_WHILE_DISCHARGING: {utils.CELL_VOLTAGES_WHILE_DISCHARGING}"
@@ -1437,10 +1228,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                "Non blocking exception occurred: "
-                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
     def calcMaxChargeCurrentReferringToTemperature(self) -> float:
@@ -1480,10 +1268,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error(
-                "calcMaxChargeCurrentReferringToTemperature(): Error while executing,"
-                + " using default current instead."
-            )
+            logger.error("calcMaxChargeCurrentReferringToTemperature(): Error while executing," + " using default current instead.")
             logger.error(
                 f"temps: {temps}"
                 + f" • TEMPERATURES_WHILE_CHARGING: {utils.TEMPERATURES_WHILE_CHARGING}"
@@ -1493,10 +1278,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                "Non blocking exception occurred: "
-                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
     def calcMaxDischargeCurrentReferringToTemperature(self) -> float:
@@ -1536,10 +1318,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error(
-                "calcMaxDischargeCurrentReferringToTemperature(): Error while executing,"
-                + " using default current instead."
-            )
+            logger.error("calcMaxDischargeCurrentReferringToTemperature(): Error while executing," + " using default current instead.")
             logger.error(
                 f"temps: {temps}"
                 + f" • TEMPERATURES_WHILE_DISCHARGING: {utils.TEMPERATURES_WHILE_DISCHARGING}"
@@ -1549,10 +1328,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                "Non blocking exception occurred: "
-                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
     def calcMaxChargeCurrentReferringToSoc(self) -> float:
@@ -1578,10 +1354,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error(
-                "calcMaxChargeCurrentReferringToSoc(): Error while executing,"
-                + " using default current instead."
-            )
+            logger.error("calcMaxChargeCurrentReferringToSoc(): Error while executing," + " using default current instead.")
             logger.error(
                 f"soc_calc: {self.soc_calc}"
                 + f" • SOC_WHILE_CHARGING: {utils.SOC_WHILE_CHARGING}"
@@ -1591,9 +1364,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
     def calcMaxDischargeCurrentReferringToSoc(self) -> float:
@@ -1619,10 +1390,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error(
-                "calcMaxDischargeCurrentReferringToSoc: Error while executing,"
-                + " using default current instead."
-            )
+            logger.error("calcMaxDischargeCurrentReferringToSoc: Error while executing," + " using default current instead.")
             logger.error(
                 f"soc_calc: {self.soc_calc}"
                 + f" • SOC_WHILE_DISCHARGING: {utils.SOC_WHILE_DISCHARGING}"
@@ -1632,9 +1400,7 @@ class Battery(ABC):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_discharge_current
 
     def get_min_cell(self) -> int:
@@ -1649,10 +1415,7 @@ class Battery(ABC):
             return self.cell_min_no
 
         for c in range(min(len(self.cells), self.cell_count)):
-            if (
-                self.cells[c].voltage is not None
-                and min_voltage > self.cells[c].voltage
-            ):
+            if self.cells[c].voltage is not None and min_voltage > self.cells[c].voltage:
                 min_voltage = self.cells[c].voltage
                 min_cell = c
         return min_cell
@@ -1669,10 +1432,7 @@ class Battery(ABC):
             return self.cell_max_no
 
         for c in range(min(len(self.cells), self.cell_count)):
-            if (
-                self.cells[c].voltage is not None
-                and max_voltage < self.cells[c].voltage
-            ):
+            if self.cells[c].voltage is not None and max_voltage < self.cells[c].voltage:
                 max_voltage = self.cells[c].voltage
                 max_cell = c
         return max_cell
@@ -1745,9 +1505,7 @@ class Battery(ABC):
             return self.capacity * self.soc_calc / 100
         return None
 
-    def get_timeToSoc(
-        self, soc_target: float, percent_per_second: float, only_number: bool = False
-    ) -> str:
+    def get_timeToSoc(self, soc_target: float, percent_per_second: float, only_number: bool = False) -> str:
         """
         Calculate the time to reach a specific SoC target.
 
@@ -1756,11 +1514,7 @@ class Battery(ABC):
         :param only_number: Whether to return only the seconds
         :return: The time to reach the target SoC
         """
-        if (
-            self.get_current() is None
-            or soc_target is None
-            or percent_per_second is None
-        ):
+        if self.get_current() is None or soc_target is None or percent_per_second is None:
             return None
 
         if self.get_current() > 0:
@@ -1777,11 +1531,7 @@ class Battery(ABC):
             return None
 
         time_to_go_str = None
-        if (
-            self.soc_calc != soc_target
-            and percent_per_second != 0
-            and (soc_diff > 0 or utils.TIME_TO_SOC_INC_FROM is True)
-        ):
+        if self.soc_calc != soc_target and percent_per_second != 0 and (soc_diff > 0 or utils.TIME_TO_SOC_INC_FROM is True):
             seconds_to_go = int(soc_diff / percent_per_second)
             time_to_go_str = ""
 
@@ -1841,9 +1591,7 @@ class Battery(ABC):
 
         if min_voltage is None:
             try:
-                min_voltage = min(
-                    c.voltage for c in self.cells if c.voltage is not None
-                )
+                min_voltage = min(c.voltage for c in self.cells if c.voltage is not None)
             except ValueError:
                 pass
         return min_voltage
@@ -1855,9 +1603,7 @@ class Battery(ABC):
 
         if max_voltage is None:
             try:
-                max_voltage = max(
-                    c.voltage for c in self.cells if c.voltage is not None
-                )
+                max_voltage = max(c.voltage for c in self.cells if c.voltage is not None)
             except ValueError:
                 pass
         return max_voltage
@@ -1869,13 +1615,7 @@ class Battery(ABC):
         of the cells and adding 1/2 of the "middle cell" voltage (if it exists)
         :return: a tuple of the voltage in the middle, as well as a percentage deviation (total_voltage / 2)
         """
-        if (
-            not utils.MIDPOINT_ENABLE
-            or self.cell_count is None
-            or self.cell_count == 0
-            or self.cell_count < 4
-            or len(self.cells) != self.cell_count
-        ):
+        if not utils.MIDPOINT_ENABLE or self.cell_count is None or self.cell_count == 0 or self.cell_count < 4 or len(self.cells) != self.cell_count:
             return None, None
 
         halfcount = int(math.floor(self.cell_count / 2))
@@ -1884,16 +1624,8 @@ class Battery(ABC):
         half2voltage = 0
 
         try:
-            half1voltage = sum(
-                cell.voltage
-                for cell in self.cells[:halfcount]
-                if cell.voltage is not None
-            )
-            half2voltage = sum(
-                cell.voltage
-                for cell in self.cells[halfcount + uneven_cells_offset :]
-                if cell.voltage is not None
-            )
+            half1voltage = sum(cell.voltage for cell in self.cells[:halfcount] if cell.voltage is not None)
+            half2voltage = sum(cell.voltage for cell in self.cells[halfcount + uneven_cells_offset :] if cell.voltage is not None)
         except ValueError:
             pass
 
@@ -1903,9 +1635,7 @@ class Battery(ABC):
             midpoint = half1voltage + extra
             return (
                 abs(midpoint),
-                abs(
-                    (half2voltage - half1voltage) / (half2voltage + half1voltage) * 100
-                ),
+                abs((half2voltage - half1voltage) / (half2voltage + half1voltage) * 100),
             )
         except ValueError:
             return None, None
@@ -1927,11 +1657,7 @@ class Battery(ABC):
             elif utils.TEMP_BATTERY == 4:
                 return self.temp4
             else:
-                temps = [
-                    t
-                    for t in [self.temp1, self.temp2, self.temp3, self.temp4]
-                    if t is not None
-                ]
+                temps = [t for t in [self.temp1, self.temp2, self.temp3, self.temp4] if t is not None]
                 n = len(temps)
                 if not temps or n == 0:
                     return None
@@ -1946,11 +1672,7 @@ class Battery(ABC):
 
     def get_min_temp(self) -> Union[float, None]:
         try:
-            temps = [
-                t
-                for t in [self.temp1, self.temp2, self.temp3, self.temp4]
-                if t is not None
-            ]
+            temps = [t for t in [self.temp1, self.temp2, self.temp3, self.temp4] if t is not None]
             if not temps:
                 return None
             return min(temps)
@@ -1959,11 +1681,7 @@ class Battery(ABC):
 
     def get_min_temp_id(self) -> Union[str, None]:
         try:
-            temps = [
-                (t, i)
-                for i, t in enumerate([self.temp1, self.temp2, self.temp3, self.temp4])
-                if t is not None
-            ]
+            temps = [(t, i) for i, t in enumerate([self.temp1, self.temp2, self.temp3, self.temp4]) if t is not None]
             if not temps:
                 return None
             index = min(temps)[1]
@@ -1980,11 +1698,7 @@ class Battery(ABC):
 
     def get_max_temp(self) -> Union[float, None]:
         try:
-            temps = [
-                t
-                for t in [self.temp1, self.temp2, self.temp3, self.temp4]
-                if t is not None
-            ]
+            temps = [t for t in [self.temp1, self.temp2, self.temp3, self.temp4] if t is not None]
             if not temps:
                 return None
             return max(temps)
@@ -1993,11 +1707,7 @@ class Battery(ABC):
 
     def get_max_temp_id(self) -> Union[str, None]:
         try:
-            temps = [
-                (t, i)
-                for i, t in enumerate([self.temp1, self.temp2, self.temp3, self.temp4])
-                if t is not None
-            ]
+            temps = [(t, i) for i, t in enumerate([self.temp1, self.temp2, self.temp3, self.temp4]) if t is not None]
             if not temps:
                 return None
             index = max(temps)[1]
@@ -2019,22 +1729,10 @@ class Battery(ABC):
             return None
 
     def get_allow_to_charge(self) -> bool:
-        return (
-            True
-            if self.charge_fet
-            and self.control_allow_charge
-            and self.block_because_disconnect is False
-            else False
-        )
+        return True if self.charge_fet and self.control_allow_charge and self.block_because_disconnect is False else False
 
     def get_allow_to_discharge(self) -> bool:
-        return (
-            True
-            if self.discharge_fet
-            and self.control_allow_discharge
-            and self.block_because_disconnect is False
-            else False
-        )
+        return True if self.discharge_fet and self.control_allow_discharge and self.block_because_disconnect is False else False
 
     def get_allow_to_balance(self) -> bool:
         return True if self.balance_fet else False
@@ -2046,20 +1744,13 @@ class Battery(ABC):
         else return False since it's very probably not a BMS
         """
         if self.capacity is not None and (self.capacity < 0 or self.capacity > 5000):
-            logger.debug(
-                "Capacity outside of thresholds (from 0 to 5000): " + str(self.capacity)
-            )
+            logger.debug("Capacity outside of thresholds (from 0 to 5000): " + str(self.capacity))
             return False
         if self.current is not None and abs(self.current) > 1000:
-            logger.debug(
-                "Current outside of thresholds (from -1000 to 1000): "
-                + str(self.current)
-            )
+            logger.debug("Current outside of thresholds (from -1000 to 1000): " + str(self.current))
             return False
         if self.voltage is not None and (self.voltage < 0 or self.voltage > 100):
-            logger.debug(
-                "Voltage outside of thresholds (form 0 to 100): " + str(self.voltage)
-            )
+            logger.debug("Voltage outside of thresholds (form 0 to 100): " + str(self.voltage))
             return False
         if self.soc is not None and (self.soc < 0 or self.soc > 100):
             logger.debug("SoC outside of thresholds (from 0 to 100): " + str(self.soc))
@@ -2076,30 +1767,20 @@ class Battery(ABC):
         from dbus.mainloop.glib import DBusGMainLoop
         from vedbus import VeDbusItemImport
 
-        logger.info(
-            "Monitoring external current using: "
-            + f"{utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE}{utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH}"
-        )
+        logger.info("Monitoring external current using: " + f"{utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE}{utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH}")
 
         # setup external dbus paths
         try:
             DBusGMainLoop(set_as_default=True)
 
             # connect to the sessionbus, on a CC GX the systembus is used
-            dbus_connection = (
-                dbus.SessionBus()
-                if "DBUS_SESSION_BUS_ADDRESS" in os.environ
-                else dbus.SystemBus()
-            )
+            dbus_connection = dbus.SessionBus() if "DBUS_SESSION_BUS_ADDRESS" in os.environ else dbus.SystemBus()
 
             # dictionary containing the different items
             dbus_objects = {}
 
             # check if the dbus service is available
-            is_present_in_vebus = (
-                utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE
-                in dbus_connection.list_names()
-            )
+            is_present_in_vebus = utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE in dbus_connection.list_names()
 
             if is_present_in_vebus:
                 dbus_objects["Current"] = VeDbusItemImport(
@@ -2122,13 +1803,8 @@ class Battery(ABC):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                "Exception occurred: "
-                + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
-            logger.error(
-                "External current sensor setup failed, fallback to internal sensor"
-            )
+            logger.error("Exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
+            logger.error("External current sensor setup failed, fallback to internal sensor")
 
     def get_current(self) -> Union[float, None]:
         """
@@ -2136,12 +1812,8 @@ class Battery(ABC):
         If an external current sensor is connected, use that value.
         """
         if self.dbus_external_objects is not None:
-            current_external = round(
-                self.dbus_external_objects["Current"].get_value(), 3
-            )
-            logger.debug(
-                f"current: {self.current} - current_external: {current_external}"
-            )
+            current_external = round(self.dbus_external_objects["Current"].get_value(), 3)
+            logger.debug(f"current: {self.current} - current_external: {current_external}")
             return current_external
         return self.current
 
@@ -2163,11 +1835,7 @@ class Battery(ABC):
         #     there are more or equal to 180 errors
         #     the first error in the list is within the last 3 hours
         #     the error code is different from the current error
-        if (
-            len(self.error_timestamps) >= 180
-            and int(time()) - self.error_timestamps[0] <= (60 * 60 * 3)
-            and self.error_code != error_code
-        ):
+        if len(self.error_timestamps) >= 180 and int(time()) - self.error_timestamps[0] <= (60 * 60 * 3) and self.error_code != error_code:
             # set error code
             self.error_code = error_code
 
@@ -2179,11 +1847,7 @@ class Battery(ABC):
         #     there are more or equal to 180 errors
         #     the first error in the list is not within the last 3 hours
         #     the error code is not already None
-        if (
-            len(self.error_timestamps) >= 180
-            and int(time()) - self.error_timestamps[0] > (60 * 60 * 3)
-            and self.error_code is not None
-        ):
+        if len(self.error_timestamps) >= 180 and int(time()) - self.error_timestamps[0] > (60 * 60 * 3) and self.error_code is not None:
             self.error_code = None
 
     def log_cell_data(self) -> bool:
@@ -2204,15 +1868,9 @@ class Battery(ABC):
         logger.info("========== Settings ==========")
         logger.info(
             f"> Connection voltage: {self.voltage} V | Current: {self.get_current()} A | SoC: {self.soc}%"
-            + (
-                f" | SoC calc: {self.soc_calc:.0f}%"
-                if self.soc_calc is not None
-                else ""
-            )
+            + (f" | SoC calc: {self.soc_calc:.0f}%" if self.soc_calc is not None else "")
         )
-        logger.info(
-            f"> Cell count: {self.cell_count} | Cells populated: {cell_counter}"
-        )
+        logger.info(f"> Cell count: {self.cell_count} | Cells populated: {cell_counter}")
         logger.info(f"> LINEAR LIMITATION ENABLE: {utils.LINEAR_LIMITATION_ENABLE}")
         logger.info(
             f"> MIN CELL VOLTAGE: {utils.MIN_CELL_VOLTAGE:.3f} V "
@@ -2220,15 +1878,10 @@ class Battery(ABC):
             + f"| FLOAT CELL VOLTAGE: {utils.FLOAT_CELL_VOLTAGE:.3f} V"
         )
         logger.info(
-            f"> MAX BATTERY CHARGE CURRENT: {utils.MAX_BATTERY_CHARGE_CURRENT} A | "
-            + f"MAX BATTERY DISCHARGE CURRENT: {utils.MAX_BATTERY_DISCHARGE_CURRENT} A"
+            f"> MAX BATTERY CHARGE CURRENT: {utils.MAX_BATTERY_CHARGE_CURRENT} A | " + f"MAX BATTERY DISCHARGE CURRENT: {utils.MAX_BATTERY_DISCHARGE_CURRENT} A"
         )
         if (
-            (
-                utils.MAX_BATTERY_CHARGE_CURRENT != self.max_battery_charge_current
-                or utils.MAX_BATTERY_DISCHARGE_CURRENT
-                != self.max_battery_discharge_current
-            )
+            (utils.MAX_BATTERY_CHARGE_CURRENT != self.max_battery_charge_current or utils.MAX_BATTERY_DISCHARGE_CURRENT != self.max_battery_discharge_current)
             and self.max_battery_charge_current is not None
             and self.max_battery_discharge_current is not None
         ):
@@ -2237,18 +1890,10 @@ class Battery(ABC):
                 + f"MAX BATTERY DISCHARGE CURRENT: {self.max_battery_discharge_current} A (read from BMS)"
             )
         logger.info(f"> CVCM:     {utils.CVCM_ENABLE}")
-        logger.info(
-            f"> CCCM CV:  {str(utils.CCCM_CV_ENABLE).ljust(5)} | DCCM CV:  {utils.DCCM_CV_ENABLE}"
-        )
-        logger.info(
-            f"> CCCM T:   {str(utils.CCCM_T_ENABLE).ljust(5)} | DCCM T:   {utils.DCCM_T_ENABLE}"
-        )
-        logger.info(
-            f"> CCCM SOC: {str(utils.CCCM_SOC_ENABLE).ljust(5)} | DCCM SOC: {utils.DCCM_SOC_ENABLE}"
-        )
-        logger.info(
-            f"> CHARGE FET: {self.charge_fet} | DISCHARGE FET: {self.discharge_fet} | BALANCE FET: {self.balance_fet}"
-        )
+        logger.info(f"> CCCM CV:  {str(utils.CCCM_CV_ENABLE).ljust(5)} | DCCM CV:  {utils.DCCM_CV_ENABLE}")
+        logger.info(f"> CCCM T:   {str(utils.CCCM_T_ENABLE).ljust(5)} | DCCM T:   {utils.DCCM_T_ENABLE}")
+        logger.info(f"> CCCM SOC: {str(utils.CCCM_SOC_ENABLE).ljust(5)} | DCCM SOC: {utils.DCCM_SOC_ENABLE}")
+        logger.info(f"> CHARGE FET: {self.charge_fet} | DISCHARGE FET: {self.discharge_fet} | BALANCE FET: {self.balance_fet}")
         logger.info(f"Serial Number/Unique Identifier: {self.unique_identifier()}")
 
         return

@@ -46,9 +46,7 @@ class Jkbms_pb(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -141,11 +139,7 @@ class Jkbms_pb(Battery):
         status_data = self.read_serial_data_jkbms_pb(self.command_about, 300)
         serial_nr = status_data[86:96].decode("utf-8")
         vendor_id = status_data[6:18].decode("utf-8")
-        hw_version = (
-            status_data[22:26].decode("utf-8")
-            + " / "
-            + status_data[30:34].decode("utf-8")
-        ).replace("\x00", "")
+        hw_version = (status_data[22:26].decode("utf-8") + " / " + status_data[30:34].decode("utf-8")).replace("\x00", "")
         sw_version = status_data[30:34].decode("utf-8")  # will be overridden
 
         self.unique_identifier_tmp = serial_nr
@@ -182,9 +176,7 @@ class Jkbms_pb(Battery):
         # cell voltages
         for c in range(self.cell_count):
             if (unpack_from("<H", status_data, c * 2 + 6)[0] / 1000) != 0:
-                self.cells[c].voltage = (
-                    unpack_from("<H", status_data, c * 2 + 6)[0] / 1000
-                )
+                self.cells[c].voltage = unpack_from("<H", status_data, c * 2 + 6)[0] / 1000
 
         # MOSFET temperature
         temp_mos = unpack_from("<h", status_data, 144)[0] / 10
@@ -237,9 +229,7 @@ class Jkbms_pb(Battery):
         # show wich cells are balancing
         if self.get_min_cell() is not None and self.get_max_cell() is not None:
             for c in range(self.cell_count):
-                if self.balancing and (
-                    self.get_min_cell() == c or self.get_max_cell() == c
-                ):
+                if self.balancing and (self.get_min_cell() == c or self.get_max_cell() == c):
                     self.cells[c].balance = True
                 else:
                     self.cells[c].balance = False
@@ -264,11 +254,7 @@ class Jkbms_pb(Battery):
         """
         # TODO: Temporary solution, since the serial number is not correctly read
         if USE_PORT_AS_UNIQUE_ID:
-            return self.port + (
-                "__" + bytearray_to_string(self.address).replace("\\", "0")
-                if self.address is not None
-                else ""
-            )
+            return self.port + ("__" + bytearray_to_string(self.address).replace("\\", "0") if self.address is not None else "")
         else:
             return self.unique_identifier_tmp
 
@@ -279,10 +265,7 @@ class Jkbms_pb(Battery):
         min_voltage = 9999
         min_cell = None
         for c in range(min(len(self.cells), self.cell_count)):
-            if (
-                self.cells[c].voltage is not None
-                and min_voltage > self.cells[c].voltage
-            ):
+            if self.cells[c].voltage is not None and min_voltage > self.cells[c].voltage:
                 min_voltage = self.cells[c].voltage
                 min_cell = c
         return min_cell
@@ -291,10 +274,7 @@ class Jkbms_pb(Battery):
         max_voltage = 0
         max_cell = None
         for c in range(min(len(self.cells), self.cell_count)):
-            if (
-                self.cells[c].voltage is not None
-                and max_voltage < self.cells[c].voltage
-            ):
+            if self.cells[c].voltage is not None and max_voltage < self.cells[c].voltage:
                 max_voltage = self.cells[c].voltage
                 max_cell = c
         return max_cell

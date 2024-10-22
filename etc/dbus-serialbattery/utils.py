@@ -60,9 +60,7 @@ errors_in_config = []
 
 
 # FUNCTIONS needed for config parsing
-def _get_list_from_config(
-    group: str, option: str, mapper: Callable[[Any], Any] = lambda v: v
-) -> List[Any]:
+def _get_list_from_config(group: str, option: str, mapper: Callable[[Any], Any] = lambda v: v) -> List[Any]:
     """
     Get a string with comma separated values from the config file and return a list of values
 
@@ -82,15 +80,11 @@ def _get_list_from_config(
 
 # SAVE CONFIG VALUES to constants
 # --------- Battery Current limits ---------
-MAX_BATTERY_CHARGE_CURRENT: float = float(
-    config["DEFAULT"]["MAX_BATTERY_CHARGE_CURRENT"]
-)
+MAX_BATTERY_CHARGE_CURRENT: float = float(config["DEFAULT"]["MAX_BATTERY_CHARGE_CURRENT"])
 """
 Defines the maximum charge current that the battery can accept.
 """
-MAX_BATTERY_DISCHARGE_CURRENT: float = float(
-    config["DEFAULT"]["MAX_BATTERY_DISCHARGE_CURRENT"]
-)
+MAX_BATTERY_DISCHARGE_CURRENT: float = float(config["DEFAULT"]["MAX_BATTERY_DISCHARGE_CURRENT"])
 """
 Defines the maximum discharge current that the battery can deliver.
 """
@@ -133,11 +127,7 @@ if FLOAT_CELL_VOLTAGE < MIN_CELL_VOLTAGE:
     FLOAT_CELL_VOLTAGE = MIN_CELL_VOLTAGE
 
 SOC_RESET_VOLTAGE: float = float(config["DEFAULT"]["SOC_RESET_VOLTAGE"])
-SOC_RESET_AFTER_DAYS: int = (
-    int(config["DEFAULT"]["SOC_RESET_AFTER_DAYS"])
-    if config["DEFAULT"]["SOC_RESET_AFTER_DAYS"] != ""
-    else False
-)
+SOC_RESET_AFTER_DAYS: int = int(config["DEFAULT"]["SOC_RESET_AFTER_DAYS"]) if config["DEFAULT"]["SOC_RESET_AFTER_DAYS"] != "" else False
 
 # make some checks for most common missconfigurations
 if SOC_RESET_AFTER_DAYS and SOC_RESET_VOLTAGE < MAX_CELL_VOLTAGE:
@@ -154,21 +144,13 @@ Speed of the CAN bus in bps
 """
 
 # --------- Modbus (multiple BMS on one serial adapter) ---------
-MODBUS_ADDRESSES: list = _get_list_from_config(
-    "DEFAULT", "MODBUS_ADDRESSES", lambda v: str(v)
-)
+MODBUS_ADDRESSES: list = _get_list_from_config("DEFAULT", "MODBUS_ADDRESSES", lambda v: str(v))
 
 # --------- BMS disconnect behaviour ---------
 BLOCK_ON_DISCONNECT: bool = "True" == config["DEFAULT"]["BLOCK_ON_DISCONNECT"]
-BLOCK_ON_DISCONNECT_TIMEOUT_MINUTES: float = float(
-    config["DEFAULT"]["BLOCK_ON_DISCONNECT_TIMEOUT_MINUTES"]
-)
-BLOCK_ON_DISCONNECT_VOLTAGE_MIN: float = float(
-    config["DEFAULT"]["BLOCK_ON_DISCONNECT_VOLTAGE_MIN"]
-)
-BLOCK_ON_DISCONNECT_VOLTAGE_MAX: float = float(
-    config["DEFAULT"]["BLOCK_ON_DISCONNECT_VOLTAGE_MAX"]
-)
+BLOCK_ON_DISCONNECT_TIMEOUT_MINUTES: float = float(config["DEFAULT"]["BLOCK_ON_DISCONNECT_TIMEOUT_MINUTES"])
+BLOCK_ON_DISCONNECT_VOLTAGE_MIN: float = float(config["DEFAULT"]["BLOCK_ON_DISCONNECT_VOLTAGE_MIN"])
+BLOCK_ON_DISCONNECT_VOLTAGE_MAX: float = float(config["DEFAULT"]["BLOCK_ON_DISCONNECT_VOLTAGE_MAX"])
 
 # make some checks for most common missconfigurations
 if not BLOCK_ON_DISCONNECT:
@@ -198,20 +180,14 @@ if not BLOCK_ON_DISCONNECT:
 # --------- Charge mode ---------
 LINEAR_LIMITATION_ENABLE: bool = "True" == config["DEFAULT"]["LINEAR_LIMITATION_ENABLE"]
 LINEAR_RECALCULATION_EVERY: int = int(config["DEFAULT"]["LINEAR_RECALCULATION_EVERY"])
-LINEAR_RECALCULATION_ON_PERC_CHANGE: int = int(
-    config["DEFAULT"]["LINEAR_RECALCULATION_ON_PERC_CHANGE"]
-)
+LINEAR_RECALCULATION_ON_PERC_CHANGE: int = int(config["DEFAULT"]["LINEAR_RECALCULATION_ON_PERC_CHANGE"])
 
 # --------- External current sensor ---------
 EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE: str = (
-    config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE"]
-    if config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE"] != ""
-    else None
+    config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE"] if config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE"] != "" else None
 )
 EXTERNAL_CURRENT_SENSOR_DBUS_PATH: str = (
-    config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_PATH"]
-    if config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_PATH"] != ""
-    else None
+    config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_PATH"] if config["DEFAULT"]["EXTERNAL_CURRENT_SENSOR_DBUS_PATH"] != "" else None
 )
 
 # --------- Charge Voltage limitation (affecting CVL) ---------
@@ -222,20 +198,12 @@ Charge voltage control management
 Limits max charging voltage (CVL). Switch from max to float voltage and back.
 """
 
-CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_UNTIL: float = float(
-    config["DEFAULT"]["CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_UNTIL"]
-)
-CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_TIME_RESTART: float = float(
-    config["DEFAULT"]["CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_TIME_RESTART"]
-)
-CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT: float = float(
-    config["DEFAULT"]["CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT"]
-)
+CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_UNTIL: float = float(config["DEFAULT"]["CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_UNTIL"])
+CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_TIME_RESTART: float = float(config["DEFAULT"]["CELL_VOLTAGE_DIFF_KEEP_MAX_VOLTAGE_TIME_RESTART"])
+CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT: float = float(config["DEFAULT"]["CELL_VOLTAGE_DIFF_TO_RESET_VOLTAGE_LIMIT"])
 
 MAX_VOLTAGE_TIME_SEC: int = int(config["DEFAULT"]["MAX_VOLTAGE_TIME_SEC"])
-SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT: int = int(
-    config["DEFAULT"]["SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT"]
-)
+SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT: int = int(config["DEFAULT"]["SOC_LEVEL_TO_RESET_VOLTAGE_LIMIT"])
 
 CCCM_CV_ENABLE: bool = "True" == config["DEFAULT"]["CCCM_CV_ENABLE"]
 """
@@ -247,9 +215,7 @@ DCCM_CV_ENABLE: bool = "True" == config["DEFAULT"]["DCCM_CV_ENABLE"]
 Discharge current control management referring to cell-voltage
 """
 
-CELL_VOLTAGES_WHILE_CHARGING: list = _get_list_from_config(
-    "DEFAULT", "CELL_VOLTAGES_WHILE_CHARGING", lambda v: float(v)
-)
+CELL_VOLTAGES_WHILE_CHARGING: list = _get_list_from_config("DEFAULT", "CELL_VOLTAGES_WHILE_CHARGING", lambda v: float(v))
 MAX_CHARGE_CURRENT_CV: list = _get_list_from_config(
     "DEFAULT",
     "MAX_CHARGE_CURRENT_CV_FRACTION",
@@ -263,11 +229,7 @@ if CELL_VOLTAGES_WHILE_CHARGING[0] < MAX_CELL_VOLTAGE and MAX_CHARGE_CURRENT_CV[
         + "and battery will not change to float. Please check the configuration."
     )
 # make some checks for most common missconfigurations
-if (
-    SOC_RESET_AFTER_DAYS is not False
-    and CELL_VOLTAGES_WHILE_CHARGING[0] < SOC_RESET_VOLTAGE
-    and MAX_CHARGE_CURRENT_CV[0] == 0
-):
+if SOC_RESET_AFTER_DAYS is not False and CELL_VOLTAGES_WHILE_CHARGING[0] < SOC_RESET_VOLTAGE and MAX_CHARGE_CURRENT_CV[0] == 0:
     errors_in_config.append(
         f"**CONFIG ISSUE**: Maximum value of CELL_VOLTAGES_WHILE_CHARGING ({CELL_VOLTAGES_WHILE_CHARGING[0]} V) "
         + f"is lower than SOC_RESET_VOLTAGE ({SOC_RESET_VOLTAGE} V). SOC_RESET_VOLTAGE will never be reached this way "
@@ -280,19 +242,14 @@ if MAX_BATTERY_CHARGE_CURRENT not in MAX_CHARGE_CURRENT_CV:
         + "there is no value set to 1. This means that the battery will never use the maximum charge current. Please check the configuration."
     )
 
-CELL_VOLTAGES_WHILE_DISCHARGING: list = _get_list_from_config(
-    "DEFAULT", "CELL_VOLTAGES_WHILE_DISCHARGING", lambda v: float(v)
-)
+CELL_VOLTAGES_WHILE_DISCHARGING: list = _get_list_from_config("DEFAULT", "CELL_VOLTAGES_WHILE_DISCHARGING", lambda v: float(v))
 MAX_DISCHARGE_CURRENT_CV: list = _get_list_from_config(
     "DEFAULT",
     "MAX_DISCHARGE_CURRENT_CV_FRACTION",
     lambda v: MAX_BATTERY_DISCHARGE_CURRENT * float(v),
 )
 # make some checks for most common missconfigurations
-if (
-    CELL_VOLTAGES_WHILE_DISCHARGING[0] > MIN_CELL_VOLTAGE
-    and MAX_DISCHARGE_CURRENT_CV[0] == 0
-):
+if CELL_VOLTAGES_WHILE_DISCHARGING[0] > MIN_CELL_VOLTAGE and MAX_DISCHARGE_CURRENT_CV[0] == 0:
     errors_in_config.append(
         f"**CONFIG ISSUE**: Minimum value of CELL_VOLTAGES_WHILE_DISCHARGING ({CELL_VOLTAGES_WHILE_DISCHARGING[0]} V) "
         + f"is higher than MIN_CELL_VOLTAGE ({MIN_CELL_VOLTAGE} V). MIN_CELL_VOLTAGE will never be reached this way. "
@@ -321,9 +278,7 @@ DCCM_T_ENABLE: bool = "True" == config["DEFAULT"]["DCCM_T_ENABLE"]
 Discharge current control management referring to temperature
 """
 
-TEMPERATURES_WHILE_CHARGING: list = _get_list_from_config(
-    "DEFAULT", "TEMPERATURES_WHILE_CHARGING", lambda v: float(v)
-)
+TEMPERATURES_WHILE_CHARGING: list = _get_list_from_config("DEFAULT", "TEMPERATURES_WHILE_CHARGING", lambda v: float(v))
 MAX_CHARGE_CURRENT_T: list = _get_list_from_config(
     "DEFAULT",
     "MAX_CHARGE_CURRENT_T_FRACTION",
@@ -336,9 +291,7 @@ if MAX_BATTERY_CHARGE_CURRENT not in MAX_CHARGE_CURRENT_T:
         + "there is no value set to 1. This means that the battery will never use the maximum discharge current. Please check the configuration."
     )
 
-TEMPERATURES_WHILE_DISCHARGING: list = _get_list_from_config(
-    "DEFAULT", "TEMPERATURES_WHILE_DISCHARGING", lambda v: float(v)
-)
+TEMPERATURES_WHILE_DISCHARGING: list = _get_list_from_config("DEFAULT", "TEMPERATURES_WHILE_DISCHARGING", lambda v: float(v))
 MAX_DISCHARGE_CURRENT_T: list = _get_list_from_config(
     "DEFAULT",
     "MAX_DISCHARGE_CURRENT_T_FRACTION",
@@ -362,9 +315,7 @@ DCCM_SOC_ENABLE: bool = "True" == config["DEFAULT"]["DCCM_SOC_ENABLE"]
 Discharge current control management referring to SoC
 """
 
-SOC_WHILE_CHARGING: list = _get_list_from_config(
-    "DEFAULT", "SOC_WHILE_CHARGING", lambda v: float(v)
-)
+SOC_WHILE_CHARGING: list = _get_list_from_config("DEFAULT", "SOC_WHILE_CHARGING", lambda v: float(v))
 MAX_CHARGE_CURRENT_SOC: list = _get_list_from_config(
     "DEFAULT",
     "MAX_CHARGE_CURRENT_SOC_FRACTION",
@@ -377,9 +328,7 @@ if MAX_BATTERY_CHARGE_CURRENT not in MAX_CHARGE_CURRENT_SOC:
         + "there is no value set to 1. This means that the battery will never use the maximum charge current. Please check the configuration."
     )
 
-SOC_WHILE_DISCHARGING: list = _get_list_from_config(
-    "DEFAULT", "SOC_WHILE_DISCHARGING", lambda v: float(v)
-)
+SOC_WHILE_DISCHARGING: list = _get_list_from_config("DEFAULT", "SOC_WHILE_DISCHARGING", lambda v: float(v))
 MAX_DISCHARGE_CURRENT_SOC: list = _get_list_from_config(
     "DEFAULT",
     "MAX_DISCHARGE_CURRENT_SOC_FRACTION",
@@ -396,14 +345,10 @@ if MAX_BATTERY_DISCHARGE_CURRENT not in MAX_DISCHARGE_CURRENT_SOC:
 TIME_TO_GO_ENABLE: bool = "True" == config["DEFAULT"]["TIME_TO_GO_ENABLE"]
 
 # --------- Time-To-Soc ---------
-TIME_TO_SOC_POINTS: list = _get_list_from_config(
-    "DEFAULT", "TIME_TO_SOC_POINTS", lambda v: int(v)
-)
+TIME_TO_SOC_POINTS: list = _get_list_from_config("DEFAULT", "TIME_TO_SOC_POINTS", lambda v: int(v))
 TIME_TO_SOC_VALUE_TYPE: int = int(config["DEFAULT"]["TIME_TO_SOC_VALUE_TYPE"])
 TIME_TO_SOC_RECALCULATE_EVERY: int = (
-    int(config["DEFAULT"]["TIME_TO_SOC_RECALCULATE_EVERY"])
-    if int(config["DEFAULT"]["TIME_TO_SOC_RECALCULATE_EVERY"]) > 5
-    else 5
+    int(config["DEFAULT"]["TIME_TO_SOC_RECALCULATE_EVERY"]) if int(config["DEFAULT"]["TIME_TO_SOC_RECALCULATE_EVERY"]) > 5 else 5
 )
 TIME_TO_SOC_INC_FROM: bool = "True" == config["DEFAULT"]["TIME_TO_SOC_INC_FROM"]
 
@@ -411,12 +356,8 @@ TIME_TO_SOC_INC_FROM: bool = "True" == config["DEFAULT"]["TIME_TO_SOC_INC_FROM"]
 SOC_CALCULATION: bool = "True" == config["DEFAULT"]["SOC_CALCULATION"]
 SOC_RESET_CURRENT: float = float(config["DEFAULT"]["SOC_RESET_CURRENT"])
 SOC_RESET_TIME: int = int(config["DEFAULT"]["SOC_RESET_TIME"])
-SOC_CALC_CURRENT_REPORTED_BY_BMS: list = _get_list_from_config(
-    "DEFAULT", "SOC_CALC_CURRENT_REPORTED_BY_BMS", lambda v: float(v)
-)
-SOC_CALC_CURRENT_MEASURED_BY_USER: list = _get_list_from_config(
-    "DEFAULT", "SOC_CALC_CURRENT_MEASURED_BY_USER", lambda v: float(v)
-)
+SOC_CALC_CURRENT_REPORTED_BY_BMS: list = _get_list_from_config("DEFAULT", "SOC_CALC_CURRENT_REPORTED_BY_BMS", lambda v: float(v))
+SOC_CALC_CURRENT_MEASURED_BY_USER: list = _get_list_from_config("DEFAULT", "SOC_CALC_CURRENT_MEASURED_BY_USER", lambda v: float(v))
 # check if lists are different
 # this allows to calculate linear relationship between the two lists only if needed
 if SOC_CALC_CURRENT_REPORTED_BY_BMS == SOC_CALC_CURRENT_MEASURED_BY_USER:
@@ -427,15 +368,9 @@ else:
 # --------- Additional settings ---------
 BMS_TYPE: list = _get_list_from_config("DEFAULT", "BMS_TYPE", lambda v: str(v))
 
-EXCLUDED_DEVICES: list = _get_list_from_config(
-    "DEFAULT", "EXCLUDED_DEVICES", lambda v: str(v)
-)
+EXCLUDED_DEVICES: list = _get_list_from_config("DEFAULT", "EXCLUDED_DEVICES", lambda v: str(v))
 
-POLL_INTERVAL: float = (
-    float(config["DEFAULT"]["POLL_INTERVAL"]) * 1000
-    if config["DEFAULT"]["POLL_INTERVAL"] != ""
-    else None
-)
+POLL_INTERVAL: float = float(config["DEFAULT"]["POLL_INTERVAL"]) * 1000 if config["DEFAULT"]["POLL_INTERVAL"] != "" else None
 """
 Poll interval in milliseconds
 """
@@ -459,9 +394,7 @@ TEMP_4_NAME: str = config["DEFAULT"]["TEMP_4_NAME"]
 
 TELEMETRY: bool = "True" == config["DEFAULT"]["TELEMETRY"]
 
-GUI_PARAMETERS_SHOW_ADDITIONAL_INFO: bool = (
-    "True" == config["DEFAULT"]["GUI_PARAMETERS_SHOW_ADDITIONAL_INFO"]
-)
+GUI_PARAMETERS_SHOW_ADDITIONAL_INFO: bool = "True" == config["DEFAULT"]["GUI_PARAMETERS_SHOW_ADDITIONAL_INFO"]
 # --------- BMS specific settings ---------
 
 # -- Unique ID settings
@@ -507,9 +440,7 @@ def constrain(val: float, min_val: float, max_val: float) -> float:
     return min(max_val, max(min_val, val))
 
 
-def mapRange(
-    inValue: float, inMin: float, inMax: float, outMin: float, outMax: float
-) -> float:
+def mapRange(inValue: float, inMin: float, inMax: float, outMin: float, outMax: float) -> float:
     """
     Map a value from one range to another
 
@@ -523,9 +454,7 @@ def mapRange(
     return outMin + (((inValue - inMin) / (inMax - inMin)) * (outMax - outMin))
 
 
-def mapRangeConstrain(
-    inValue: float, inMin: float, inMax: float, outMin: float, outMax: float
-) -> float:
+def mapRangeConstrain(inValue: float, inMin: float, inMax: float, outMin: float, outMax: float) -> float:
     """
     Map a value from one range to another and constrain it between the output range
 
@@ -567,9 +496,7 @@ def calcLinearRelationship(inValue: float, inArray: float, outArray: float) -> f
         return mapRangeConstrain(inValue, lowerIN, upperIN, lowerOUT, upperOUT)
 
 
-def calcStepRelationship(
-    inValue: float, inArray: float, outArray: float, returnLower: float
-) -> float:
+def calcStepRelationship(inValue: float, inArray: float, outArray: float, returnLower: float) -> float:
     """
     Calculate a step relationship between two arrays
 
@@ -694,9 +621,7 @@ def read_serialport_data(
             length = length_fixed
         else:
             if len(res) < (length_pos + length_byte_size):
-                logger.error(
-                    ">>> ERROR: No reply - returning [len:" + str(len(res)) + "]"
-                )
+                logger.error(">>> ERROR: No reply - returning [len:" + str(len(res)) + "]")
                 return False
             length = unpack_from(">" + length_size, res, length_pos)[0]
 
@@ -711,13 +636,7 @@ def read_serialport_data(
             sleep(0.005)
             count += 1
             if count > 150:
-                logger.error(
-                    ">>> ERROR: No reply - returning [len:"
-                    + str(len(data))
-                    + "/"
-                    + str(length + length_check)
-                    + "]"
-                )
+                logger.error(">>> ERROR: No reply - returning [len:" + str(len(data)) + "/" + str(length + length_check) + "]")
                 return False
 
         return data
@@ -734,9 +653,7 @@ def read_serialport_data(
         ) = sys.exc_info()
         file = exception_traceback.tb_frame.f_code.co_filename
         line = exception_traceback.tb_lineno
-        logger.error(
-            f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-        )
+        logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
         return False
 
 
@@ -763,9 +680,7 @@ def read_serial_data(
     """
     try:
         with serial.Serial(port, baudrate=baud, timeout=0.1) as ser:
-            return read_serialport_data(
-                ser, command, length_pos, length_check, length_fixed, length_size
-            )
+            return read_serialport_data(ser, command, length_pos, length_check, length_fixed, length_size)
 
     except serial.SerialException as e:
         logger.error(e)
@@ -779,9 +694,7 @@ def read_serial_data(
         ) = sys.exc_info()
         file = exception_traceback.tb_frame.f_code.co_filename
         line = exception_traceback.tb_lineno
-        logger.error(
-            f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-        )
+        logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
 
 
 def validate_config_values() -> bool:
@@ -808,12 +721,7 @@ def publish_config_variables(dbusservice) -> None:
     for variable, value in locals_copy.items():
         if variable.startswith("__"):
             continue
-        if (
-            isinstance(value, float)
-            or isinstance(value, int)
-            or isinstance(value, str)
-            or isinstance(value, List)
-        ):
+        if isinstance(value, float) or isinstance(value, int) or isinstance(value, str) or isinstance(value, List):
             dbusservice.add_path(f"/Info/Config/{variable}", value)
 
 

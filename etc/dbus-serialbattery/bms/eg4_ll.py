@@ -97,9 +97,7 @@ class EG4_LL(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -116,18 +114,10 @@ class EG4_LL(Battery):
 
         if self.debug_config:
             logger.info(f'Returned: [{config_results[0:187].hex(":").upper()}]')
-            logger.info(
-                f'Cell Under Voltage Warning (V): {int.from_bytes(config_results[35:37], "big")/1000}'
-            )
-            logger.info(
-                f'Cell Over Voltage Warning (V): {int.from_bytes(config_results[47:49], "big")/1000}'
-            )
-            logger.info(
-                f'Balancer Voltage (V): {int.from_bytes(config_results[25:27], "big")/1000}'
-            )
-            logger.info(
-                f'Balancer Difference (mV): {int.from_bytes(config_results[27:29], "big")}'
-            )
+            logger.info(f'Cell Under Voltage Warning (V): {int.from_bytes(config_results[35:37], "big")/1000}')
+            logger.info(f'Cell Over Voltage Warning (V): {int.from_bytes(config_results[47:49], "big")/1000}')
+            logger.info(f'Balancer Voltage (V): {int.from_bytes(config_results[25:27], "big")/1000}')
+            logger.info(f'Balancer Difference (mV): {int.from_bytes(config_results[27:29], "big")}')
 
         # self.MIN_CELL_VOLTAGE = int.from_bytes(config_results[35:37], "big")/1000
         # self.MAX_CELL_VOLTAGE = int.from_bytes(config_results[47:49], "big")/1000
@@ -213,9 +203,7 @@ class EG4_LL(Battery):
                 self.cells.append(Cell(False))
 
         for c in range(self.cell_count):
-            cell_voltage = (
-                int.from_bytes(packet[cell_start_pos:cell_end_pos], "big") / 1000
-            )
+            cell_voltage = int.from_bytes(packet[cell_start_pos:cell_end_pos], "big") / 1000
             if self.cell_min > cell_voltage:
                 self.cell_min = cell_voltage
             if self.cell_max < cell_voltage:
@@ -347,36 +335,21 @@ class EG4_LL(Battery):
         logger.info(f"Hardware Version: {str(self.hardware_version)}")
         logger.info(f"Serial Number: {str(self.unique_identifier())}")
         logger.info("===== BMS Data =====")
-        logger.info(
-            "Cell Total Voltage: "
-            + "%.3fv" % cell_total
-            + " | Current: "
-            + str(self.current)
-            + "A"
-        )
+        logger.info("Cell Total Voltage: " + "%.3fv" % cell_total + " | Current: " + str(self.current) + "A")
         logger.info(f"Capacity Left: {self.capacity_remain} of {self.capacity} AH")
         logger.info(f"SoC: {self.soc}% - {status_code}")
         logger.info("===== DVCC State =====")
         logger.info(f"DVCC Charger Mode: {self.charge_mode}")
         logger.info(f"DVCC Charge Voltage: {self.control_voltage}v")
-        logger.info(
-            f"Charge Current: {self.control_charge_current} | Discharge Current: {self.control_discharge_current}"
-        )
-        logger.info(
-            f"Charge Limit: {self.charge_limitation} | Discharge Limit: {self.discharge_limitation}"
-        )
+        logger.info(f"Charge Current: {self.control_charge_current} | Discharge Current: {self.control_discharge_current}")
+        logger.info(f"Charge Limit: {self.charge_limitation} | Discharge Limit: {self.discharge_limitation}")
         logger.info("===== Warning/Alarms =====")
         logger.info(f" {warning_alarm}")
         logger.info(f" {protection_alarm}")
         logger.info(f" {error}")
         logger.info("===== Temp =====")
-        logger.info(
-            f"Temp 1: {self.temp1}c | Temp 2: {self.temp2}c | Temp Mos: {self.temp_mos}c"
-        )
-        logger.info(
-            f'Avg: {int.from_bytes(packet[41:43], "big", signed=True)}c | '
-            + f'Temp Max: {int.from_bytes(packet[43:45], "big", signed=True)}c'
-        )
+        logger.info(f"Temp 1: {self.temp1}c | Temp 2: {self.temp2}c | Temp Mos: {self.temp_mos}c")
+        logger.info(f'Avg: {int.from_bytes(packet[41:43], "big", signed=True)}c | ' + f'Temp Max: {int.from_bytes(packet[43:45], "big", signed=True)}c')
         logger.info(f"Heater Status: {heater_state}")
         logger.info("===== Battery Stats =====")
         logger.info(f"SoH: {self.soh}% | Cycle Count: {self.history.charge_cycles}")
@@ -384,9 +357,7 @@ class EG4_LL(Battery):
         logger.info("===== Cell Stats =====")
         for c in range(self.cell_count):
             logger.info(f"Cell {c} Voltage: {self.cells[c].voltage}")
-        logger.info(
-            f"Cell Max/Min/Diff: ({self.cell_max}/{self.cell_min}/{round((self.cell_max-self.cell_min), 3)})v"
-        )
+        logger.info(f"Cell Max/Min/Diff: ({self.cell_max}/{self.cell_min}/{round((self.cell_max-self.cell_min), 3)})v")
 
         return True
 
@@ -430,9 +401,7 @@ class EG4_LL(Battery):
             logger.info(f"Modbus CMD Address: {hex(self.address[0]).upper()}")
             logger.info(f'Executed Command: {command.hex(":").upper()}')
 
-        data = read_serial_data(
-            command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK
-        )
+        data = read_serial_data(command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK)
         if data is False:
             logger.debug("read_serial_data_eg4_ll::Serial Data is Bad")
             return False
@@ -441,17 +410,13 @@ class EG4_LL(Battery):
                 logger.info(f'Returned: [{data.hex(":").upper()}]')
 
         # Its not quite modbus, but psuedo modbus'ish'
-        modbus_address, modbus_type, modbus_cmd, modbus_packet_length = unpack_from(
-            "BBBB", data
-        )
+        modbus_address, modbus_type, modbus_cmd, modbus_packet_length = unpack_from("BBBB", data)
 
         if self.debug:
             logger.info(f"Modbus Address: {modbus_address} [{hex(modbus_address)}]")
             logger.info(f"Modbus Type   : {modbus_type} [{hex(modbus_type)}]")
             logger.info(f"Modbus Command: {modbus_cmd} [{hex(modbus_cmd)}]")
-            logger.info(
-                f"Modbus PackLen: {modbus_packet_length} [{hex(modbus_packet_length)}]"
-            )
+            logger.info(f"Modbus PackLen: {modbus_packet_length} [{hex(modbus_packet_length)}]")
             logger.info(f'Modbus Packet : [ {data.hex(":").upper()} ]')
 
         if modbus_type == 3:
@@ -460,7 +425,5 @@ class EG4_LL(Battery):
         else:
             logger.error(">>> ERROR: Incorrect Reply")
             logger.info(f"Modbus Type   : {modbus_type} [{hex(modbus_type)}]")
-            logger.info(
-                f"Modbus PackLen: {modbus_packet_length} [{hex(modbus_packet_length)}]"
-            )
+            logger.info(f"Modbus PackLen: {modbus_packet_length} [{hex(modbus_packet_length)}]")
             return False

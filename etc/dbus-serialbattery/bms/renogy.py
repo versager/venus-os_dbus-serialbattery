@@ -35,9 +35,7 @@ class Renogy(Battery):
     command_manufacturer = b"\x14\x0C\x00\x08"  # Registers 5132-5139 (8 byte string)
     command_model = b"\x14\x02\x00\x08"  # Registers 5122-5129 (8 byte string)
     command_serial_number = b"\x13\xF6\x00\x08"  # Registers 5110-5117 (8 byte string)
-    command_firmware_version = (
-        b"\x14\x0A\x00\x02"  # Registers 5130-5131 (2 byte string)
-    )
+    command_firmware_version = b"\x14\x0A\x00\x02"  # Registers 5130-5131 (2 byte string)
     # BMS warning and protection config
 
     def unique_identifier(self) -> str:
@@ -47,11 +45,7 @@ class Renogy(Battery):
         if self.serial_number is not None:
             return self.serial_number
         else:
-            return self.port + (
-                "__" + bytearray_to_string(self.address).replace("\\", "0")
-                if self.address is not None
-                else ""
-            )
+            return self.port + ("__" + bytearray_to_string(self.address).replace("\\", "0") if self.address is not None else "")
 
     def test_connection(self):
         """
@@ -75,9 +69,7 @@ class Renogy(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -112,9 +104,7 @@ class Renogy(Battery):
             self.hardware_version = model_num
         else:
             # may contain null bytes that we don't want
-            manufacturer, _, _ = (
-                unpack("16s", manufacturer)[0].decode("utf-8").partition("\0")
-            )
+            manufacturer, _, _ = unpack("16s", manufacturer)[0].decode("utf-8").partition("\0")
             self.hardware_version = f"{manufacturer} {model_num}"
 
         logger.info(self.hardware_version)

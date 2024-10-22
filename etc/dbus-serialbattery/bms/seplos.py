@@ -75,9 +75,7 @@ class Seplos(Battery):
 
             address_int = int.from_bytes(address, byteorder="big")
 
-            frame = "{:02X}{:02X}{:02X}{:02X}{:04X}".format(
-                0x20, address_int, cid1, cid2, info_length
-            ).encode()
+            frame = "{:02X}{:02X}{:02X}{:02X}{:04X}".format(0x20, address_int, cid1, cid2, info_length).encode()
             frame += info
 
             checksum = Seplos.get_checksum(frame)
@@ -91,9 +89,7 @@ class Seplos(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return b""
 
     def test_connection(self):
@@ -117,9 +113,7 @@ class Seplos(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         # give the user a feedback that no BMS was found
@@ -164,9 +158,7 @@ class Seplos(Battery):
 
     def read_alarm_data(self):
         logger.debug("read alarm data")
-        data = self.read_serial_data_seplos(
-            self.encode_cmd(self.address, cid2=self.COMMAND_ALARM, info=b"01")
-        )
+        data = self.read_serial_data_seplos(self.encode_cmd(self.address, cid2=self.COMMAND_ALARM, info=b"01"))
         # check if we could successfully read data and we have the expected length of 98 bytes
         if data is False or len(data) != 98:
             return False
@@ -181,47 +173,25 @@ class Seplos(Battery):
     def decode_alarm_data(self, data: bytes):
         logger.debug("alarm info decoded {}".format(data))
         voltage_alarm_byte = data[30]
-        self.protection.low_cell_voltage = Seplos.decode_alarm_byte(
-            data_byte=voltage_alarm_byte, alarm_bit=3, warn_bit=2
-        )
+        self.protection.low_cell_voltage = Seplos.decode_alarm_byte(data_byte=voltage_alarm_byte, alarm_bit=3, warn_bit=2)
         # cell high voltage is actually unused because DBUS does not seem to support it, decoding anyway
         # c.f. https://github.com/victronenergy/venus/wiki/dbus#battery
-        self.protection.voltage_cell_high = Seplos.decode_alarm_byte(
-            data_byte=voltage_alarm_byte, alarm_bit=1, warn_bit=0
-        )
-        self.protection.low_voltage = Seplos.decode_alarm_byte(
-            data_byte=voltage_alarm_byte, alarm_bit=7, warn_bit=6
-        )
-        self.protection.high_voltage = Seplos.decode_alarm_byte(
-            data_byte=voltage_alarm_byte, alarm_bit=5, warn_bit=4
-        )
+        self.protection.voltage_cell_high = Seplos.decode_alarm_byte(data_byte=voltage_alarm_byte, alarm_bit=1, warn_bit=0)
+        self.protection.low_voltage = Seplos.decode_alarm_byte(data_byte=voltage_alarm_byte, alarm_bit=7, warn_bit=6)
+        self.protection.high_voltage = Seplos.decode_alarm_byte(data_byte=voltage_alarm_byte, alarm_bit=5, warn_bit=4)
 
         temperature_alarm_byte = data[31]
-        self.protection.low_charge_temp = Seplos.decode_alarm_byte(
-            data_byte=temperature_alarm_byte, alarm_bit=3, warn_bit=2
-        )
-        self.protection.high_charge_temp = Seplos.decode_alarm_byte(
-            data_byte=temperature_alarm_byte, alarm_bit=1, warn_bit=0
-        )
-        self.protection.low_temperature = Seplos.decode_alarm_byte(
-            data_byte=temperature_alarm_byte, alarm_bit=7, warn_bit=6
-        )
-        self.protection.high_temperature = Seplos.decode_alarm_byte(
-            data_byte=temperature_alarm_byte, alarm_bit=5, warn_bit=4
-        )
+        self.protection.low_charge_temp = Seplos.decode_alarm_byte(data_byte=temperature_alarm_byte, alarm_bit=3, warn_bit=2)
+        self.protection.high_charge_temp = Seplos.decode_alarm_byte(data_byte=temperature_alarm_byte, alarm_bit=1, warn_bit=0)
+        self.protection.low_temperature = Seplos.decode_alarm_byte(data_byte=temperature_alarm_byte, alarm_bit=7, warn_bit=6)
+        self.protection.high_temperature = Seplos.decode_alarm_byte(data_byte=temperature_alarm_byte, alarm_bit=5, warn_bit=4)
 
         current_alarm_byte = data[33]
-        self.protection.high_charge_current = Seplos.decode_alarm_byte(
-            data_byte=current_alarm_byte, alarm_bit=1, warn_bit=0
-        )
-        self.protection.high_discharge_current = Seplos.decode_alarm_byte(
-            data_byte=current_alarm_byte, alarm_bit=3, warn_bit=2
-        )
+        self.protection.high_charge_current = Seplos.decode_alarm_byte(data_byte=current_alarm_byte, alarm_bit=1, warn_bit=0)
+        self.protection.high_discharge_current = Seplos.decode_alarm_byte(data_byte=current_alarm_byte, alarm_bit=3, warn_bit=2)
 
         soc_alarm_byte = data[34]
-        self.protection.low_soc = Seplos.decode_alarm_byte(
-            data_byte=soc_alarm_byte, alarm_bit=3, warn_bit=2
-        )
+        self.protection.low_soc = Seplos.decode_alarm_byte(data_byte=soc_alarm_byte, alarm_bit=3, warn_bit=2)
 
         switch_byte = data[35]
         self.discharge_fet = True if switch_byte & 0b01 != 0 else False
@@ -231,9 +201,7 @@ class Seplos(Battery):
     def read_status_data(self):
         logger.debug("read status data")
 
-        data = self.read_serial_data_seplos(
-            self.encode_cmd(self.address, cid2=0x42, info=b"01")
-        )
+        data = self.read_serial_data_seplos(self.encode_cmd(self.address, cid2=0x42, info=b"01"))
 
         # check if reading data was successful and has the expected data length of 150 byte
         if data is False or len(data) != 150:
@@ -248,48 +216,26 @@ class Seplos(Battery):
         cell_count_offset = 4
         voltage_offset = 6
         temps_offset = 72
-        self.cell_count = Seplos.int_from_1byte_hex_ascii(
-            data=data, offset=cell_count_offset
-        )
+        self.cell_count = Seplos.int_from_1byte_hex_ascii(data=data, offset=cell_count_offset)
         if self.cell_count == len(self.cells):
             for i in range(self.cell_count):
-                voltage = (
-                    Seplos.int_from_2byte_hex_ascii(data, voltage_offset + i * 4) / 1000
-                )
+                voltage = Seplos.int_from_2byte_hex_ascii(data, voltage_offset + i * 4) / 1000
                 self.cells[i].voltage = voltage
                 logger.debug("Voltage cell[{}]={}V".format(i, voltage))
 
-        self.temp1 = (
-            Seplos.int_from_2byte_hex_ascii(data, temps_offset + 0 * 4) - 2731
-        ) / 10
-        self.temp2 = (
-            Seplos.int_from_2byte_hex_ascii(data, temps_offset + 1 * 4) - 2731
-        ) / 10
-        self.temp3 = (
-            Seplos.int_from_2byte_hex_ascii(data, temps_offset + 2 * 4) - 2731
-        ) / 10
-        self.temp4 = (
-            Seplos.int_from_2byte_hex_ascii(data, temps_offset + 3 * 4) - 2731
-        ) / 10
-        temp_environment = (
-            Seplos.int_from_2byte_hex_ascii(data, temps_offset + 4 * 4) - 2731
-        ) / 10  # currently not available in the Battery class
-        self.temp_mos = (
-            Seplos.int_from_2byte_hex_ascii(data, temps_offset + 5 * 4) - 2731
-        ) / 10
+        self.temp1 = (Seplos.int_from_2byte_hex_ascii(data, temps_offset + 0 * 4) - 2731) / 10
+        self.temp2 = (Seplos.int_from_2byte_hex_ascii(data, temps_offset + 1 * 4) - 2731) / 10
+        self.temp3 = (Seplos.int_from_2byte_hex_ascii(data, temps_offset + 2 * 4) - 2731) / 10
+        self.temp4 = (Seplos.int_from_2byte_hex_ascii(data, temps_offset + 3 * 4) - 2731) / 10
+        temp_environment = (Seplos.int_from_2byte_hex_ascii(data, temps_offset + 4 * 4) - 2731) / 10  # currently not available in the Battery class
+        self.temp_mos = (Seplos.int_from_2byte_hex_ascii(data, temps_offset + 5 * 4) - 2731) / 10
         logger.debug("Temp cell1={}°C".format(self.temp1))
         logger.debug("Temp cell2={}°C".format(self.temp2))
         logger.debug("Temp cell3={}°C".format(self.temp3))
         logger.debug("Temp cell4={}°C".format(self.temp4))
-        logger.debug(
-            "Environment temp = {}°C,  Power/MOSFET temp = {}°C".format(
-                temp_environment, self.temp_mos
-            )
-        )
+        logger.debug("Environment temp = {}°C,  Power/MOSFET temp = {}°C".format(temp_environment, self.temp_mos))
 
-        self.current = (
-            Seplos.int_from_2byte_hex_ascii(data, offset=96, signed=True) / 100
-        )
+        self.current = Seplos.int_from_2byte_hex_ascii(data, offset=96, signed=True) / 100
         self.voltage = Seplos.int_from_2byte_hex_ascii(data, offset=100) / 100
         self.capacity_remain = Seplos.int_from_2byte_hex_ascii(data, offset=104) / 100
         self.capacity = Seplos.int_from_2byte_hex_ascii(data, offset=110) / 100
@@ -297,11 +243,7 @@ class Seplos(Battery):
         self.history.charge_cycles = Seplos.int_from_2byte_hex_ascii(data, offset=122)
         self.hardware_version = "Seplos BMS {}S".format(self.cell_count)
         logger.debug("Current = {}A , Voltage = {}V".format(self.current, self.voltage))
-        logger.debug(
-            "Capacity = {}/{}Ah , SOC = {}%".format(
-                self.capacity_remain, self.capacity, self.soc
-            )
-        )
+        logger.debug("Capacity = {}/{}Ah , SOC = {}%".format(self.capacity_remain, self.capacity, self.soc))
         logger.debug("Cycles = {}".format(self.history.charge_cycles))
         logger.debug("HW:" + self.hardware_version)
 
@@ -338,11 +280,7 @@ class Seplos(Battery):
             ser.flushOutput()
             ser.flushInput()
             written = ser.write(command)
-            logger.debug(
-                "wrote {} bytes to serial port {}, command={}".format(
-                    written, self.port, command
-                )
-            )
+            logger.debug("wrote {} bytes to serial port {}, command={}".format(written, self.port, command))
 
             data = ser.readline()
 
@@ -352,10 +290,6 @@ class Seplos(Battery):
             length_pos = 10
             return_data = data[length_pos + 3 : -5]
             info_length = Seplos.int_from_2byte_hex_ascii(b"0" + data[length_pos:], 0)
-            logger.debug(
-                "returning info data of length {}, info_length is {} : {}".format(
-                    len(return_data), info_length, return_data
-                )
-            )
+            logger.debug("returning info data of length {}, info_length is {} : {}".format(len(return_data), info_length, return_data))
 
             return return_data

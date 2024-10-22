@@ -48,9 +48,7 @@ class Daren485(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -99,10 +97,7 @@ class Daren485(Battery):
             logger.warning("Couldn't open serial port")
 
         if not result:  # TROUBLESHOOTING for no reply errors
-            logger.debug(
-                f"get_settings: result: {result}."
-                + " If you don't see this warning very often, you can ignore it."
-            )
+            logger.debug(f"get_settings: result: {result}." + " If you don't see this warning very often, you can ignore it.")
             logger.error(">>> ERROR: No reply - returning")
 
         return result
@@ -135,10 +130,7 @@ class Daren485(Battery):
             logger.warning("Couldn't open serial port")
 
         if not result:  # TROUBLESHOOTING for no reply errors
-            logger.info(
-                f"refresh_data: result: {result}."
-                + " If you don't see this warning very often, you can ignore it."
-            )
+            logger.info(f"refresh_data: result: {result}." + " If you don't see this warning very often, you can ignore it.")
 
         return result
 
@@ -306,11 +298,7 @@ class Daren485(Battery):
                     self.protection.high_charge_current = 0
 
                 # check bit 4 for DISCH_OC_1_PROT, bit 5 for DISCH_OC_2_PROT and bit 3 for Short_circuit_PROT
-                if (
-                    currentstatus & (1 << 4)
-                    or currentstatus & (1 << 5)
-                    or currentstatus & (1 << 3)
-                ):
+                if currentstatus & (1 << 4) or currentstatus & (1 << 5) or currentstatus & (1 << 3):
                     self.protection.high_discharge_current = 2
                 # check bit 7 for DISCH_C_alarm
                 elif currentstatus & (1 << 7):
@@ -400,9 +388,7 @@ class Daren485(Battery):
                     self.max_battery_discharge_current = 0
 
                 for i in range(1, 17):
-                    cell_voltage = (
-                        int(payload[(i - 1) * 4 + 12 : i * 4 + 12], base=16) / 1000
-                    )
+                    cell_voltage = int(payload[(i - 1) * 4 + 12 : i * 4 + 12], base=16) / 1000
                     self.cells[i - 1].voltage = cell_voltage
 
                 result = True
@@ -435,19 +421,13 @@ class Daren485(Battery):
             payload = response[13 : len(response) - 5]
             if len(payload) >= (3 * 20) + 10:
                 hardware_type_byte_array = bytearray.fromhex(payload[0:20])
-                hardware_type = (
-                    hardware_type_byte_array.decode().replace("\0", "").strip()
-                )
+                hardware_type = hardware_type_byte_array.decode().replace("\0", "").strip()
 
                 product_code_byte_array = bytearray.fromhex(payload[20:40])
-                product_code = (
-                    product_code_byte_array.decode().replace("\0", "").strip()
-                )
+                product_code = product_code_byte_array.decode().replace("\0", "").strip()
 
                 project_code_byte_array = bytearray.fromhex(payload[40:60])
-                project_code = (
-                    project_code_byte_array.decode().replace("\0", "").strip()
-                )
+                project_code = project_code_byte_array.decode().replace("\0", "").strip()
 
                 software_version_array = findall("..", payload[60:66])
                 seperator = "."
@@ -571,11 +551,7 @@ class Daren485(Battery):
             if calculated_chksum == chksum:
                 logger.debug("Checksum ok.")
             else:
-                logger.error(
-                    "Checksum error. Calculated: {}, Received: {}".format(
-                        calculated_chksum, chksum
-                    )
-                )
+                logger.error("Checksum error. Calculated: {}, Received: {}".format(calculated_chksum, chksum))
                 return False
 
         except Exception as e:
@@ -591,9 +567,7 @@ class Daren485(Battery):
         Example command (mark the \r at the end):
         ~22014A47E00201FD23␍
         """
-        return self.create_command(
-            self.address, b"\x4A", b"\x47", self.address.hex().upper()
-        )
+        return self.create_command(self.address, b"\x4A", b"\x47", self.address.hex().upper())
 
     def create_command_get_mfg_params(self):
         """
@@ -631,9 +605,7 @@ class Daren485(Battery):
         Example command (mark the \r at the end):
         ~22014A42E00201FD28␍
         """
-        return self.create_command(
-            self.address, b"\x4A", b"\x42", self.address.hex().upper()
-        )
+        return self.create_command(self.address, b"\x4A", b"\x42", self.address.hex().upper())
 
     def create_command_get_manufacturer_info(self):
         """

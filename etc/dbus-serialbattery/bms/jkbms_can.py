@@ -79,9 +79,7 @@ class Jkbms_Can(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -125,51 +123,25 @@ class Jkbms_Can(Battery):
         pos = len(tmp)
         logger.debug(tmp)
         self.protection.cell_overvoltage = 2 if int(tmp[pos - 2 : pos], 2) > 0 else 0
-        self.protection.low_cell_voltage = (
-            2 if int(tmp[pos - 4 : pos - 2], 2) > 0 else 0
-        )
+        self.protection.low_cell_voltage = 2 if int(tmp[pos - 4 : pos - 2], 2) > 0 else 0
         self.protection.high_voltage = 2 if int(tmp[pos - 6 : pos - 4], 4) > 0 else 0
         self.protection.low_voltage = 2 if int(tmp[pos - 8 : pos - 6], 2) > 0 else 0
         self.protection.cell_imbalance = 2 if int(tmp[pos - 10 : pos - 8], 2) > 0 else 0
-        self.protection.high_discharge_current = (
-            2 if int(tmp[pos - 12 : pos - 10], 2) > 0 else 0
-        )
-        self.protection.high_charge_current = (
-            2 if int(tmp[pos - 14 : pos - 12], 2) > 0 else 0
-        )
+        self.protection.high_discharge_current = 2 if int(tmp[pos - 12 : pos - 10], 2) > 0 else 0
+        self.protection.high_charge_current = 2 if int(tmp[pos - 14 : pos - 12], 2) > 0 else 0
 
         # there is just a BMS and Battery temp alarm (not for charg and discharge)
-        self.protection.high_charge_temp = (
-            2 if int(tmp[pos - 16 : pos - 14], 2) > 0 else 0
-        )
-        self.protection.high_temperature = (
-            2 if int(tmp[pos - 16 : pos - 14], 2) > 0 else 0
-        )
-        self.protection.low_charge_temp = (
-            2 if int(tmp[pos - 18 : pos - 16], 2) > 0 else 0
-        )
-        self.protection.low_temperature = (
-            2 if int(tmp[pos - 18 : pos - 16], 2) > 0 else 0
-        )
-        self.protection.high_charge_temp = (
-            2 if int(tmp[pos - 20 : pos - 18], 2) > 0 else 0
-        )
-        self.protection.high_temperature = (
-            2 if int(tmp[pos - 20 : pos - 18], 2) > 0 else 0
-        )
+        self.protection.high_charge_temp = 2 if int(tmp[pos - 16 : pos - 14], 2) > 0 else 0
+        self.protection.high_temperature = 2 if int(tmp[pos - 16 : pos - 14], 2) > 0 else 0
+        self.protection.low_charge_temp = 2 if int(tmp[pos - 18 : pos - 16], 2) > 0 else 0
+        self.protection.low_temperature = 2 if int(tmp[pos - 18 : pos - 16], 2) > 0 else 0
+        self.protection.high_charge_temp = 2 if int(tmp[pos - 20 : pos - 18], 2) > 0 else 0
+        self.protection.high_temperature = 2 if int(tmp[pos - 20 : pos - 18], 2) > 0 else 0
         self.protection.low_soc = 2 if int(tmp[pos - 22 : pos - 20], 2) > 0 else 0
-        self.protection.internal_failure = (
-            2 if int(tmp[pos - 24 : pos - 22], 2) > 0 else 0
-        )
-        self.protection.internal_failure = (
-            2 if int(tmp[pos - 26 : pos - 24], 2) > 0 else 0
-        )
-        self.protection.internal_failure = (
-            2 if int(tmp[pos - 28 : pos - 26], 2) > 0 else 0
-        )
-        self.protection.internal_failure = (
-            2 if int(tmp[pos - 30 : pos - 28], 2) > 0 else 0
-        )
+        self.protection.internal_failure = 2 if int(tmp[pos - 24 : pos - 22], 2) > 0 else 0
+        self.protection.internal_failure = 2 if int(tmp[pos - 26 : pos - 24], 2) > 0 else 0
+        self.protection.internal_failure = 2 if int(tmp[pos - 28 : pos - 26], 2) > 0 else 0
+        self.protection.internal_failure = 2 if int(tmp[pos - 30 : pos - 28], 2) > 0 else 0
 
     def reset_protection_bits(self):
         self.protection.cell_overvoltage = 0
@@ -198,9 +170,7 @@ class Jkbms_Can(Battery):
             logger.debug("Can bus init")
             # intit the can interface
             try:
-                self.can_bus = can.interface.Bus(
-                    bustype=self.CAN_BUS_TYPE, channel=self.port, bitrate=self.baud_rate
-                )
+                self.can_bus = can.interface.Bus(bustype=self.CAN_BUS_TYPE, channel=self.port, bitrate=self.baud_rate)
             except can.CanError as e:
                 logger.error(e)
 
@@ -235,9 +205,7 @@ class Jkbms_Can(Battery):
 
                     self.soc = unpack_from("<B", bytes([msg.data[4]]))[0]
 
-                    self.time_to_go = (
-                        unpack_from("<H", bytes([msg.data[6], msg.data[7]]))[0] * 36
-                    )
+                    self.time_to_go = unpack_from("<H", bytes([msg.data[6], msg.data[7]]))[0] * 36
 
                     # print(self.voltage)
                     # print(self.current)
@@ -245,15 +213,11 @@ class Jkbms_Can(Battery):
                     # print(self.time_to_go)
 
                 elif msg.arbitration_id in self.CAN_FRAMES[self.CELL_VOLT]:
-                    max_cell_volt = (
-                        unpack_from("<H", bytes([msg.data[0], msg.data[1]]))[0] / 1000
-                    )
+                    max_cell_volt = unpack_from("<H", bytes([msg.data[0], msg.data[1]]))[0] / 1000
                     max_cell_nr = unpack_from("<B", bytes([msg.data[2]]))[0]
                     max_cell_cnt = max(max_cell_nr, self.cell_count)
 
-                    min_cell_volt = (
-                        unpack_from("<H", bytes([msg.data[3], msg.data[4]]))[0] / 1000
-                    )
+                    min_cell_volt = unpack_from("<H", bytes([msg.data[3], msg.data[4]]))[0] / 1000
                     min_cell_nr = unpack_from("<B", bytes([msg.data[5]]))[0]
                     max_cell_cnt = max(min_cell_nr, max_cell_cnt)
 

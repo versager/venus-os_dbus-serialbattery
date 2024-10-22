@@ -70,9 +70,7 @@ class Revov(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -110,9 +108,7 @@ class Revov(Battery):
         if version is False:
             return False
 
-        self.hardware_version = (
-            self.BATTERYTYPE + " ver ( " + str(version, "utf-8") + ")"
-        )
+        self.hardware_version = self.BATTERYTYPE + " ver ( " + str(version, "utf-8") + ")"
         logger.error(self.hardware_version)
 
         # At moment run solely for logging purposes so i can compare
@@ -168,9 +164,7 @@ class Revov(Battery):
 
         logger.warn("Cell count: [" + str(self.cell_count) + "]")
 
-        cell_volt_data = packet[
-            2 : (self.cell_count * 2) + 2
-        ]  # 16 2 byte values from pos 3 (index 2)
+        cell_volt_data = packet[2 : (self.cell_count * 2) + 2]  # 16 2 byte values from pos 3 (index 2)
         logger.warn("Raw Cell Data: [" + str(cell_volt_data.hex(":")).upper() + "]")
 
         # first, second = unpack_from ('>HH',cell_volt_data)
@@ -189,16 +183,7 @@ class Revov(Battery):
                 elif cell_volts > 999:
                     self.cells[c].voltage = cell_volts / 1000
                 # Show Cell #, Voltage to 4DP, Hex and Binary value
-                logger.warn(
-                    "Cell ["
-                    + "%02d" % (c + 1)
-                    + "] "
-                    + "%.3f" % self.cells[c].voltage
-                    + "v "
-                    + "0x%04X" % cell_volts
-                    + " "
-                    + str(bin(cell_volts))
-                )
+                logger.warn("Cell [" + "%02d" % (c + 1) + "] " + "%.3f" % self.cells[c].voltage + "v " + "0x%04X" % cell_volts + " " + str(bin(cell_volts)))
                 cell_total = cell_total + self.cells[c].voltage
             except struct.error:
                 self.cells[c].voltage = 0
@@ -224,18 +209,14 @@ class Revov(Battery):
 
     def read_serial_data_revov(self, command):
         # use the read_serial_data() function to read the data and then do BMS spesific checks (crc, start bytes, etc)
-        data = read_serial_data(
-            command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK
-        )
+        data = read_serial_data(command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK)
 
         if data is False:
             logger.debug("read_serial_data_revov::Serial Data is Bad")
             return False
 
         # Its not quite modbus, but psuedo modbus'ish'
-        modbus_address, modbus_type, modbus_cmd, modbus_packet_length = unpack_from(
-            "BBBB", data
-        )
+        modbus_address, modbus_type, modbus_cmd, modbus_packet_length = unpack_from("BBBB", data)
 
         logger.warn("Modbus Address: " + str(modbus_address))
         logger.warn("Modbus Type   : " + str(modbus_type))

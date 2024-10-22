@@ -44,9 +44,7 @@ class Jkbms(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -92,14 +90,10 @@ class Jkbms(Battery):
 
         # cell voltages
         offset = 1
-        cellbyte_count = unpack_from(
-            ">B", self.get_data(status_data, b"\x79", offset, 1)
-        )[0]
+        cellbyte_count = unpack_from(">B", self.get_data(status_data, b"\x79", offset, 1))[0]
 
         offset = cellbyte_count + 30
-        cell_count = unpack_from(">H", self.get_data(status_data, b"\x8A", offset, 2))[
-            0
-        ]
+        cell_count = unpack_from(">H", self.get_data(status_data, b"\x8A", offset, 2))[0]
         # check if the cell count is valid
         if cell_count > 0:
             self.cell_count = cell_count
@@ -141,26 +135,18 @@ class Jkbms(Battery):
 
         offset = cellbyte_count + 15
         current = unpack_from(">H", self.get_data(status_data, b"\x84", offset, 2))[0]
-        self.current = (
-            current / -100
-            if current < self.CURRENT_ZERO_CONSTANT
-            else (current - self.CURRENT_ZERO_CONSTANT) / 100
-        )
+        self.current = current / -100 if current < self.CURRENT_ZERO_CONSTANT else (current - self.CURRENT_ZERO_CONSTANT) / 100
 
         # Continued discharge current
         offset = cellbyte_count + 66
-        max_battery_discharge_current = float(
-            unpack_from(">H", self.get_data(status_data, b"\x97", offset, 2))[0]
-        )
+        max_battery_discharge_current = float(unpack_from(">H", self.get_data(status_data, b"\x97", offset, 2))[0])
         # check if the max discharge current is valid
         if max_battery_discharge_current >= 0:
             self.max_battery_discharge_current = max_battery_discharge_current
 
         # Continued charge current
         offset = cellbyte_count + 72
-        max_battery_charge_current = float(
-            unpack_from(">H", self.get_data(status_data, b"\x99", offset, 2))[0]
-        )
+        max_battery_charge_current = float(unpack_from(">H", self.get_data(status_data, b"\x99", offset, 2))[0])
         # check if the max charge current is valid
         if max_battery_charge_current >= 0:
             self.max_battery_charge_current = max_battery_charge_current
@@ -175,9 +161,7 @@ class Jkbms(Battery):
             self.soc = soc
 
         offset = cellbyte_count + 22
-        charge_cycles = unpack_from(
-            ">H", self.get_data(status_data, b"\x87", offset, 2)
-        )[0]
+        charge_cycles = unpack_from(">H", self.get_data(status_data, b"\x87", offset, 2))[0]
         # check if the charge cycles are valid
         if charge_cycles >= 0:
             self.history.charge_cycles = charge_cycles
@@ -191,71 +175,45 @@ class Jkbms(Battery):
             self.capacity = capacity
 
         offset = cellbyte_count + 33
-        self.to_protection_bits(
-            unpack_from(">H", self.get_data(status_data, b"\x8B", offset, 2))[0]
-        )
+        self.to_protection_bits(unpack_from(">H", self.get_data(status_data, b"\x8B", offset, 2))[0])
 
         offset = cellbyte_count + 36
-        self.to_fet_bits(
-            unpack_from(">H", self.get_data(status_data, b"\x8C", offset, 2))[0]
-        )
+        self.to_fet_bits(unpack_from(">H", self.get_data(status_data, b"\x8C", offset, 2))[0])
 
         offset = cellbyte_count + 84
-        self.to_balance_bits(
-            unpack_from(">B", self.get_data(status_data, b"\x9D", offset, 1))[0]
-        )
+        self.to_balance_bits(unpack_from(">B", self.get_data(status_data, b"\x9D", offset, 1))[0])
 
         # "User Private Data" field in APP
         offset = cellbyte_count + 155
         tmp = sub(
             " +",
             " ",
-            (
-                unpack_from(">8s", self.get_data(status_data, b"\xB4", offset, 8))[0]
-                .decode()
-                .replace("\x00", " ")
-                .strip()
-            ),
+            (unpack_from(">8s", self.get_data(status_data, b"\xB4", offset, 8))[0].decode().replace("\x00", " ").strip()),
         )
         self.custom_field = tmp if tmp != "Input Us" else None
 
         # production date
         try:
             offset = cellbyte_count + 164
-            tmp = unpack_from(">4s", self.get_data(status_data, b"\xB5", offset, 4))[
-                0
-            ].decode()
+            tmp = unpack_from(">4s", self.get_data(status_data, b"\xB5", offset, 4))[0].decode()
             self.production = "20" + tmp + "01" if tmp and tmp != "" else None
         except UnicodeDecodeError:
             self.production = None
 
         offset = cellbyte_count + 174
-        self.version = (
-            unpack_from(">15s", self.get_data(status_data, b"\xB7", offset, 15))[0]
-            .decode()
-            .replace("_", " ")
-            .strip()
-        )
+        self.version = unpack_from(">15s", self.get_data(status_data, b"\xB7", offset, 15))[0].decode().replace("_", " ").strip()
 
         offset = cellbyte_count + 197
         self.unique_identifier_tmp = sub(
             " +",
             "_",
-            (
-                unpack_from(">24s", self.get_data(status_data, b"\xBA", offset, 24))[0]
-                .decode()
-                .replace("\x00", " ")
-                .replace("Input Userda", "")
-                .strip()
-            ),
+            (unpack_from(">24s", self.get_data(status_data, b"\xBA", offset, 24))[0].decode().replace("\x00", " ").replace("Input Userda", "").strip()),
         )
 
         # show wich cells are balancing
         if self.get_min_cell() is not None and self.get_max_cell() is not None:
             for c in range(self.cell_count):
-                if self.balancing and (
-                    self.get_min_cell() == c or self.get_max_cell() == c
-                ):
+                if self.balancing and (self.get_min_cell() == c or self.get_max_cell() == c):
                     self.cells[c].balance = True
                 else:
                     self.cells[c].balance = False
@@ -286,10 +244,7 @@ class Jkbms(Battery):
         min_voltage = 9999
         min_cell = None
         for c in range(min(len(self.cells), self.cell_count)):
-            if (
-                self.cells[c].voltage is not None
-                and min_voltage > self.cells[c].voltage
-            ):
+            if self.cells[c].voltage is not None and min_voltage > self.cells[c].voltage:
                 min_voltage = self.cells[c].voltage
                 min_cell = c
         return min_cell
@@ -298,10 +253,7 @@ class Jkbms(Battery):
         max_voltage = 0
         max_cell = None
         for c in range(min(len(self.cells), self.cell_count)):
-            if (
-                self.cells[c].voltage is not None
-                and max_voltage < self.cells[c].voltage
-            ):
+            if self.cells[c].voltage is not None and max_voltage < self.cells[c].voltage:
                 max_voltage = self.cells[c].voltage
                 max_cell = c
         return max_cell
@@ -342,31 +294,19 @@ class Jkbms(Battery):
         # discharge over current alarm
         self.protection.high_discharge_current = 1 if is_bit_set(tmp[pos - 6]) else 0
         # core differential pressure alarm OR unit overvoltage alarm
-        self.protection.cell_imbalance = (
-            2 if is_bit_set(tmp[pos - 7]) else 1 if is_bit_set(tmp[pos - 10]) else 0
-        )
+        self.protection.cell_imbalance = 2 if is_bit_set(tmp[pos - 7]) else 1 if is_bit_set(tmp[pos - 10]) else 0
         # unit undervoltage alarm
         self.protection.low_cell_voltage = 1 if is_bit_set(tmp[pos - 11]) else 0
         # battery overtemperature alarm OR overtemperature alarm in the battery box
-        alarm_temp_high = (
-            1 if is_bit_set(tmp[pos - 4]) or is_bit_set(tmp[pos - 8]) else 0
-        )
+        alarm_temp_high = 1 if is_bit_set(tmp[pos - 4]) or is_bit_set(tmp[pos - 8]) else 0
         # battery low temperature alarm
         alarm_temp_low = 1 if is_bit_set(tmp[pos - 9]) else 0
         # check if low/high temp alarm arise during charging
-        self.protection.high_charge_temp = (
-            1 if self.current > 0 and alarm_temp_high == 1 else 0
-        )
-        self.protection.low_charge_temp = (
-            1 if self.current > 0 and alarm_temp_low == 1 else 0
-        )
+        self.protection.high_charge_temp = 1 if self.current > 0 and alarm_temp_high == 1 else 0
+        self.protection.low_charge_temp = 1 if self.current > 0 and alarm_temp_low == 1 else 0
         # check if low/high temp alarm arise during discharging
-        self.protection.high_temperature = (
-            1 if self.current <= 0 and alarm_temp_high == 1 else 0
-        )
-        self.protection.low_temperature = (
-            1 if self.current <= 0 and alarm_temp_low == 1 else 0
-        )
+        self.protection.high_temperature = 1 if self.current <= 0 and alarm_temp_high == 1 else 0
+        self.protection.low_temperature = 1 if self.current <= 0 and alarm_temp_low == 1 else 0
 
     def read_serial_data_jkbms(self, command: str) -> bool:
         """
@@ -396,9 +336,7 @@ class Jkbms(Battery):
         if start == 0x4E57 and end == 0x68 and s == crc_lo:
             return data[10 : length - 7]
         elif s != crc_lo:
-            logger.error(
-                "CRC checksum mismatch: Expected 0x%04x, Got 0x%04x" % (crc_lo, s)
-            )
+            logger.error("CRC checksum mismatch: Expected 0x%04x, Got 0x%04x" % (crc_lo, s))
             return False
         else:
             logger.error(">>> ERROR: Incorrect Reply ")

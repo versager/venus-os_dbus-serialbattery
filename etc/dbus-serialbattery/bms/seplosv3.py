@@ -82,13 +82,9 @@ class Seplosv3(Battery):
 
             for n in range(1, RETRYCNT):
                 try:
-                    factory = mbdev.read_string(
-                        registeraddress=0x1700, number_of_registers=10, functioncode=4
-                    )
+                    factory = mbdev.read_string(registeraddress=0x1700, number_of_registers=10, functioncode=4)
                     if "XZH-ElecTech Co.,Ltd" in factory:
-                        logger.info(
-                            f"Identified Seplos v3 by '{factory}' on slave address {self.slaveaddress}"
-                        )
+                        logger.info(f"Identified Seplos v3 by '{factory}' on slave address {self.slaveaddress}")
                         model = mbdev.read_string(
                             registeraddress=0x170A,
                             number_of_registers=10,
@@ -118,9 +114,7 @@ class Seplosv3(Battery):
                         self.mbdev = mbdev
 
                 except Exception as e:
-                    logger.debug(
-                        f"Seplos v3 testing failed ({e}) {n}/{RETRYCNT} for {self.port}({str(self.slaveaddress)})"
-                    )
+                    logger.debug(f"Seplos v3 testing failed ({e}) {n}/{RETRYCNT} for {self.port}({str(self.slaveaddress)})")
                     continue
                 break
             if found:
@@ -154,18 +148,10 @@ class Seplosv3(Battery):
         spa, pia, pib, sca, pic, sfa = None, None, None, None, None, None
         try:
             mb = self.get_modbus(self.slaveaddress)
-            spa = mb.read_registers(
-                registeraddress=0x1300, number_of_registers=0x6A, functioncode=4
-            )
-            pia = mb.read_registers(
-                registeraddress=0x1000, number_of_registers=0x12, functioncode=4
-            )
-            pib = mb.read_registers(
-                registeraddress=0x1100, number_of_registers=0x1A, functioncode=4
-            )
-            sca = mb.read_registers(
-                registeraddress=0x1500, number_of_registers=0x04, functioncode=4
-            )
+            spa = mb.read_registers(registeraddress=0x1300, number_of_registers=0x6A, functioncode=4)
+            pia = mb.read_registers(registeraddress=0x1000, number_of_registers=0x12, functioncode=4)
+            pib = mb.read_registers(registeraddress=0x1100, number_of_registers=0x1A, functioncode=4)
+            sca = mb.read_registers(registeraddress=0x1500, number_of_registers=0x04, functioncode=4)
             pic = mb.read_bits(0x1200, number_of_bits=0x90, functioncode=1)
             sfa = mb.read_bits(0x1400, number_of_bits=0x50, functioncode=1)
             logger.debug(f"spa: {spa}")
@@ -236,44 +222,19 @@ class Seplosv3(Battery):
         try:
             self.protection = Protection()
             #   ALARM = 2 , WARNING = 1 , OK = 0
-            self.protection.high_voltage = (
-                2 if sfa[0x05] == 0 else 1 if sfa[0x04] == 0 else 0
-            )
-            self.protection.low_voltage = (
-                2 if sfa[0x06] == 0 else 1 if sfa[0x06] == 0 else 0
-            )
+            self.protection.high_voltage = 2 if sfa[0x05] == 0 else 1 if sfa[0x04] == 0 else 0
+            self.protection.low_voltage = 2 if sfa[0x06] == 0 else 1 if sfa[0x06] == 0 else 0
             # self.protection.voltage_cell_high =  1 if  sfa[0x00] == 0 else 0 + 1 if  sfa[0x01] == 0 else 0
-            self.protection.low_cell_voltage = (
-                2 if sfa[0x03] == 0 else 1 if sfa[0x02] == 0 else 0
-            )
+            self.protection.low_cell_voltage = 2 if sfa[0x03] == 0 else 1 if sfa[0x02] == 0 else 0
             self.protection.low_soc = 2 if sfa[0x30] == 0 else 0
-            self.protection.high_charge_current = (
-                2 if sfa[0x21] == 0 else 1 if sfa[0x20] == 0 else 0
-            )
-            self.protection.high_discharge_current = (
-                2 if sfa[0x24] == 0 else 1 if sfa[0x23] == 0 else 0
-            )
-            self.protection.internal_failure = (
-                2
-                if (sfa[0x48] + sfa[0x49] + sfa[0x4A] + sfa[0x4B] + sfa[0x4D] + sfa[53])
-                < 5
-                else 0
-            )
-            self.protection.high_charge_temp = (
-                2 if sfa[0x09] == 0 else 1 if sfa[0x08] == 0 else 0
-            )
-            self.protection.low_charge_temp = (
-                2 if sfa[0x0B] == 0 else 1 if sfa[0x0A] == 0 else 0
-            )
-            self.protection.high_temperature = (
-                2 if sfa[0x0D] == 0 else 1 if sfa[0x0C] == 0 else 0
-            )
-            self.protection.low_temperature = (
-                2 if sfa[0x0F] == 0 else 1 if sfa[0x0E] == 0 else 0
-            )
-            self.protection.high_internal_temp = (
-                2 if sfa[0x15] == 0 else 1 if sfa[0x14] == 0 else 0
-            )
+            self.protection.high_charge_current = 2 if sfa[0x21] == 0 else 1 if sfa[0x20] == 0 else 0
+            self.protection.high_discharge_current = 2 if sfa[0x24] == 0 else 1 if sfa[0x23] == 0 else 0
+            self.protection.internal_failure = 2 if (sfa[0x48] + sfa[0x49] + sfa[0x4A] + sfa[0x4B] + sfa[0x4D] + sfa[53]) < 5 else 0
+            self.protection.high_charge_temp = 2 if sfa[0x09] == 0 else 1 if sfa[0x08] == 0 else 0
+            self.protection.low_charge_temp = 2 if sfa[0x0B] == 0 else 1 if sfa[0x0A] == 0 else 0
+            self.protection.high_temperature = 2 if sfa[0x0D] == 0 else 1 if sfa[0x0C] == 0 else 0
+            self.protection.low_temperature = 2 if sfa[0x0F] == 0 else 1 if sfa[0x0E] == 0 else 0
+            self.protection.high_internal_temp = 2 if sfa[0x15] == 0 else 1 if sfa[0x14] == 0 else 0
         except Exception as e:
             logger.info(f"Error updating alarm info {e}")
             return False
@@ -324,9 +285,7 @@ class Seplosv3(Battery):
 
         for result in results:
             if result is False:
-                logger.info(
-                    f"Updating Seplos v3 {self.hardware_version} {self.serialnumber} failed: {results}"
-                )
+                logger.info(f"Updating Seplos v3 {self.hardware_version} {self.serialnumber} failed: {results}")
                 return False
         logger.debug(f"Updating Seplos v3 {self.hardware_version} {self.serialnumber}")
         return True

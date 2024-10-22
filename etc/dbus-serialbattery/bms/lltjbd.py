@@ -209,33 +209,23 @@ class LltJbdProtection(Protection):
 
     def set_voltage_cell_high(self, value):
         self.voltage_cell_high = value
-        self.cell_imbalance = (
-            2 if self.voltage_cell_low or self.voltage_cell_high else 0
-        )
+        self.cell_imbalance = 2 if self.voltage_cell_low or self.voltage_cell_high else 0
 
     def set_voltage_cell_low(self, value):
         self.voltage_cell_low = value
-        self.cell_imbalance = (
-            2 if self.voltage_cell_low or self.voltage_cell_high else 0
-        )
+        self.cell_imbalance = 2 if self.voltage_cell_low or self.voltage_cell_high else 0
 
     def set_short(self, value):
         self.short = value
-        self.set_cell_imbalance(
-            2 if self.short or self.IC_inspection or self.software_lock else 0
-        )
+        self.set_cell_imbalance(2 if self.short or self.IC_inspection or self.software_lock else 0)
 
     def set_ic_inspection(self, value):
         self.IC_inspection = value
-        self.set_cell_imbalance(
-            2 if self.short or self.IC_inspection or self.software_lock else 0
-        )
+        self.set_cell_imbalance(2 if self.short or self.IC_inspection or self.software_lock else 0)
 
     def set_software_lock(self, value):
         self.software_lock = value
-        self.set_cell_imbalance(
-            2 if self.short or self.IC_inspection or self.software_lock else 0
-        )
+        self.set_cell_imbalance(2 if self.short or self.IC_inspection or self.software_lock else 0)
 
 
 class LltJbd(Battery):
@@ -284,11 +274,7 @@ class LltJbd(Battery):
             # 1) Read name of BMS
             # 2) Try read BMS settings
             # 3) Refresh general data
-            result = (
-                self.read_hardware_data()
-                and self.get_settings()
-                and self.refresh_data()
-            )
+            result = self.read_hardware_data() and self.get_settings() and self.refresh_data()
         except Exception:
             (
                 exception_type,
@@ -297,9 +283,7 @@ class LltJbd(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -320,16 +304,12 @@ class LltJbd(Battery):
             charge_over_current = self.read_serial_data_llt(readCmd(REG_CHGOC))
 
             if charge_over_current:
-                self.max_battery_charge_current = abs(
-                    float(unpack_from(">h", charge_over_current)[0] / 100.0)
-                )
+                self.max_battery_charge_current = abs(float(unpack_from(">h", charge_over_current)[0] / 100.0))
 
             discharge_over_current = self.read_serial_data_llt(readCmd(REG_DSGOC))
 
             if discharge_over_current:
-                self.max_battery_discharge_current = abs(
-                    float(unpack_from(">h", discharge_over_current)[0] / -100.0)
-                )
+                self.max_battery_discharge_current = abs(float(unpack_from(">h", discharge_over_current)[0] / -100.0))
 
             func_config = self.read_serial_data_llt(readCmd(REG_FUNC_CONFIG))
 
@@ -393,40 +373,26 @@ class LltJbd(Battery):
         return False
 
     def write_charge_discharge_mos(self):
-        if (
-            self.trigger_force_disable_charge is None
-            and self.trigger_force_disable_discharge is None
-        ):
+        if self.trigger_force_disable_charge is None and self.trigger_force_disable_discharge is None:
             return False
 
         charge_disabled = 0 if self.charge_fet else 1
         if self.trigger_force_disable_charge is not None:
             charge_disabled = 1 if self.trigger_force_disable_charge else 0
-            logger.info(
-                f"write force disable charging: {'true' if self.trigger_force_disable_charge else 'false'}"
-            )
+            logger.info(f"write force disable charging: {'true' if self.trigger_force_disable_charge else 'false'}")
         self.trigger_force_disable_charge = None
 
         discharge_disabled = 0 if self.discharge_fet else 1
         if self.trigger_force_disable_discharge is not None:
             discharge_disabled = 1 if self.trigger_force_disable_discharge else 0
-            logger.info(
-                f"write force disable discharging: {'true' if self.trigger_force_disable_discharge else 'false'}"
-            )
+            logger.info(f"write force disable discharging: {'true' if self.trigger_force_disable_discharge else 'false'}")
         self.trigger_force_disable_discharge = None
 
         logger.debug(
-            f"trigger_force_disable_charge: {self.trigger_force_disable_charge} - "
-            + f"trigger_force_disable_discharge: {self.trigger_force_disable_discharge}"
+            f"trigger_force_disable_charge: {self.trigger_force_disable_charge} - " + f"trigger_force_disable_discharge: {self.trigger_force_disable_discharge}"
         )
-        logger.debug(
-            f"CHARGE: charge_disabled: {charge_disabled} - "
-            + f"charge_fet: {self.charge_fet}"
-        )
-        logger.debug(
-            f"DISCHARGE: discharge_disabled: {discharge_disabled} - "
-            + f"discharge_fet: {self.discharge_fet}"
-        )
+        logger.debug(f"CHARGE: charge_disabled: {charge_disabled} - " + f"charge_fet: {self.charge_fet}")
+        logger.debug(f"DISCHARGE: discharge_disabled: {discharge_disabled} - " + f"discharge_fet: {self.discharge_fet}")
 
         mosdata = pack(">BB", 0, charge_disabled | (discharge_disabled << 1))
 
@@ -455,9 +421,7 @@ class LltJbd(Battery):
             return False
 
         disable_balancer = self.trigger_disable_balancer
-        logger.info(
-            f"write disable balancer: {'true' if self.trigger_disable_balancer else 'false'}"
-        )
+        logger.info(f"write disable balancer: {'true' if self.trigger_disable_balancer else 'false'}")
         self.trigger_disable_balancer = None
         new_func_config = None
 
@@ -469,18 +433,14 @@ class LltJbd(Battery):
                 balancer_enabled = self.func_config & FUNC_BALANCE_EN
 
                 # Balance is enabled, force disable OR balancer is disabled and force enable
-                if (balancer_enabled != 0 and disable_balancer) or (
-                    balancer_enabled == 0 and not disable_balancer
-                ):
+                if (balancer_enabled != 0 and disable_balancer) or (balancer_enabled == 0 and not disable_balancer):
                     new_func_config = self.func_config ^ FUNC_BALANCE_EN
 
         if new_func_config:
             new_func_config_bytes = pack(">H", new_func_config)
 
             with self.eeprom(writable=True):
-                reply = self.read_serial_data_llt(
-                    writeCmd(REG_FUNC_CONFIG, new_func_config_bytes)
-                )
+                reply = self.read_serial_data_llt(writeCmd(REG_FUNC_CONFIG, new_func_config_bytes))
 
                 if reply is False:
                     logger.error("write force disable balancer failed")
@@ -509,9 +469,7 @@ class LltJbd(Battery):
         self.protection.high_discharge_current = 1 if is_bit_set(tmp[3]) else 0
 
         # Software implementations for low soc
-        self.protection.low_soc = (
-            2 if self.soc < SOC_LOW_ALARM else 1 if self.soc < SOC_LOW_WARNING else 0
-        )
+        self.protection.low_soc = 2 if self.soc < SOC_LOW_ALARM else 1 if self.soc < SOC_LOW_WARNING else 0
 
         # extra protection flags for LltJbd
         self.protection.set_voltage_cell_low = is_bit_set(tmp[11])
@@ -618,9 +576,7 @@ class LltJbd(Battery):
         self.capacity_remain = capacity_remain / 100
         self.capacity = capacity / 100
         self.to_cell_bits(balance, balance2)
-        self.hardware_version = float(
-            str(version >> 4 & 0x0F) + "." + str(version & 0x0F)
-        )
+        self.hardware_version = float(str(version >> 4 & 0x0F) + "." + str(version & 0x0F))
         self.to_fet_bits(fet)
         self.to_protection_bits(protection)
 
@@ -663,9 +619,7 @@ class LltJbd(Battery):
         if hardware_data is False:
             return False
 
-        self._product_name = unpack_from(
-            ">" + str(len(hardware_data)) + "s", hardware_data
-        )[0].decode("ascii", errors="ignore")
+        self._product_name = unpack_from(">" + str(len(hardware_data)) + "s", hardware_data)[0].decode("ascii", errors="ignore")
         logger.debug(self._product_name)
         return True
 
@@ -679,25 +633,16 @@ class LltJbd(Battery):
         logger.debug("bytearray: " + bytearray_to_string(data))
 
         if start != 0xDD:
-            logger.error(
-                ">>> ERROR: Invalid response packet. Expected begin packet character 0xDD"
-            )
+            logger.error(">>> ERROR: Invalid response packet. Expected begin packet character 0xDD")
         if status != 0x0:
             logger.warn(">>> WARN: BMS rejected request. Status " + str(status))
             return False
         if len(data) != payload_length + 7:
-            logger.error(
-                ">>> ERROR: BMS send insufficient data. Received "
-                + str(len(data))
-                + " expected "
-                + str(payload_length + 7)
-            )
+            logger.error(">>> ERROR: BMS send insufficient data. Received " + str(len(data)) + " expected " + str(payload_length + 7))
             return False
         chk_sum, end = unpack_from(">HB", data, payload_length + 4)
         if end != 0x77:
-            logger.error(
-                ">>> ERROR: Incorrect Reply. Expected end packet character 0x77"
-            )
+            logger.error(">>> ERROR: Incorrect Reply. Expected end packet character 0x77")
             return False
         if chk_sum != checksum(data[2:-3]):
             logger.error(">>> ERROR: Invalid checksum.")
@@ -708,21 +653,15 @@ class LltJbd(Battery):
         return payload
 
     def read_serial_data_llt(self, command):
-        data = read_serial_data(
-            command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK
-        )
+        data = read_serial_data(command, self.port, self.baud_rate, self.LENGTH_POS, self.LENGTH_CHECK)
         return self.validate_packet(data)
 
     def __enter__(self):
-        if self.read_serial_data_llt(
-            writeCmd(REG_ENTER_FACTORY, CMD_ENTER_FACTORY_MODE)
-        ):
+        if self.read_serial_data_llt(writeCmd(REG_ENTER_FACTORY, CMD_ENTER_FACTORY_MODE)):
             self.factory_mode = True
 
     def __exit__(self, type, value, traceback):
-        cmd_value = (
-            CMD_EXIT_AND_SAVE_FACTORY_MODE if self.writable else CMD_EXIT_FACTORY_MODE
-        )
+        cmd_value = CMD_EXIT_AND_SAVE_FACTORY_MODE if self.writable else CMD_EXIT_FACTORY_MODE
         if self.factory_mode:
             if not self.read_serial_data_llt(writeCmd(REG_EXIT_FACTORY, cmd_value)):
                 logger.error(">>> ERROR: Unable to exit factory mode.")

@@ -67,32 +67,9 @@ class HeltecModbus(Battery):
                     string = mbdev.read_string(7, 13)
                     time.sleep(SLPTIME)
                     found = True
-                    logger.debug(
-                        "found in try "
-                        + str(n)
-                        + "/"
-                        + str(RETRYCNT)
-                        + " for "
-                        + self.port
-                        + "("
-                        + str(self.address)
-                        + "): "
-                        + string
-                    )
+                    logger.debug("found in try " + str(n) + "/" + str(RETRYCNT) + " for " + self.port + "(" + str(self.address) + "): " + string)
                 except Exception as e:
-                    logger.debug(
-                        "testing failed ("
-                        + str(e)
-                        + ") "
-                        + str(n)
-                        + "/"
-                        + str(RETRYCNT)
-                        + " for "
-                        + self.port
-                        + "("
-                        + str(self.address)
-                        + ")"
-                    )
+                    logger.debug("testing failed (" + str(e) + ") " + str(n) + "/" + str(RETRYCNT) + " for " + self.port + "(" + str(self.address) + ")")
                     continue
                 break
 
@@ -103,12 +80,7 @@ class HeltecModbus(Battery):
         if not found:
             logger.error(">>> ERROR: No reply - returning")
 
-        return (
-            found
-            and self.read_status_data()
-            and self.get_settings()
-            and self.refresh_data()
-        )
+        return found and self.read_status_data() and self.get_settings() and self.refresh_data()
 
     def get_settings(self):
         # After successful connection get_settings() will be called to set up the battery
@@ -130,15 +102,11 @@ class HeltecModbus(Battery):
             for n in range(1, RETRYCNT + 1):
                 try:
                     ccur = mbdev.read_register(191, 0, 3, False)
-                    self.max_battery_charge_current = (
-                        (int)(((ccur & 0xFF) << 8) | ((ccur >> 8) & 0xFF))
-                    ) / 100
+                    self.max_battery_charge_current = ((int)(((ccur & 0xFF) << 8) | ((ccur >> 8) & 0xFF))) / 100
                     time.sleep(SLPTIME)
 
                     dc = mbdev.read_register(194, 0, 3, False)
-                    self.max_battery_discharge_current = (
-                        ((dc & 0xFF) << 8) | ((dc >> 8) & 0xFF)
-                    ) / 100
+                    self.max_battery_discharge_current = (((dc & 0xFF) << 8) | ((dc >> 8) & 0xFF)) / 100
                     time.sleep(SLPTIME)
 
                     cap = mbdev.read_register(118, 0, 3, False)
@@ -146,27 +114,19 @@ class HeltecModbus(Battery):
                     time.sleep(SLPTIME)
 
                     cap = mbdev.read_register(119, 0, 3, False)
-                    self.actual_capacity = (
-                        ((cap & 0xFF) << 8) | ((cap >> 8) & 0xFF)
-                    ) / 10
+                    self.actual_capacity = (((cap & 0xFF) << 8) | ((cap >> 8) & 0xFF)) / 10
                     time.sleep(SLPTIME)
 
                     cap = mbdev.read_register(126, 0, 3, False)
-                    self.learned_capacity = (
-                        ((cap & 0xFF) << 8) | ((cap >> 8) & 0xFF)
-                    ) / 10
+                    self.learned_capacity = (((cap & 0xFF) << 8) | ((cap >> 8) & 0xFF)) / 10
                     time.sleep(SLPTIME)
 
                     volt = mbdev.read_register(169, 0, 3, False)
-                    self.max_cell_voltage = (
-                        ((volt & 0xFF) << 8) | ((volt >> 8) & 0xFF)
-                    ) / 1000
+                    self.max_cell_voltage = (((volt & 0xFF) << 8) | ((volt >> 8) & 0xFF)) / 1000
                     time.sleep(SLPTIME)
 
                     volt = mbdev.read_register(172, 0, 3, False)
-                    self.min_cell_voltage = (
-                        ((volt & 0xFF) << 8) | ((volt >> 8) & 0xFF)
-                    ) / 1000
+                    self.min_cell_voltage = (((volt & 0xFF) << 8) | ((volt >> 8) & 0xFF)) / 1000
                     time.sleep(SLPTIME)
 
                     string = mbdev.read_string(7, 13)
@@ -178,9 +138,7 @@ class HeltecModbus(Battery):
                     time.sleep(SLPTIME)
 
                     serial1 = mbdev.read_registers(2, number_of_registers=4)
-                    self.unique_identifier_tmp = "-".join(
-                        "{:04x}".format(x) for x in serial1
-                    )
+                    self.unique_identifier_tmp = "-".join("{:04x}".format(x) for x in serial1)
                     time.sleep(SLPTIME)
 
                     self.pw = mbdev.read_string(47, 2)
@@ -202,35 +160,17 @@ class HeltecModbus(Battery):
                         self.cellType = "unknown"
                     time.sleep(SLPTIME)
 
-                    self.hardware_version = (
-                        self.devName
-                        + "("
-                        + str((mbdev.read_register(38) >> 8) & 0xFF)
-                        + ")"
-                    )
+                    self.hardware_version = self.devName + "(" + str((mbdev.read_register(38) >> 8) & 0xFF) + ")"
                     time.sleep(SLPTIME)
 
                     date = mbdev.read_long(39, 3, True, minimalmodbus.BYTEORDER_LITTLE)
-                    self.production_date = (
-                        str(date & 0xFFFF)
-                        + "-"
-                        + str((date >> 24) & 0xFF)
-                        + "-"
-                        + str((date >> 16) & 0xFF)
-                    )
+                    self.production_date = str(date & 0xFFFF) + "-" + str((date >> 24) & 0xFF) + "-" + str((date >> 16) & 0xFF)
                     time.sleep(SLPTIME)
 
                     # we finished all readings without trouble, so let's break from the retry loop
                     break
                 except Exception as e:
-                    logger.warn(
-                        "Error reading settings from BMS, retry ("
-                        + str(n)
-                        + "/"
-                        + str(RETRYCNT)
-                        + "): "
-                        + str(e)
-                    )
+                    logger.warn("Error reading settings from BMS, retry (" + str(n) + "/" + str(RETRYCNT) + "): " + str(e))
                     if n == RETRYCNT:
                         return False
                     continue
@@ -261,21 +201,13 @@ class HeltecModbus(Battery):
         with locks[self.address]:
             for n in range(1, RETRYCNT):
                 try:
-                    self.voltage = (
-                        mbdev.read_long(76, 3, True, minimalmodbus.BYTEORDER_LITTLE)
-                        / 1000
-                    )
+                    self.voltage = mbdev.read_long(76, 3, True, minimalmodbus.BYTEORDER_LITTLE) / 1000
                     time.sleep(SLPTIME)
 
-                    self.current = -(
-                        mbdev.read_long(78, 3, True, minimalmodbus.BYTEORDER_LITTLE)
-                        / 100
-                    )
+                    self.current = -(mbdev.read_long(78, 3, True, minimalmodbus.BYTEORDER_LITTLE) / 100)
                     time.sleep(SLPTIME)
 
-                    runState1 = mbdev.read_long(
-                        152, 3, True, minimalmodbus.BYTEORDER_LITTLE
-                    )
+                    runState1 = mbdev.read_long(152, 3, True, minimalmodbus.BYTEORDER_LITTLE)
                     time.sleep(SLPTIME)
 
                     # bit 29 is discharge protection
@@ -290,12 +222,8 @@ class HeltecModbus(Battery):
                     else:
                         self.charge_fet = False
 
-                    warnings = mbdev.read_long(
-                        156, 3, True, minimalmodbus.BYTEORDER_LITTLE
-                    )
-                    if (warnings & (1 << 3)) or (
-                        warnings & (1 << 15)
-                    ):  # 15 is full protection, 3 is total overvoltage
+                    warnings = mbdev.read_long(156, 3, True, minimalmodbus.BYTEORDER_LITTLE)
+                    if (warnings & (1 << 3)) or (warnings & (1 << 15)):  # 15 is full protection, 3 is total overvoltage
                         self.protection.high_voltage = 2
                     else:
                         self.protection.high_voltage = 0
@@ -394,14 +322,7 @@ class HeltecModbus(Battery):
                     return True
 
                 except Exception as e:
-                    logger.warn(
-                        "Error reading SOC, retry ("
-                        + str(n)
-                        + "/"
-                        + str(RETRYCNT)
-                        + ") "
-                        + str(e)
-                    )
+                    logger.warn("Error reading SOC, retry (" + str(n) + "/" + str(RETRYCNT) + ") " + str(e))
                     continue
                 break
             logger.warn("Error reading SOC, failed")
@@ -414,26 +335,15 @@ class HeltecModbus(Battery):
         with locks[self.address]:
             for n in range(1, RETRYCNT):
                 try:
-                    cells = mbdev.read_registers(
-                        81, number_of_registers=self.cell_count
-                    )
+                    cells = mbdev.read_registers(81, number_of_registers=self.cell_count)
                     time.sleep(SLPTIME)
 
-                    balancing = mbdev.read_long(
-                        139, 3, signed=False, byteorder=minimalmodbus.BYTEORDER_LITTLE
-                    )
+                    balancing = mbdev.read_long(139, 3, signed=False, byteorder=minimalmodbus.BYTEORDER_LITTLE)
                     time.sleep(SLPTIME)
 
                     result = True
                 except Exception as e:
-                    logger.warn(
-                        "read_cell_data() failed ("
-                        + str(e)
-                        + ") "
-                        + str(n)
-                        + "/"
-                        + str(RETRYCNT)
-                    )
+                    logger.warn("read_cell_data() failed (" + str(e) + ") " + str(n) + "/" + str(RETRYCNT))
                     continue
                 break
             if result is False:

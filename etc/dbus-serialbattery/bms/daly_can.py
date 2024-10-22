@@ -105,9 +105,7 @@ class Daly_Can(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -178,11 +176,7 @@ class Daly_Can(Battery):
                 return False
 
             voltage, tmp, current, soc = unpack_from(">hhhh", soc_data)
-            current = (
-                (current - self.CURRENT_ZERO_CONSTANT)
-                / -10
-                * INVERT_CURRENT_MEASUREMENT
-            )
+            current = (current - self.CURRENT_ZERO_CONSTANT) / -10 * INVERT_CURRENT_MEASUREMENT
             # logger.info("voltage: " + str(voltage) + ", current: " + str(current) + ", soc: " + str(soc))
             if crntMinValid < current < crntMaxValid:
                 self.voltage = voltage / 10
@@ -307,9 +301,7 @@ class Daly_Can(Battery):
 
     def read_cells_volts(self, can_bus):
         if self.cell_count is not None:
-            cells_volts_data = self.read_bus_data_daly(
-                can_bus, self.command_cell_volts, 6
-            )
+            cells_volts_data = self.read_bus_data_daly(can_bus, self.command_cell_volts, 6)
             if cells_volts_data is False:
                 logger.warning("read_cells_volts")
                 return False
@@ -326,17 +318,13 @@ class Daly_Can(Battery):
                     self.cells.append(Cell(True))
 
             while bufIdx < len(cells_volts_data):
-                frame, frameCell[0], frameCell[1], frameCell[2] = unpack_from(
-                    ">Bhhh", cells_volts_data, bufIdx
-                )
+                frame, frameCell[0], frameCell[1], frameCell[2] = unpack_from(">Bhhh", cells_volts_data, bufIdx)
                 for idx in range(3):
                     cellnum = ((frame - 1) * 3) + idx  # daly is 1 based, driver 0 based
                     if cellnum >= self.cell_count:
                         break
                     cellVoltage = frameCell[idx] / 1000
-                    self.cells[cellnum].voltage = (
-                        None if cellVoltage < lowMin else cellVoltage
-                    )
+                    self.cells[cellnum].voltage = None if cellVoltage < lowMin else cellVoltage
                 bufIdx += 8
 
         return True

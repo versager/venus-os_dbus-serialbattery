@@ -45,9 +45,7 @@ class ANT(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -81,9 +79,7 @@ class ANT(Battery):
 
         self.cell_count = unpack_from(">b", status_data, 123)[0]
 
-        cell_max_no, cell_max_voltage, cell_min_no, cell_min_voltage = unpack_from(
-            ">bhbh", status_data, 115
-        )
+        cell_max_no, cell_max_voltage, cell_min_no, cell_min_voltage = unpack_from(">bhbh", status_data, 115)
         self.cell_max_no = cell_max_no - 1
         self.cell_min_no = cell_min_no - 1
         self.cell_max_voltage = cell_max_voltage / 1000
@@ -99,9 +95,7 @@ class ANT(Battery):
         self.history.total_ah_drawn = total_ah_drawn[0] / 1000
         self.history.charge_cycles = self.history.total_ah_drawn / self.capacity
 
-        self.charge_fet, self.discharge_fet, self.balancing = unpack_from(
-            ">bbb", status_data, 103
-        )
+        self.charge_fet, self.discharge_fet, self.balancing = unpack_from(">bbb", status_data, 103)
 
         self.temp1, self.temp2 = unpack_from(">bxb", status_data, 96)
 
@@ -109,20 +103,10 @@ class ANT(Battery):
 
         # Alarms
         self.protection.high_voltage = 2 if self.charge_fet == 2 else 0
-        self.protection.low_voltage = (
-            2 if self.discharge_fet == 2 or self.discharge_fet == 5 else 0
-        )
-        self.protection.low_cell_voltage = (
-            2
-            if self.cell_min_voltage < MIN_CELL_VOLTAGE - 0.1
-            else 1 if self.cell_min_voltage < MIN_CELL_VOLTAGE else 0
-        )
-        self.protection.high_charge_temp = (
-            1 if self.charge_fet == 3 or self.charge_fet == 6 else 0
-        )
-        self.protection.high_temperature = (
-            1 if self.discharge_fet == 7 or self.discharge_fet == 6 else 0
-        )
+        self.protection.low_voltage = 2 if self.discharge_fet == 2 or self.discharge_fet == 5 else 0
+        self.protection.low_cell_voltage = 2 if self.cell_min_voltage < MIN_CELL_VOLTAGE - 0.1 else 1 if self.cell_min_voltage < MIN_CELL_VOLTAGE else 0
+        self.protection.high_charge_temp = 1 if self.charge_fet == 3 or self.charge_fet == 6 else 0
+        self.protection.high_temperature = 1 if self.discharge_fet == 7 or self.discharge_fet == 6 else 0
         self.protection.high_charge_current = 2 if self.charge_fet == 3 else 0
         self.protection.high_discharge_current = 2 if self.discharge_fet == 3 else 0
 

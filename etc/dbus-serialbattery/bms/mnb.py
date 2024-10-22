@@ -25,33 +25,23 @@ class MNBProtection(Protection):
 
     def set_voltage_cell_high(self, value):
         self.voltage_cell_high = value
-        self.set_cell_imbalance(
-            2 if self.voltage_cell_low or self.voltage_cell_high else 0
-        )
+        self.set_cell_imbalance(2 if self.voltage_cell_low or self.voltage_cell_high else 0)
 
     def set_voltage_cell_low(self, value):
         self.voltage_cell_low = value
-        self.set_cell_imbalance(
-            2 if self.voltage_cell_low or self.voltage_cell_high else 0
-        )
+        self.set_cell_imbalance(2 if self.voltage_cell_low or self.voltage_cell_high else 0)
 
     def set_short(self, value):
         self.short = value
-        self.set_cell_imbalance(
-            2 if self.short or self.IC_inspection or self.software_lock else 0
-        )
+        self.set_cell_imbalance(2 if self.short or self.IC_inspection or self.software_lock else 0)
 
     def set_ic_inspection(self, value):
         self.IC_inspection = value
-        self.set_cell_imbalance(
-            2 if self.short or self.IC_inspection or self.software_lock else 0
-        )
+        self.set_cell_imbalance(2 if self.short or self.IC_inspection or self.software_lock else 0)
 
     def set_software_lock(self, value):
         self.software_lock = value
-        self.set_cell_imbalance(
-            2 if self.short or self.IC_inspection or self.software_lock else 0
-        )
+        self.set_cell_imbalance(2 if self.short or self.IC_inspection or self.software_lock else 0)
 
 
 class MNB(Battery):
@@ -111,9 +101,7 @@ class MNB(Battery):
             ) = sys.exc_info()
             file = exception_traceback.tb_frame.f_code.co_filename
             line = exception_traceback.tb_lineno
-            logger.error(
-                f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}"
-            )
+            logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             result = False
 
         return result
@@ -126,12 +114,8 @@ class MNB(Battery):
         # *****************************************************************
         self.inst_capacity = 36 * 3.6  # Equivalent cell capacity Ah
         self.C_rating = 1  # Max current/Ah eg 1, 0.5 or 0.25
-        self.max_battery_charge_current = (
-            self.inst_capacity * self.C_rating
-        )  # MAX_BATTERY_CHARGE_CURRENT = Crating * Capacity
-        self.max_battery_discharge_current = (
-            self.inst_capacity * self.C_rating
-        )  # MAX_BATTERY_DISCHARGE_CURRENT
+        self.max_battery_charge_current = self.inst_capacity * self.C_rating  # MAX_BATTERY_CHARGE_CURRENT = Crating * Capacity
+        self.max_battery_discharge_current = self.inst_capacity * self.C_rating  # MAX_BATTERY_DISCHARGE_CURRENT
         self.V_C_min = 2.55  # Min cell voltage permitted
         self.V_C_max = 3.65  # Max cell voltage permitted
         self.cell_count = 8  # Number of cells in series (max) 8 for 24V
