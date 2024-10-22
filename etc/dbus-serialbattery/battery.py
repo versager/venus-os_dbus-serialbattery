@@ -1203,9 +1203,23 @@ class Battery(ABC):
         ):
             self.linear_ccl_last_set = int(time())
 
-            self.control_charge_current = ccl
-
-            self.charge_limitation = charge_limits[min(charge_limits)]
+            # Introduce a threshold mechanism to prevent flapping
+            if ccl == 0:
+                self.control_charge_current = ccl
+                self.charge_limitation = charge_limits[min(charge_limits)]
+            else:
+                # Allow recovery only if the new allowed current is greater than 1% of the previous allowed current
+                if (
+                    self.control_charge_current == 0
+                    and ccl > self.control_charge_current * 0.01
+                ):
+                    self.control_charge_current = ccl
+                    self.charge_limitation = charge_limits[min(charge_limits)]
+                elif self.control_charge_current != 0:
+                    self.control_charge_current = ccl
+                    self.charge_limitation = charge_limits[min(charge_limits)]
+                elif self.charge_limitation != charge_limits[min(charge_limits)] + " *":
+                    self.charge_limitation = charge_limits[min(charge_limits)] + " *"
 
         # set allow to charge to no, if CCL is 0
         if self.control_charge_current == 0:
@@ -1299,9 +1313,28 @@ class Battery(ABC):
         ):
             self.linear_dcl_last_set = int(time())
 
-            self.control_discharge_current = dcl
-
-            self.discharge_limitation = discharge_limits[min(discharge_limits)]
+            # Introduce a threshold mechanism to prevent flapping
+            if dcl == 0:
+                self.control_discharge_current = dcl
+                self.discharge_limitation = discharge_limits[min(discharge_limits)]
+            else:
+                # Allow recovery only if the new allowed current is greater than 1% of the previous allowed current
+                if (
+                    self.control_discharge_current == 0
+                    and dcl > self.control_discharge_current * 0.01
+                ):
+                    self.control_discharge_current = dcl
+                    self.discharge_limitation = discharge_limits[min(discharge_limits)]
+                elif self.control_discharge_current != 0:
+                    self.control_discharge_current = dcl
+                    self.discharge_limitation = discharge_limits[min(discharge_limits)]
+                elif (
+                    self.discharge_limitation
+                    != discharge_limits[min(discharge_limits)] + " *"
+                ):
+                    self.discharge_limitation = (
+                        discharge_limits[min(discharge_limits)] + " *"
+                    )
 
         # set allow to discharge to no, if DCL is 0
         if self.control_discharge_current == 0:

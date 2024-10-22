@@ -65,6 +65,7 @@
 ## v1.5.x
 * Added: Daly BMS - Connect multiple BMS to the same RS485 port by @CaptKrisp
 * Added: Possibility to change the CAN bus speed by @mr-manuel
+* Added: Threshold, if `CCL = 0` or `DCL = 0` is reached to prevent flapping @mr-manuel
 * Changed: Rewritten code for external current sensor and fixed https://github.com/mr-manuel/venus-os_dbus-serialbattery/issues/60 by @mr-manuel
 
 ## v1.4.20240928
