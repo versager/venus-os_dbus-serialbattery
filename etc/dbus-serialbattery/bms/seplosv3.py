@@ -8,7 +8,7 @@ import math
 import struct
 from typing import Union
 
-import minimalmodbus
+import ext.minimalmodbus as minimalmodbus
 import serial
 from battery import Battery, Cell, Protection
 from utils import logger, SEPLOS_USE_BMS_VALUES

@@ -8,7 +8,7 @@ from utils import (
     LIPRO_END_ADDRESS,
     LIPRO_START_ADDRESS,
 )
-import minimalmodbus
+import ext.minimalmodbus as minimalmodbus
 import sys
 
 

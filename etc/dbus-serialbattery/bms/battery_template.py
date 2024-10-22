@@ -6,7 +6,7 @@
 
 # avoid importing wildcards, remove unused imports
 from battery import Battery, Cell
-from utils import is_bit_set, read_serial_data, logger
+from utils import read_serial_data, logger
 from struct import unpack_from
 import sys
 
