@@ -122,7 +122,7 @@ class HLPdataBMS4S(Battery):
         par2 = str(status_data)
         ix = par2.find("m1")
         if ix == -1:
-            logger.error(">>> ERROR: m1 " + par1)
+            logger.error(">>> ERROR: m1 " + par2)
             return False
         par1 = par2[ix : len(par2)]
         par = par1.split(",")
