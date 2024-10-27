@@ -68,6 +68,10 @@ class ConsoleBase(object):
         self.byte_output.write(byte_string)
         self.byte_output.flush()
 
+    def write_echo(self, text):
+        self.output.write(text)
+        self.output.flush()
+
     def write(self, text):
         """Write string"""
         self.output.write(text)
@@ -139,7 +143,10 @@ if os.name == "nt":  # noqa
             ctypes.windll.kernel32.SetConsoleCP(65001)
             # ANSI handling available through SetConsoleMode since Windows 10 v1511
             # https://en.wikipedia.org/wiki/ANSI_escape_code#cite_note-win10th2-1
-            if platform.release() == "10" and int(platform.version().split(".")[2]) > 10586:
+            if (
+                platform.release() == "10"
+                and int(platform.version().split(".")[2]) > 10586
+            ):
                 ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
                 import ctypes.wintypes as wintypes
 
@@ -166,7 +173,9 @@ if os.name == "nt":  # noqa
             ctypes.windll.kernel32.SetConsoleOutputCP(self._saved_ocp)
             ctypes.windll.kernel32.SetConsoleCP(self._saved_icp)
             try:
-                ctypes.windll.kernel32.SetConsoleMode(ctypes.windll.kernel32.GetStdHandle(-11), self._saved_cm)
+                ctypes.windll.kernel32.SetConsoleMode(
+                    ctypes.windll.kernel32.GetStdHandle(-11), self._saved_cm
+                )
             except AttributeError:  # in case no _saved_cm
                 pass
 
@@ -236,7 +245,9 @@ elif os.name == "posix":
             self.cancel()
 
 else:
-    raise NotImplementedError("Sorry no implementation for your platform ({}) available.".format(sys.platform))
+    raise NotImplementedError(
+        "Sorry no implementation for your platform ({}) available.".format(sys.platform)
+    )
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -282,7 +293,9 @@ class LF(Transform):
 class NoTerminal(Transform):
     """remove typical terminal control codes from input"""
 
-    REPLACEMENT_MAP = dict((x, 0x2400 + x) for x in range(32) if unichr(x) not in "\r\n\b\t")
+    REPLACEMENT_MAP = dict(
+        (x, 0x2400 + x) for x in range(32) if unichr(x) not in "\r\n\b\t"
+    )
     REPLACEMENT_MAP.update(
         {
             0x7F: 0x2421,  # DEL
@@ -429,6 +442,7 @@ class Miniterm(object):
         self.tx_encoder = None
         self.no_write = False
         self.remove_no_write = False
+        self.cmd = ""
 
     def _start_reader(self):
         """Start reader thread"""
@@ -472,7 +486,9 @@ class Miniterm(object):
 
     def update_transformations(self):
         """take list of transformation classes and instantiate them for rx and tx"""
-        transformations = [EOL_TRANSFORMATIONS[self.eol]] + [TRANSFORMATIONS[f] for f in self.filters]
+        transformations = [EOL_TRANSFORMATIONS[self.eol]] + [
+            TRANSFORMATIONS[f] for f in self.filters
+        ]
         self.tx_transformations = [t() for t in transformations]
         self.rx_transformations = list(reversed(self.tx_transformations))
 
@@ -488,7 +504,11 @@ class Miniterm(object):
 
     def dump_port_settings(self):
         """Write current settings to sys.stderr"""
-        sys.stderr.write("\n--- Settings: {p.name}  {p.baudrate},{p.bytesize},{p.parity},{p.stopbits}\n".format(p=self.serial))
+        sys.stderr.write(
+            "\n--- Settings: {p.name}  {p.baudrate},{p.bytesize},{p.parity},{p.stopbits}\n".format(
+                p=self.serial
+            )
+        )
         sys.stderr.write(
             "--- RTS: {:8}  DTR: {:8}  BREAK: {:8}\n".format(
                 ("active" if self.serial.rts else "inactive"),
@@ -509,10 +529,20 @@ class Miniterm(object):
             # on RFC 2217 ports, it can happen if no modem state notification was
             # yet received. ignore this error.
             pass
-        sys.stderr.write("--- software flow control: {}\n".format("active" if self.serial.xonxoff else "inactive"))
-        sys.stderr.write("--- hardware flow control: {}\n".format("active" if self.serial.rtscts else "inactive"))
+        sys.stderr.write(
+            "--- software flow control: {}\n".format(
+                "active" if self.serial.xonxoff else "inactive"
+            )
+        )
+        sys.stderr.write(
+            "--- hardware flow control: {}\n".format(
+                "active" if self.serial.rtscts else "inactive"
+            )
+        )
         sys.stderr.write("--- serial input encoding: {}\n".format(self.input_encoding))
-        sys.stderr.write("--- serial output encoding: {}\n".format(self.output_encoding))
+        sys.stderr.write(
+            "--- serial output encoding: {}\n".format(self.output_encoding)
+        )
         sys.stderr.write("--- EOL: {}\n".format(self.eol.upper()))
         sys.stderr.write("--- filters: {}\n".format(" ".join(self.filters)))
 
@@ -556,7 +586,6 @@ class Miniterm(object):
             while self.alive:
                 try:
                     c = self.console.getkey()
-                    self.remove_no_write = True
                 except KeyboardInterrupt:
                     c = "\x03"
                 if not self.alive:
@@ -570,16 +599,16 @@ class Miniterm(object):
                     self.stop()  # exit app
                     break
                 else:
-                    # ~ if self.raw:
-                    text = c
+                    self.cmd += c
+                    echo_text = c
                     for transformation in self.tx_transformations:
-                        text = transformation.tx(text)
-                    self.serial.write(self.tx_encoder.encode(text))
-                    if self.echo:
-                        echo_text = c
-                        for transformation in self.tx_transformations:
                             echo_text = transformation.echo(echo_text)
-                        self.console.write(echo_text)
+                    if self.echo: self.console.write_echo(echo_text)
+                    if c == '\n':
+                        self.remove_no_write = True
+                        text = self.cmd
+                        self.serial.write(self.tx_encoder.encode(text))
+                        self.cmd = ""
         except Exception:
             self.alive = False
             raise
@@ -597,16 +626,26 @@ class Miniterm(object):
             sys.stderr.write(self.get_help_text())
         elif c == "\x12":  # CTRL+R -> Toggle RTS
             self.serial.rts = not self.serial.rts
-            sys.stderr.write("--- RTS {} ---\n".format("active" if self.serial.rts else "inactive"))
+            sys.stderr.write(
+                "--- RTS {} ---\n".format("active" if self.serial.rts else "inactive")
+            )
         elif c == "\x04":  # CTRL+D -> Toggle DTR
             self.serial.dtr = not self.serial.dtr
-            sys.stderr.write("--- DTR {} ---\n".format("active" if self.serial.dtr else "inactive"))
+            sys.stderr.write(
+                "--- DTR {} ---\n".format("active" if self.serial.dtr else "inactive")
+            )
         elif c == "\x02":  # CTRL+B -> toggle BREAK condition
             self.serial.break_condition = not self.serial.break_condition
-            sys.stderr.write("--- BREAK {} ---\n".format("active" if self.serial.break_condition else "inactive"))
+            sys.stderr.write(
+                "--- BREAK {} ---\n".format(
+                    "active" if self.serial.break_condition else "inactive"
+                )
+            )
         elif c == "\x05":  # CTRL+E -> toggle local echo
             self.echo = not self.echo
-            sys.stderr.write("--- local echo {} ---\n".format("active" if self.echo else "inactive"))
+            sys.stderr.write(
+                "--- local echo {} ---\n".format("active" if self.echo else "inactive")
+            )
         elif c == "\x06":  # CTRL+F -> edit filters
             self.change_filter()
         elif c == "\x0c":  # CTRL+L -> EOL mode
@@ -668,7 +707,9 @@ class Miniterm(object):
         elif c in "qQ":
             self.stop()  # Q -> exit app
         else:
-            sys.stderr.write("--- unknown menu character {} --\n".format(key_description(c)))
+            sys.stderr.write(
+                "--- unknown menu character {} --\n".format(key_description(c))
+            )
 
     def upload_file(self):
         """Ask user for filename and send its contents"""
@@ -690,13 +731,22 @@ class Miniterm(object):
                             sys.stderr.write(".")  # Progress indicator.
                     sys.stderr.write("\n--- File {} sent ---\n".format(filename))
                 except IOError as e:
-                    sys.stderr.write("--- ERROR opening file {}: {} ---\n".format(filename, e))
+                    sys.stderr.write(
+                        "--- ERROR opening file {}: {} ---\n".format(filename, e)
+                    )
 
     def change_filter(self):
         """change the i/o transformations"""
         sys.stderr.write("\n--- Available Filters:\n")
-        sys.stderr.write("\n".join("---   {:<10} = {.__doc__}".format(k, v) for k, v in sorted(TRANSFORMATIONS.items())))
-        sys.stderr.write("\n--- Enter new filter name(s) [{}]: ".format(" ".join(self.filters)))
+        sys.stderr.write(
+            "\n".join(
+                "---   {:<10} = {.__doc__}".format(k, v)
+                for k, v in sorted(TRANSFORMATIONS.items())
+            )
+        )
+        sys.stderr.write(
+            "\n--- Enter new filter name(s) [{}]: ".format(" ".join(self.filters))
+        )
         with self.console:
             new_filters = sys.stdin.readline().lower().split()
         if new_filters:
@@ -711,7 +761,9 @@ class Miniterm(object):
 
     def change_encoding(self):
         """change encoding on the serial port"""
-        sys.stderr.write("\n--- Enter new encoding name [{}]: ".format(self.input_encoding))
+        sys.stderr.write(
+            "\n--- Enter new encoding name [{}]: ".format(self.input_encoding)
+        )
         with self.console:
             new_encoding = sys.stdin.readline().strip()
         if new_encoding:
@@ -723,7 +775,9 @@ class Miniterm(object):
                 self.set_rx_encoding(new_encoding)
                 self.set_tx_encoding(new_encoding)
         sys.stderr.write("--- serial input encoding: {}\n".format(self.input_encoding))
-        sys.stderr.write("--- serial output encoding: {}\n".format(self.output_encoding))
+        sys.stderr.write(
+            "--- serial output encoding: {}\n".format(self.output_encoding)
+        )
 
     def change_baudrate(self):
         """change the baudrate"""
@@ -765,7 +819,9 @@ class Miniterm(object):
             else:
                 self.serial.close()
                 self.serial = new_serial
-                sys.stderr.write("--- Port changed to: {} ---\n".format(self.serial.port))
+                sys.stderr.write(
+                    "--- Port changed to: {} ---\n".format(self.serial.port)
+                )
             # and restart the reader thread
             self._start_reader()
 
@@ -780,7 +836,11 @@ class Miniterm(object):
         sys.stderr.write("\n--- Port closed: {} ---\n".format(self.serial.port))
         do_change_port = False
         while not self.serial.is_open:
-            sys.stderr.write("--- Quit: {exit} | p: port change | any other key to reconnect ---\n".format(exit=key_description(self.exit_character)))
+            sys.stderr.write(
+                "--- Quit: {exit} | p: port change | any other key to reconnect ---\n".format(
+                    exit=key_description(self.exit_character)
+                )
+            )
             k = self.console.getkey()
             if k == self.exit_character:
                 self.stop()  # exit app
@@ -856,7 +916,9 @@ def main(
 
     import argparse
 
-    parser = argparse.ArgumentParser(description="Miniterm - A simple terminal program for the serial port.")
+    parser = argparse.ArgumentParser(
+        description="Miniterm - A simple terminal program for the serial port."
+    )
 
     parser.add_argument(
         "port",
@@ -1011,7 +1073,12 @@ def main(
     if args.filter:
         if "help" in args.filter:
             sys.stderr.write("Available filters:\n")
-            sys.stderr.write("\n".join("{:<10} = {.__doc__}".format(k, v) for k, v in sorted(TRANSFORMATIONS.items())))
+            sys.stderr.write(
+                "\n".join(
+                    "{:<10} = {.__doc__}".format(k, v)
+                    for k, v in sorted(TRANSFORMATIONS.items())
+                )
+            )
             sys.stderr.write("\n")
             sys.exit(1)
         filters = args.filter
@@ -1045,11 +1112,19 @@ def main(
 
             if args.dtr is not None:
                 if not args.quiet:
-                    sys.stderr.write("--- forcing DTR {}\n".format("active" if args.dtr else "inactive"))
+                    sys.stderr.write(
+                        "--- forcing DTR {}\n".format(
+                            "active" if args.dtr else "inactive"
+                        )
+                    )
                 serial_instance.dtr = args.dtr
             if args.rts is not None:
                 if not args.quiet:
-                    sys.stderr.write("--- forcing RTS {}\n".format("active" if args.rts else "inactive"))
+                    sys.stderr.write(
+                        "--- forcing RTS {}\n".format(
+                            "active" if args.rts else "inactive"
+                        )
+                    )
                 serial_instance.rts = args.rts
 
             if isinstance(serial_instance, serial.Serial):
@@ -1067,7 +1142,9 @@ def main(
         else:
             break
 
-    miniterm = Miniterm(serial_instance, echo=args.echo, eol=args.eol.lower(), filters=filters)
+    miniterm = Miniterm(
+        serial_instance, echo=args.echo, eol=args.eol.lower(), filters=filters
+    )
     miniterm.exit_character = unichr(args.exit_char)
     miniterm.menu_character = unichr(args.menu_char)
     miniterm.raw = args.raw
@@ -1075,7 +1152,11 @@ def main(
     miniterm.set_tx_encoding(args.serial_port_encoding)
 
     if not args.quiet:
-        sys.stderr.write("--- Miniterm on {p.name}  {p.baudrate},{p.bytesize},{p.parity},{p.stopbits} ---\n".format(p=miniterm.serial))
+        sys.stderr.write(
+            "--- Miniterm on {p.name}  {p.baudrate},{p.bytesize},{p.parity},{p.stopbits} ---\n".format(
+                p=miniterm.serial
+            )
+        )
         sys.stderr.write(
             "--- Quit: {} | Menu: {} | Help: {} followed by {} ---\n".format(
                 key_description(miniterm.exit_character),
@@ -1084,8 +1165,16 @@ def main(
                 key_description("\x08"),
             )
         )
-        sys.stderr.write("--- Specifically modified for managing HLPdataBMS4S in Venus OS ---\n".format(p=miniterm.serial))  # noqa: F522
-        sys.stderr.write("--- Quit: Ctrl-t q | Local echo: Ctrl-t Ctrl-e ---\n".format(p=miniterm.serial))  # noqa: F522
+        sys.stderr.write(
+            "--- Specifically modified for managing HLPdataBMS4S in Venus OS ---\n".format(  # noqa: F522
+                p=miniterm.serial
+            )
+        )
+        sys.stderr.write(
+            "--- Quit: Ctrl-t q | Local echo: Ctrl-t Ctrl-e ---\n".format(  # noqa: F522
+                p=miniterm.serial
+            )
+        )
 
     miniterm.start()
     try:
