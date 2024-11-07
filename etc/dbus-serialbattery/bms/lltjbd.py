@@ -233,7 +233,7 @@ class LltJbdProtection(Protection):
 
 
 class LltJbd(Battery):
-    def __init__(self, port, baud, address=b"\x00"):
+    def __init__(self, port, baud, address):
         super(LltJbd, self).__init__(port, baud, address)
         self.protection = LltJbdProtection()
         self.type = self.BATTERYTYPE
