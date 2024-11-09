@@ -251,7 +251,7 @@ class Jkbms_Brn:
         self.bms_status["warnings"]["cell_undervoltage"] = bool(val & (1 << 11))
         self.bms_status["warnings"]["charge_overcurrent"] = bool(val & (1 << 6))
         self.bms_status["warnings"]["discharge_overcurrent"] = bool(val & (1 << 13))
-        # bis hierhin verifiziert, rest zu testen
+        # verified until here, rest is guesswork
 
     def decode_device_info_jk02(self):
         fb = self.frame_buffer

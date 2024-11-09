@@ -28,6 +28,7 @@ class Protection(object):
 
     def __init__(self):
         self.high_voltage: int = None
+        self.high_cell_voltage: int = None
         self.low_voltage: int = None
         self.low_cell_voltage: int = None
         self.low_soc: int = None

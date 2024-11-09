@@ -316,7 +316,9 @@ class Jkbms_pb(Battery):
         self.protection.high_discharge_current = (byte_data & 0x00002000) * 2
         # core differential pressure alarm OR unit overvoltage alarm
         self.protection.cell_imbalance = 0
-        # unit undervoltage alarm
+        # cell overvoltage alarm
+        self.protection.high_cell_voltage = (byte_data & 0x00000010) * 2
+        # cell undervoltage alarm
         self.protection.low_cell_voltage = (byte_data & 0x00001000) * 2
         # battery overtemperature alarm OR overtemperature alarm in the battery box
         self.protection.high_charge_temp = (byte_data & 0x00000100) * 2

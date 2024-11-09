@@ -610,7 +610,7 @@ class DbusHelper:
         self._dbusservice.add_path("/Alarms/LowVoltage", None, writeable=True)
         self._dbusservice.add_path("/Alarms/HighVoltage", None, writeable=True)
         self._dbusservice.add_path("/Alarms/LowCellVoltage", None, writeable=True)
-        # self._dbusservice.add_path("/Alarms/HighCellVoltage", None, writeable=True)  ## does not exist on the dbus
+        self._dbusservice.add_path("/Alarms/HighCellVoltage", None, writeable=True)
         self._dbusservice.add_path("/Alarms/LowSoc", None, writeable=True)
         self._dbusservice.add_path("/Alarms/HighChargeCurrent", None, writeable=True)
         self._dbusservice.add_path("/Alarms/HighDischargeCurrent", None, writeable=True)
@@ -910,6 +910,11 @@ class DbusHelper:
         # disable high voltage warning temporarly, if loading to bulk voltage and bulk voltage reached is 30 minutes ago
         self._dbusservice["/Alarms/HighVoltage"] = (
             self.battery.protection.high_voltage
+            if (self.battery.soc_reset_requested is False and self.battery.soc_reset_last_reached < int(time()) - (60 * 30))
+            else 0
+        )
+        self._dbusservice["/Alarms/HighCellVoltage"] = (
+            self.battery.protection.high_cell_voltage
             if (self.battery.soc_reset_requested is False and self.battery.soc_reset_last_reached < int(time()) - (60 * 30))
             else 0
         )
