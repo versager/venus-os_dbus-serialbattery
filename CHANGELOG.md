@@ -70,7 +70,8 @@
 * Added: Possibility to change the CAN bus speed by @mr-manuel
 * Added: Threshold, if `CCL = 0` or `DCL = 0` is reached to prevent flapping @mr-manuel
 * Changed: Calculate Time-to-Go until ESS -> Minimum SOC (unless grid fails), Active SOC limit or `SOC_LOW_WARNING` from `config.ini` by @mr-manuel
-* Changed: HLPDATABMS4S BMS - improved driver with https://github.com/mr-manuel/venus-os_dbus-serialbattery/pull/96 by @peterohman
+* Changed: HLPDATA BMS - BMS control of max charge and discharge is removed by @peterohman
+* Changed: HLPDATA BMS - improved driver with https://github.com/mr-manuel/venus-os_dbus-serialbattery/pull/96 by @peterohman
 * Changed: JKBMS PB Model fixed firmware version and temperature sensors by @KoljaWindeler
 * Changed: Rewritten code for external current sensor and fixed https://github.com/mr-manuel/venus-os_dbus-serialbattery/issues/60 by @mr-manuel
 
