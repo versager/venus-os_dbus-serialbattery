@@ -84,7 +84,8 @@ if len(utils.BMS_TYPE) > 0:
 
 
 # count loops
-loop_count = 0
+count_for_loops = 5
+delayed_loop_count = 0
 
 
 def main():
@@ -95,7 +96,7 @@ def main():
         """
         Polls the battery for data and updates it on the dbus
         """
-        global loop_count
+        global count_for_loops, delayed_loop_count
 
         # count execution time in milliseconds
         start = datetime.now()
@@ -108,17 +109,25 @@ def main():
 
         # check if polling took too long and adjust poll interval, but only after 5 loops
         # since the first polls are always slower
-        if loop_count > 5 and runtime > battery[first_key].poll_interval / 1000:
-            new_poll_interval = math.ceil(runtime + 0.8) * 1000
+        if runtime > battery[first_key].poll_interval / 1000:
+            delayed_loop_count += 1
+            if delayed_loop_count > 1:
+                logger.warning(f"Polling data took {runtime:.3f} seconds. Automatically increase interval in {count_for_loops - delayed_loop_count} cycles.")
+        else:
+            delayed_loop_count = 0
+
+        if delayed_loop_count >= count_for_loops:
+            # round up to the next half second
+            new_poll_interval = math.ceil((runtime + 0.05) * 2) / 2 * 1000
 
             # limit max poll interval to 60 seconds
             if new_poll_interval > 60000:
                 new_poll_interval = 60000
 
             battery[first_key].poll_interval = new_poll_interval
-            logger.warning(f"Polling took too long. Set to {new_poll_interval/1000:.3f} s")
+            logger.warning(f"Polling took too long for the last {count_for_loops} cycles. Set to {new_poll_interval/1000:.3f} s")
 
-        loop_count += 1
+            delayed_loop_count = 0
 
         return True
 

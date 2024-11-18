@@ -73,6 +73,7 @@
 * Changed: HLPDATA BMS - BMS control of max charge and discharge is removed by @peterohman
 * Changed: HLPDATA BMS - improved driver with https://github.com/mr-manuel/venus-os_dbus-serialbattery/pull/96 by @peterohman
 * Changed: JKBMS PB Model fixed firmware version and temperature sensors by @KoljaWindeler
+* Changed: Optimized auto increase of the polling time by @mr-manuel
 * Changed: Rewritten code for external current sensor and fixed https://github.com/mr-manuel/venus-os_dbus-serialbattery/issues/60 by @mr-manuel
 
 ## v1.4.20240928
