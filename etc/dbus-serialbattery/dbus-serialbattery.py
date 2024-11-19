@@ -159,7 +159,7 @@ def main():
                     baud = test["baud"]
                     battery: Battery = batteryClass(port=_port, baud=baud, address=_bms_address)
                     if battery.test_connection() and battery.validate_data():
-                        logger.info("Connection established to " + battery.__class__.__name__)
+                        logger.info("-- Connection established to " + battery.__class__.__name__)
                         return battery
                 except KeyboardInterrupt:
                     return None
@@ -236,7 +236,7 @@ def main():
             testbms = class_("ble_" + ble_address.replace(":", "").lower(), 9600, ble_address)
 
             if testbms.test_connection():
-                logger.info("Connection established to " + testbms.__class__.__name__)
+                logger.info("-- Connection established to " + testbms.__class__.__name__)
                 battery[0] = testbms
 
     elif port.startswith("can") or port.startswith("vecan"):
@@ -316,7 +316,7 @@ def main():
         if utils.POLL_INTERVAL is not None:
             battery[first_key].poll_interval = utils.POLL_INTERVAL
 
-        logger.info(f"Polling data every {battery[first_key].poll_interval/1000:.3f} s")
+        logger.info(f"Polling interval: {battery[first_key].poll_interval/1000:.3f} s")
 
         # if not possible, poll the battery every poll_interval milliseconds
         gobject.timeout_add(

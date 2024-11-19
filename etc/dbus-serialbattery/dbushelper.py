@@ -132,7 +132,7 @@ class DbusHelper:
         # Ensure the changes are written to the disk
         # os.fsync(self.pid_file.fileno())
 
-        logger.info(f"PID file created successfully: {pid_file_path}")
+        logger.debug(f"PID file created successfully: {pid_file_path}")
 
     def setup_instance(self):
         """
@@ -219,7 +219,7 @@ class DbusHelper:
                         if "ClassAndVrmInstance" in value and value["ClassAndVrmInstance"] != "":
                             # get the instance from the object name
                             device_instance = int(value["ClassAndVrmInstance"][value["ClassAndVrmInstance"].rfind(":") + 1 :])
-                            logger.info(f"Found existing battery with DeviceInstance = {device_instance}")
+                            logger.info(f"Reconnected to previously identified battery with DeviceInstance: {device_instance}")
 
                         # check if the battery has AllowMaxVoltage set
                         if "AllowMaxVoltage" in value and value["AllowMaxVoltage"] != "":
@@ -384,24 +384,28 @@ class DbusHelper:
 
         self.settings.addSettings(settings)
         self.battery.role, self.instance = self.get_role_instance()
+        logger.info(f"Use DeviceInstance: {self.instance}")
+
+        logger.debug(f"Found DeviceInstances: {device_instances_used}")
 
         # create pid file
         self.create_pid_file()
 
-        logger.info(f"Used DeviceInstances = {device_instances_used}")
-
     def get_role_instance(self):
         val = self.settings["ClassAndVrmInstance"].split(":")
-        logger.info("DeviceInstance = %d", int(val[1]))
+        logger.debug(f"Use DeviceInstance: {int(val[1])}")
         return val[0], int(val[1])
 
     def handle_changed_setting(self, setting, oldvalue, newvalue):
         if setting == "ClassAndVrmInstance":
+            old_instance = self.instance
             self.battery.role, self.instance = self.get_role_instance()
-            logger.info(f"Changed DeviceInstance = {self.instance}")
+            if old_instance != self.instance:
+                logger.info(f"Changed to DeviceInstance: {self.instance}")
             return
         if setting == "CustomName":
-            logger.info(f"Changed CustomName = {newvalue}")
+            if oldvalue != newvalue:
+                logger.info(f"Changed to CustomName: {newvalue}")
             return
 
     # this function is called when the battery is initiated
@@ -412,7 +416,7 @@ class DbusHelper:
         This is only called once when a battery is initiated
         """
         self.setup_instance()
-        logger.info("%s" % (self._dbusname))
+        logger.info(f"Use dbus ServiceName: {self._dbusname}")
 
         # Create the management objects, as specified in the ccgx dbus-api document
         self._dbusservice.add_path("/Mgmt/ProcessName", __file__)
@@ -667,7 +671,7 @@ class DbusHelper:
                 for num in utils.TIME_TO_SOC_POINTS:
                     self._dbusservice.add_path("/TimeToSoC/" + str(num), None, writeable=True)
 
-        logger.info(f"publish config values = {utils.PUBLISH_CONFIG_VALUES}")
+        logger.debug(f"Publish config values: {utils.PUBLISH_CONFIG_VALUES}")
         if utils.PUBLISH_CONFIG_VALUES:
             publish_config_variables(self._dbusservice)
 
