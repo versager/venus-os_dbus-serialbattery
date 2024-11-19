@@ -964,7 +964,7 @@ class Battery(ABC):
 
         :return: None
         """
-        # Manage Charge Current Limitations
+        # ---------- Manage Charge Current Limitations ----------
         charge_limits = {utils.MAX_BATTERY_CHARGE_CURRENT: "Max Battery Charge Current"}
 
         # if BMS limit is lower then config limit and therefore the values are not the same,
@@ -1025,8 +1025,8 @@ class Battery(ABC):
         diff = abs(self.control_charge_current - ccl) if self.control_charge_current is not None else 0
         if (
             int(time()) - self.linear_ccl_last_set >= utils.LINEAR_RECALCULATION_EVERY
-            or ccl == 0
             or (diff >= self.control_charge_current * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE / 100)
+            or (ccl == 0 and self.control_charge_current != 0)
         ):
             self.linear_ccl_last_set = int(time())
 
@@ -1035,15 +1035,12 @@ class Battery(ABC):
                 self.control_charge_current = ccl
                 self.charge_limitation = charge_limits[min(charge_limits)]
             else:
-                # Allow recovery only if the new allowed current is greater than 1% of the previous allowed current
-                if self.control_charge_current == 0 and ccl > self.control_charge_current * 0.01:
-                    self.control_charge_current = ccl
-                    self.charge_limitation = charge_limits[min(charge_limits)]
-                elif self.control_charge_current != 0:
-                    self.control_charge_current = ccl
-                    self.charge_limitation = charge_limits[min(charge_limits)]
-                elif self.charge_limitation != charge_limits[min(charge_limits)] + " *":
+                # Don't allow recovery if the new allowed current is smaller than 1% of the previous allowed current
+                if self.control_charge_current == 0 and ccl < utils.MAX_BATTERY_CHARGE_CURRENT * utils.CHARGE_CURRENT_RECOVERY_THRESHOLD_PERCENT:
                     self.charge_limitation = charge_limits[min(charge_limits)] + " *"
+                else:
+                    self.control_charge_current = ccl
+                    self.charge_limitation = charge_limits[min(charge_limits)]
 
         # set allow to charge to no, if CCL is 0
         if self.control_charge_current == 0:
@@ -1053,7 +1050,7 @@ class Battery(ABC):
 
         #####
 
-        # Manage Discharge Current Limitations
+        # ---------- Manage Discharge Current Limitations ----------
         discharge_limits = {utils.MAX_BATTERY_DISCHARGE_CURRENT: "Max Battery Discharge Current"}
 
         # if BMS limit is lower then config limit and therefore the values are not the same,
@@ -1114,8 +1111,8 @@ class Battery(ABC):
         diff = abs(self.control_discharge_current - dcl) if self.control_discharge_current is not None else 0
         if (
             int(time()) - self.linear_dcl_last_set >= utils.LINEAR_RECALCULATION_EVERY
-            or dcl == 0
             or (diff >= self.control_discharge_current * utils.LINEAR_RECALCULATION_ON_PERC_CHANGE / 100)
+            or (dcl == 0 and self.control_discharge_current != 0)
         ):
             self.linear_dcl_last_set = int(time())
 
@@ -1124,15 +1121,12 @@ class Battery(ABC):
                 self.control_discharge_current = dcl
                 self.discharge_limitation = discharge_limits[min(discharge_limits)]
             else:
-                # Allow recovery only if the new allowed current is greater than 1% of the previous allowed current
-                if self.control_discharge_current == 0 and dcl > self.control_discharge_current * 0.01:
-                    self.control_discharge_current = dcl
-                    self.discharge_limitation = discharge_limits[min(discharge_limits)]
-                elif self.control_discharge_current != 0:
-                    self.control_discharge_current = dcl
-                    self.discharge_limitation = discharge_limits[min(discharge_limits)]
-                elif self.discharge_limitation != discharge_limits[min(discharge_limits)] + " *":
+                # Don't allow recovery if the new allowed current is smaller than 1% of the previous allowed current
+                if self.control_discharge_current == 0 and dcl < utils.MAX_BATTERY_DISCHARGE_CURRENT * utils.DISCHARGE_CURRENT_RECOVERY_THRESHOLD_PERCENT:
                     self.discharge_limitation = discharge_limits[min(discharge_limits)] + " *"
+                else:
+                    self.control_discharge_current = dcl
+                    self.discharge_limitation = discharge_limits[min(discharge_limits)]
 
         # set allow to discharge to no, if DCL is 0
         if self.control_discharge_current == 0:

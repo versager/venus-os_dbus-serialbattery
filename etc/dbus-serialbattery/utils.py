@@ -374,6 +374,17 @@ check_config_issue(
 )
 
 
+# --------- CCL/DCL Recovery Threshold ---------
+CHARGE_CURRENT_RECOVERY_THRESHOLD_PERCENT: float = get_float_from_config("DEFAULT", "CHARGE_CURRENT_RECOVERY_THRESHOLD_PERCENT")
+"""
+Defines the percentage of the maximum charge current that the battery has to reach to recover from a limitation.
+"""
+DISCHARGE_CURRENT_RECOVERY_THRESHOLD_PERCENT: float = get_float_from_config("DEFAULT", "DISCHARGE_CURRENT_RECOVERY_THRESHOLD_PERCENT")
+"""
+Defines the percentage of the maximum discharge current that the battery has to reach to recover from a limitation.
+"""
+
+
 # --------- Time-To-Go ---------
 TIME_TO_GO_ENABLE: bool = get_bool_from_config("DEFAULT", "TIME_TO_GO_ENABLE")
 
