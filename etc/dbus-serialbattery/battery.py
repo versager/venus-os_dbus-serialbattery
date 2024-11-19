@@ -450,7 +450,7 @@ class Battery(ABC):
             if utils.SOC_CALC_CURRENT:
                 # calculate current from real current
                 self.current_corrected = round(
-                    utils.calcLinearRelationship(
+                    utils.calc_linear_relationship(
                         self.get_current(),
                         utils.SOC_CALC_CURRENT_REPORTED_BY_BMS,
                         utils.SOC_CALC_CURRENT_MEASURED_BY_USER,
@@ -973,7 +973,7 @@ class Battery(ABC):
             charge_limits.update({self.max_battery_charge_current: "BMS Settings"})
 
         if utils.CCCM_CV_ENABLE:
-            tmp = self.calcMaxChargeCurrentReferringToCellVoltage()
+            tmp = self.calc_max_charge_current_from_cell_voltage()
             if self.max_battery_charge_current != tmp:
                 if tmp in charge_limits:
                     # do not add string, if global limitation is applied
@@ -985,7 +985,7 @@ class Battery(ABC):
                     charge_limits.update({tmp: "Cell Voltage"})
 
         if utils.CCCM_T_ENABLE:
-            tmp = self.calcMaxChargeCurrentReferringToTemperature()
+            tmp = self.calc_max_charge_current_from_temperature()
             if self.max_battery_charge_current != tmp:
                 if tmp in charge_limits:
                     # do not add string, if global limitation is applied
@@ -997,7 +997,7 @@ class Battery(ABC):
                     charge_limits.update({tmp: "Temp"})
 
         if utils.CCCM_SOC_ENABLE:
-            tmp = self.calcMaxChargeCurrentReferringToSoc()
+            tmp = self.calc_max_charge_current_from_soc()
             if self.max_battery_charge_current != tmp:
                 if tmp in charge_limits:
                     # do not add string, if global limitation is applied
@@ -1062,7 +1062,7 @@ class Battery(ABC):
             discharge_limits.update({self.max_battery_discharge_current: "BMS Settings"})
 
         if utils.DCCM_CV_ENABLE:
-            tmp = self.calcMaxDischargeCurrentReferringToCellVoltage()
+            tmp = self.calc_max_discharge_current_from_cell_voltage()
             if self.max_battery_discharge_current != tmp:
                 if tmp in discharge_limits:
                     # do not add string, if global limitation is applied
@@ -1074,7 +1074,7 @@ class Battery(ABC):
                     discharge_limits.update({tmp: "Cell Voltage"})
 
         if utils.DCCM_T_ENABLE:
-            tmp = self.calcMaxDischargeCurrentReferringToTemperature()
+            tmp = self.calc_max_discharge_current_from_temperature()
             if self.max_battery_discharge_current != tmp:
                 if tmp in discharge_limits:
                     # do not add string, if global limitation is applied
@@ -1086,7 +1086,7 @@ class Battery(ABC):
                     discharge_limits.update({tmp: "Temp"})
 
         if utils.DCCM_SOC_ENABLE:
-            tmp = self.calcMaxDischargeCurrentReferringToSoc()
+            tmp = self.calc_max_discharge_current_from_soc()
             if self.max_battery_discharge_current != tmp:
                 if tmp in discharge_limits:
                     # do not add string, if global limitation is applied
@@ -1140,7 +1140,7 @@ class Battery(ABC):
         else:
             self.control_allow_discharge = True
 
-    def calcMaxChargeCurrentReferringToCellVoltage(self) -> float:
+    def calc_max_charge_current_from_cell_voltage(self) -> float:
         """
         Calculate the maximum charge current referring to the cell voltage.
 
@@ -1148,7 +1148,7 @@ class Battery(ABC):
         """
         if self.get_max_cell_voltage() is None:
             logger.warning(
-                "calcMaxChargeCurrentReferringToCellVoltage():"
+                "calc_max_charge_current_from_cell_voltage():"
                 + f" get_max_cell_voltage() is {self.get_max_cell_voltage()}, using default current instead."
                 + " If you don't see this warning very often, you can ignore it."
             )
@@ -1156,12 +1156,12 @@ class Battery(ABC):
 
         try:
             if utils.LINEAR_LIMITATION_ENABLE:
-                return utils.calcLinearRelationship(
+                return utils.calc_linear_relationship(
                     self.get_max_cell_voltage(),
                     utils.CELL_VOLTAGES_WHILE_CHARGING,
                     utils.MAX_CHARGE_CURRENT_CV,
                 )
-            return utils.calcStepRelationship(
+            return utils.calc_step_relationship(
                 self.get_max_cell_voltage(),
                 utils.CELL_VOLTAGES_WHILE_CHARGING,
                 utils.MAX_CHARGE_CURRENT_CV,
@@ -1172,7 +1172,7 @@ class Battery(ABC):
             self.manage_error_code(8)
 
             logger.error(
-                "calcMaxChargeCurrentReferringToCellVoltage(): Error while executing,"
+                "calc_max_charge_current_from_cell_voltage(): Error while executing,"
                 + " using default current instead."
                 + " If you don't see this warning very often, you can ignore it."
             )
@@ -1188,7 +1188,7 @@ class Battery(ABC):
             logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
-    def calcMaxDischargeCurrentReferringToCellVoltage(self) -> float:
+    def calc_max_discharge_current_from_cell_voltage(self) -> float:
         """
         Calculate the maximum discharge current referring to the cell voltage.
 
@@ -1196,7 +1196,7 @@ class Battery(ABC):
         """
         if self.get_min_cell_voltage() is None:
             logger.warning(
-                "calcMaxDischargeCurrentReferringToCellVoltage():"
+                "calc_max_discharge_current_from_cell_voltage():"
                 + f" get_min_cell_voltage() is {self.get_min_cell_voltage()}, using default current instead."
                 + " If you don't see this warning very often, you can ignore it."
             )
@@ -1204,12 +1204,12 @@ class Battery(ABC):
 
         try:
             if utils.LINEAR_LIMITATION_ENABLE:
-                return utils.calcLinearRelationship(
+                return utils.calc_linear_relationship(
                     self.get_min_cell_voltage(),
                     utils.CELL_VOLTAGES_WHILE_DISCHARGING,
                     utils.MAX_DISCHARGE_CURRENT_CV,
                 )
-            return utils.calcStepRelationship(
+            return utils.calc_step_relationship(
                 self.get_min_cell_voltage(),
                 utils.CELL_VOLTAGES_WHILE_DISCHARGING,
                 utils.MAX_DISCHARGE_CURRENT_CV,
@@ -1219,7 +1219,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error("calcMaxChargeCurrentReferringToCellVoltage(): Error while executing," + " using default current instead.")
+            logger.error("calc_max_charge_current_from_cell_voltage(): Error while executing," + " using default current instead.")
             logger.error(
                 f"get_min_cell_voltage: {self.get_min_cell_voltage()}"
                 + f" • CELL_VOLTAGES_WHILE_DISCHARGING: {utils.CELL_VOLTAGES_WHILE_DISCHARGING}"
@@ -1232,7 +1232,7 @@ class Battery(ABC):
             logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
-    def calcMaxChargeCurrentReferringToTemperature(self) -> float:
+    def calc_max_charge_current_from_temperature(self) -> float:
         """
         Calculate the maximum charge current referring to the temperature.
 
@@ -1240,7 +1240,7 @@ class Battery(ABC):
         """
         if self.get_max_temp() is None or self.get_min_temp() is None:
             logging.warning(
-                "calcMaxChargeCurrentReferringToTemperature():"
+                "calc_max_charge_current_from_temperature():"
                 + f" get_max_temp() is {self.get_max_temp()} or get_min_temp() is {self.get_min_temp()}"
                 + ", using default current instead."
                 + " If you don't see this warning very often, you can ignore it."
@@ -1252,13 +1252,13 @@ class Battery(ABC):
         try:
             for key, currentMaxTemperature in temps.items():
                 if utils.LINEAR_LIMITATION_ENABLE:
-                    temps[key] = utils.calcLinearRelationship(
+                    temps[key] = utils.calc_linear_relationship(
                         currentMaxTemperature,
                         utils.TEMPERATURES_WHILE_CHARGING,
                         utils.MAX_CHARGE_CURRENT_T,
                     )
                 else:
-                    temps[key] = utils.calcStepRelationship(
+                    temps[key] = utils.calc_step_relationship(
                         currentMaxTemperature,
                         utils.TEMPERATURES_WHILE_CHARGING,
                         utils.MAX_CHARGE_CURRENT_T,
@@ -1269,7 +1269,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error("calcMaxChargeCurrentReferringToTemperature(): Error while executing," + " using default current instead.")
+            logger.error("calc_max_charge_current_from_temperature(): Error while executing," + " using default current instead.")
             logger.error(
                 f"temps: {temps}"
                 + f" • TEMPERATURES_WHILE_CHARGING: {utils.TEMPERATURES_WHILE_CHARGING}"
@@ -1282,7 +1282,7 @@ class Battery(ABC):
             logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
-    def calcMaxDischargeCurrentReferringToTemperature(self) -> float:
+    def calc_max_discharge_current_from_temperature(self) -> float:
         """
         Calculate the maximum discharge current referring to the temperature.
 
@@ -1290,7 +1290,7 @@ class Battery(ABC):
         """
         if self.get_max_temp() is None or self.get_min_temp() is None:
             logging.warning(
-                "calcMaxDischargeCurrentReferringToTemperature():"
+                "calc_max_discharge_current_from_temperature():"
                 + f" get_max_temp() is {self.get_max_temp()} or get_min_temp() is {self.get_min_temp()}"
                 + ", using default current instead."
                 + " If you don't see this warning very often, you can ignore it."
@@ -1302,13 +1302,13 @@ class Battery(ABC):
         try:
             for key, currentMaxTemperature in temps.items():
                 if utils.LINEAR_LIMITATION_ENABLE:
-                    temps[key] = utils.calcLinearRelationship(
+                    temps[key] = utils.calc_linear_relationship(
                         currentMaxTemperature,
                         utils.TEMPERATURES_WHILE_DISCHARGING,
                         utils.MAX_DISCHARGE_CURRENT_T,
                     )
                 else:
-                    temps[key] = utils.calcStepRelationship(
+                    temps[key] = utils.calc_step_relationship(
                         currentMaxTemperature,
                         utils.TEMPERATURES_WHILE_DISCHARGING,
                         utils.MAX_DISCHARGE_CURRENT_T,
@@ -1319,7 +1319,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error("calcMaxDischargeCurrentReferringToTemperature(): Error while executing," + " using default current instead.")
+            logger.error("calc_max_discharge_current_from_temperature(): Error while executing," + " using default current instead.")
             logger.error(
                 f"temps: {temps}"
                 + f" • TEMPERATURES_WHILE_DISCHARGING: {utils.TEMPERATURES_WHILE_DISCHARGING}"
@@ -1332,7 +1332,7 @@ class Battery(ABC):
             logger.error("Non blocking exception occurred: " + f"{repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
-    def calcMaxChargeCurrentReferringToSoc(self) -> float:
+    def calc_max_charge_current_from_soc(self) -> float:
         """
         Calculate the maximum charge current referring to the SoC.
 
@@ -1340,12 +1340,12 @@ class Battery(ABC):
         """
         try:
             if utils.LINEAR_LIMITATION_ENABLE:
-                return utils.calcLinearRelationship(
+                return utils.calc_linear_relationship(
                     self.soc_calc,
                     utils.SOC_WHILE_CHARGING,
                     utils.MAX_CHARGE_CURRENT_SOC,
                 )
-            return utils.calcStepRelationship(
+            return utils.calc_step_relationship(
                 self.soc_calc,
                 utils.SOC_WHILE_CHARGING,
                 utils.MAX_CHARGE_CURRENT_SOC,
@@ -1355,7 +1355,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error("calcMaxChargeCurrentReferringToSoc(): Error while executing," + " using default current instead.")
+            logger.error("calc_max_charge_current_from_soc(): Error while executing," + " using default current instead.")
             logger.error(
                 f"soc_calc: {self.soc_calc}"
                 + f" • SOC_WHILE_CHARGING: {utils.SOC_WHILE_CHARGING}"
@@ -1368,7 +1368,7 @@ class Battery(ABC):
             logger.error(f"Exception occurred: {repr(exception_object)} of type {exception_type} in {file} line #{line}")
             return self.max_battery_charge_current
 
-    def calcMaxDischargeCurrentReferringToSoc(self) -> float:
+    def calc_max_discharge_current_from_soc(self) -> float:
         """
         Calculate the maximum discharge current referring to the SoC.
 
@@ -1376,12 +1376,12 @@ class Battery(ABC):
         """
         try:
             if utils.LINEAR_LIMITATION_ENABLE:
-                return utils.calcLinearRelationship(
+                return utils.calc_linear_relationship(
                     self.soc_calc,
                     utils.SOC_WHILE_DISCHARGING,
                     utils.MAX_DISCHARGE_CURRENT_SOC,
                 )
-            return utils.calcStepRelationship(
+            return utils.calc_step_relationship(
                 self.soc_calc,
                 utils.SOC_WHILE_DISCHARGING,
                 utils.MAX_DISCHARGE_CURRENT_SOC,
@@ -1391,7 +1391,7 @@ class Battery(ABC):
             # set error code, to show in the GUI that something is wrong
             self.manage_error_code(8)
 
-            logger.error("calcMaxDischargeCurrentReferringToSoc: Error while executing," + " using default current instead.")
+            logger.error("calc_max_discharge_current_from_soc: Error while executing," + " using default current instead.")
             logger.error(
                 f"soc_calc: {self.soc_calc}"
                 + f" • SOC_WHILE_DISCHARGING: {utils.SOC_WHILE_DISCHARGING}"

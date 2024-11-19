@@ -159,12 +159,12 @@ class DbusHelper:
         logger.debug("setup_instance(): SettingsDevice")
 
         # get all the settings from the dbus
-        settings_from_dbus = self.getSettingsWithValues(
+        settings_from_dbus = self.get_settings_with_values(
             get_bus(),
             "com.victronenergy.settings",
             "/Settings/Devices",
         )
-        logger.debug("setup_instance(): getSettingsWithValues")
+        logger.debug("setup_instance(): get_settings_with_values")
         # output:
         # {
         #     "Settings": {
@@ -274,7 +274,7 @@ class DbusHelper:
                     # check the last seen time and remove the battery it it was not seen for 30 days
                     elif "LastSeen" in value and int(value["LastSeen"]) < int(time()) - (60 * 60 * 24 * 30):
                         # remove entry
-                        del_return = self.removeSetting(
+                        del_return = self.remove_settings(
                             get_bus(),
                             "com.victronenergy.settings",
                             "/Settings/Devices/" + key,
@@ -293,7 +293,7 @@ class DbusHelper:
 
                     # check if the battery has a last seen time, if not then it's an old entry and can be removed
                     elif "LastSeen" not in value:
-                        del_return = self.removeSetting(
+                        del_return = self.remove_settings(
                             get_bus(),
                             "com.victronenergy.settings",
                             "/Settings/Devices/" + key,
@@ -304,7 +304,7 @@ class DbusHelper:
                 if "ruuvi" in key:
                     # check if Ruuvi tag is enabled, if not remove entry.
                     if "Enabled" in value and value["Enabled"] == "0" and "ClassAndVrmInstance" not in value:
-                        del_return = self.removeSetting(
+                        del_return = self.remove_settings(
                             get_bus(),
                             "com.victronenergy.settings",
                             "/Settings/Devices/" + key,
@@ -374,7 +374,7 @@ class DbusHelper:
 
         # update last seen
         if found_bms:
-            self.setSetting(
+            self.set_settings(
                 get_bus(),
                 "com.victronenergy.settings",
                 self.path_battery,
@@ -990,12 +990,12 @@ class DbusHelper:
                 if utils.TIME_TO_GO_ENABLE and percent_per_seconds is not None:
 
                     # Get settings from dbus
-                    settings_battery_life = self.getSettingsWithValues(
+                    settings_battery_life = self.get_settings_with_values(
                         get_bus(),
                         "com.victronenergy.settings",
                         "/Settings/CGwacs/BatteryLife",
                     )
-                    settings_hub4mode = self.getSettingsWithValues(
+                    settings_hub4mode = self.get_settings_with_values(
                         get_bus(),
                         "com.victronenergy.settings",
                         "/Settings/CGwacs/Hub4Mode",
@@ -1057,7 +1057,7 @@ class DbusHelper:
 
         # save settings every 15 seconds to dbus
         if int(time()) % 15:
-            self.saveCurrentBatteryState()
+            self.save_current_battery_state()
 
         if self.battery.soc is not None:
             logger.debug("logged to dbus [%s]" % str(round(self.battery.soc, 2)))
@@ -1066,7 +1066,7 @@ class DbusHelper:
         if self.battery.has_settings:
             self._dbusservice["/Settings/ResetSoc"] = self.battery.reset_soc
 
-    def getSettingsWithValues(self, bus, service: str, object_path: str, recursive: bool = True) -> dict:
+    def get_settings_with_values(self, bus, service: str, object_path: str, recursive: bool = True) -> dict:
         # print(object_path)
         obj = bus.get_object(service, object_path)
         iface = dbus.Interface(obj, "org.freedesktop.DBus.Introspectable")
@@ -1078,8 +1078,8 @@ class DbusHelper:
                 if object_path == "/":
                     object_path = ""
                 new_path = "/".join((object_path, child.attrib["name"]))
-                # result.update(getSettingsWithValues(bus, service, new_path))
-                result_sub = self.getSettingsWithValues(bus, service, new_path)
+                # result.update(get_settings_with_values(bus, service, new_path))
+                result_sub = self.get_settings_with_values(bus, service, new_path)
                 self.merge_dicts(result, result_sub)
             elif child.tag == "interface":
                 if child.attrib["name"] == "com.victronenergy.Settings":
@@ -1100,11 +1100,11 @@ class DbusHelper:
                         # set error code, to show in the GUI that something is wrong
                         self.battery.manage_error_code(8)
 
-                        logger.error(f"getSettingsWithValues(): Failed to get value: {e}")
+                        logger.error(f"get_settings_with_values(): Failed to get value: {e}")
 
         return result
 
-    def setSetting(self, bus, service: str, object_path: str, setting_name: str, value) -> bool:
+    def set_settings(self, bus, service: str, object_path: str, setting_name: str, value) -> bool:
         # check if value is None
         if value is None:
             return False
@@ -1124,13 +1124,13 @@ class DbusHelper:
 
             logger.error(f"Failed to set setting: {e}")
 
-    def removeSetting(self, bus, service: str, object_path: str, setting_name: list) -> bool:
+    def remove_settings(self, bus, service: str, object_path: str, setting_name: list) -> bool:
         obj = bus.get_object(service, object_path)
         # iface = dbus.Interface(obj, "org.freedesktop.DBus.Introspectable")
         # xml_string = iface.Introspect()
         # print(xml_string)
         settings_iface = dbus.Interface(obj, "com.victronenergy.Settings")
-        method = settings_iface.get_dbus_method("RemoveSettings")
+        method = settings_iface.get_dbus_method("remove_settingss")
         try:
             logger.debug(f"Removed setting at {object_path}")
             return True if method(setting_name) == 0 else False
@@ -1158,7 +1158,7 @@ class DbusHelper:
 
     # save custom name to dbus
     def custom_name_callback(self, path, value) -> str:
-        result = self.setSetting(
+        result = self.set_settings(
             get_bus(),
             "com.victronenergy.settings",
             self.path_battery,
@@ -1169,11 +1169,11 @@ class DbusHelper:
         return value if result else None
 
     # save current battery states to dbus
-    def saveCurrentBatteryState(self) -> bool:
+    def save_current_battery_state(self) -> bool:
         result = True
 
         if self.battery.allow_max_voltage != self.save_charge_details_last["allow_max_voltage"]:
-            result = result + self.setSetting(
+            result = result + self.set_settings(
                 get_bus(),
                 "com.victronenergy.settings",
                 self.path_battery,
@@ -1184,7 +1184,7 @@ class DbusHelper:
             self.save_charge_details_last["allow_max_voltage"] = self.battery.allow_max_voltage
 
         if self.battery.max_voltage_start_time != self.save_charge_details_last["max_voltage_start_time"]:
-            result = result and self.setSetting(
+            result = result and self.set_settings(
                 get_bus(),
                 "com.victronenergy.settings",
                 self.path_battery,
@@ -1198,7 +1198,7 @@ class DbusHelper:
             self.save_charge_details_last["max_voltage_start_time"] = self.battery.max_voltage_start_time
 
         if self.battery.soc_calc != self.save_charge_details_last["soc_calc"]:
-            result = result and self.setSetting(
+            result = result and self.set_settings(
                 get_bus(),
                 "com.victronenergy.settings",
                 self.path_battery,
@@ -1209,7 +1209,7 @@ class DbusHelper:
             self.save_charge_details_last["soc_calc"] = self.battery.soc_calc
 
         if self.battery.soc_reset_last_reached != self.save_charge_details_last["soc_reset_last_reached"]:
-            result = result and self.setSetting(
+            result = result and self.set_settings(
                 get_bus(),
                 "com.victronenergy.settings",
                 self.path_battery,
