@@ -19,6 +19,7 @@
 * Added: GUIv2 by @mr-manuel
 * Added: High cell voltage alarm was added to venus-platform with https://github.com/victronenergy/venus-platform/commit/d686955aa15b7e246a92ee1f4c3eef3b62b153b7 and now also to this driver by @mr-manuel
 * Added: Possibility to change the CAN bus speed by @mr-manuel
+* Changed: Calculate current average not only when Time-To-Go is enabled by @mr-manuel
 * Changed: Calculate Time-to-Go until ESS -> Minimum SOC (unless grid fails), Active SOC limit or `SOC_LOW_WARNING` from `config.ini` by @mr-manuel
 * Changed: Enhance BMS type validation by @mr-manuel
 * Changed: HLPDATA BMS - BMS control of max charge and discharge is removed by @peterohman
