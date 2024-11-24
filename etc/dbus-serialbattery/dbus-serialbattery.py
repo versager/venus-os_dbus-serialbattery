@@ -71,26 +71,13 @@ logger.info("")
 logger.info("Starting dbus-serialbattery")
 
 
-# check if utils.BMS_TYPE is not empty and all BMS types in the list are supported
-if len(utils.BMS_TYPE) > 0:
-    for bms_type in utils.BMS_TYPE:
-        if bms_type not in [bms["bms"].__name__ for bms in supported_bms_types]:
-            logger.error(
-                f'ERROR >>> BMS type "{bms_type}" is not supported. Supported BMS types are: '
-                + f"{', '.join([bms['bms'].__name__ for bms in supported_bms_types])}"
-                + "; Disabled by default: ANT, MNB, Sinowealth"
-            )
-            sys.exit(1)
-
-
 # count loops
 count_for_loops = 5
 delayed_loop_count = 0
 
 
 def main():
-    # NameError: free variable 'expected_bms_types' referenced before assignment in enclosing scope
-    global expected_bms_types
+    global expected_bms_types, supported_bms_types
 
     def poll_battery(loop) -> bool:
         """
@@ -195,6 +182,34 @@ def main():
             logger.info("No Port needed")
             return "/dev/ttyUSB9"
 
+    def check_bms_types(supported_bms_types, type) -> None:
+        """
+        Check if utils.BMS_TYPE is not empty and all BMS types in the list are supported.
+        :param supported_bms_types: list of supported BMS types
+        :return: None
+        """
+        # get only BMS_TYPE that end with "_Ble"
+        if type == "ble":
+            bms_types = [type for type in utils.BMS_TYPE if type.endswith("_Ble")]
+
+        # get only BMS_TYPE that end with "_Can"
+        if type == "can":
+            bms_types = [type for type in utils.BMS_TYPE if type.endswith("_Can")]
+
+        # get only BMS_TYPE that does not end with "_Ble" or "_Can"
+        if type == "serial":
+            bms_types = [type for type in utils.BMS_TYPE if not type.endswith("_Ble") and not type.endswith("_Can")]
+
+        if len(bms_types) > 0:
+            for bms_type in bms_types:
+                if bms_type not in [bms["bms"].__name__ for bms in supported_bms_types]:
+                    logger.error(
+                        f'ERROR >>> BMS type "{bms_type}" is not supported. Supported BMS types are: '
+                        + f"{', '.join([bms['bms'].__name__ for bms in supported_bms_types])}"
+                        + "; Disabled by default: ANT, MNB, Sinowealth"
+                    )
+                    sys.exit(1)
+
     # read the version of Venus OS
     with open("/opt/victronenergy/version", "r") as f:
         venus_version = f.readline().strip()
@@ -207,10 +222,7 @@ def main():
     port = get_port()
     battery = {}
 
-    # wait some seconds to be sure that the serial connection is ready
-    # else the error throw a lot of timeouts
-    sleep(16)
-
+    # BLUETOOTH
     if port.endswith("_Ble"):
         """
         Import ble classes only, if it's a ble port, else the driver won't start due to missing python modules
@@ -239,6 +251,7 @@ def main():
                 logger.info("-- Connection established to " + testbms.__class__.__name__)
                 battery[0] = testbms
 
+    # CAN
     elif port.startswith("can") or port.startswith("vecan"):
         """
         Import CAN classes only, if it's a can port, else the driver won't start due to missing python modules
@@ -253,13 +266,24 @@ def main():
             {"bms": Jkbms_Can, "baud": utils.CAN_SPEED},
         ]
 
+        # check if utils.BMS_TYPE is not empty and all BMS types in the list are supported
+        check_bms_types(supported_bms_types, "can")
+
         expected_bms_types = [
             battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in utils.BMS_TYPE or len(utils.BMS_TYPE) == 0
         ]
 
         battery[0] = get_battery(port)
 
+    # SERIAL
     else:
+        # check if utils.BMS_TYPE is not empty and all BMS types in the list are supported
+        check_bms_types(supported_bms_types, "serial")
+
+        # wait some seconds to be sure that the serial connection is ready
+        # else the error throw a lot of timeouts
+        sleep(16)
+
         # check if MODBUS_ADDRESSES is not empty
         if utils.MODBUS_ADDRESSES:
             for address in utils.MODBUS_ADDRESSES:
