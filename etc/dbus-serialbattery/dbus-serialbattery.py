@@ -213,8 +213,13 @@ def main():
     # read the version of Venus OS
     with open("/opt/victronenergy/version", "r") as f:
         venus_version = f.readline().strip()
-    # show Venus OS version
-    logger.info("Venus OS " + venus_version)
+
+    # read the GX device type
+    with open("/sys/firmware/devicetree/base/model", "r") as f:
+        gx_device_type = f.readline().strip()
+
+    # show Venus OS version and device type
+    logger.info("Venus OS " + venus_version + " running on " + gx_device_type)
 
     # show the version of the driver
     logger.info("dbus-serialbattery v" + str(utils.DRIVER_VERSION))
