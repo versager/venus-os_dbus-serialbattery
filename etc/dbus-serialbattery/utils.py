@@ -428,6 +428,9 @@ SOC_LOW_ALARM: float = get_float_from_config("DEFAULT", "SOC_LOW_ALARM")
 BATTERY_CAPACITY: float = get_float_from_config("DEFAULT", "BATTERY_CAPACITY")
 INVERT_CURRENT_MEASUREMENT: int = get_int_from_config("DEFAULT", "INVERT_CURRENT_MEASUREMENT")
 
+# -- Felicity settings
+FELICITY_USE_BMS_VALUES: bool = get_bool_from_config("DEFAULT", "FELICITY_USE_BMS_VALUES")
+
 # -- JK BMS settings
 JKBMS_CAN_CELL_COUNT: int = get_int_from_config("DEFAULT", "JKBMS_CAN_CELL_COUNT")
 
