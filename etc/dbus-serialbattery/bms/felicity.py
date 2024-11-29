@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from battery import Battery, Cell
+from battery import Battery, Cell, Protection
 from utils import read_serial_data, unpack_from, logger
 import utils
 from struct import unpack
@@ -186,20 +186,23 @@ class Felicity(Battery):
 
         logger.debug(">>> INFO: Battery Fault: %f", fault_int)		
 
+        self.protection = Protection()
+        #   ALARM = 2 , WARNING = 1 , OK = 0
+
         # Cell voltage high status
         #self.protection. = 2 if (fault_int & 0b0000000000000100) > 0 else 0
         # Cell voltage low status
-        self.protection.voltage_cell_low = 2 if (fault_int & 0b0000000000001000) > 0 else 0
+        self.protection.low_cell_voltage = 2 if (fault_int & 0b0000000000001000) > 0 else 0
         # Charge current high status
-        self.protection.current_over = 2 if (fault_int & 0b0000000000010000) > 0 else 0
+        self.protection.high_charge_current = 2 if (fault_int & 0b0000000000010000) > 0 else 0
         # Discharge current high status
-        self.protection.current_under = 2 if (fault_int & 0b0000000000100000) > 0 else 0
+        self.protection.high_discharge_current = 2 if (fault_int & 0b0000000000100000) > 0 else 0
         # BMS Temperature high status
-        self.protection.temp_high_internal = 2 if (fault_int & 0b0000000001000000) > 0 else 0						
+        self.protection.high_internal_temp = 2 if (fault_int & 0b0000000001000000) > 0 else 0
         # Cell Temperature high status
-        self.protection.temp_high_charge = 2 if (fault_int & 0b0000000100000000) > 0 else 0
+        self.protection.high_charge_temp  = 2 if (fault_int & 0b0000000100000000) > 0 else 0
         # Cell Temperature low status
-        self.protection.temp_low_charge = 2 if (fault_int & 0b0000001000000000) > 0 else 0
+        self.protection.low_charge_temp = 2 if (fault_int & 0b0000001000000000) > 0 else 0
         
         return True
 
