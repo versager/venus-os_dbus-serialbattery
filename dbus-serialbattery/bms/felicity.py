@@ -185,7 +185,7 @@ class Felicity(Battery):
         #   ALARM = 2 , WARNING = 1 , OK = 0
 
         # Cell voltage high status
-        # self.protection. = 2 if (fault_int & 0b0000000000000100) > 0 else 0
+        self.protection.high_cell_voltage = 2 if (fault_int & 0b0000000000000100) > 0 else 0
         # Cell voltage low status
         self.protection.low_cell_voltage = 2 if (fault_int & 0b0000000000001000) > 0 else 0
         # Charge current high status
