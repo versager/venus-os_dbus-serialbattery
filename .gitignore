@@ -16,5 +16,5 @@ venv.bak/
 
 # Custom for this repo
 .DS_Store
-etc/dbus-serialbattery/config.ini
+dbus-serialbattery/config.ini
 venus-data.tar.gz
