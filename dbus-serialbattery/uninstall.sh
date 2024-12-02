@@ -4,42 +4,37 @@
 #set -x
 
 # disable driver
-bash /data/etc/dbus-serialbattery/disable.sh
+bash /data/apps/dbus-serialbattery/disable.sh
 
 
-# remove files in Victron directory. Don't use variables here,
-# since on an error the whole /opt/victronenergy gets deleted
-rm -rf /opt/victronenergy/service/dbus-serialbattery
-rm -rf /opt/victronenergy/service-templates/dbus-serialbattery
-rm -rf /opt/victronenergy/dbus-serialbattery
 
-
-# restore GUI changes
-/data/etc/dbus-serialbattery/restore-gui.sh
-
-
-# uninstall modules
-read -r -p "Do you want to uninstall bleak, python-can, python3-pip and python3-modules? If you don't know just press enter. [y/N] " response
+read -r -p "Do you want to delete the install and configuration files in \"/data/apps/dbus-serialbattery\" and also the logs? If unsure, just press enter. [y/N] " response
 echo
 response=${response,,} # tolower
-if [[ $response =~ ^(y) ]]; then
-    echo "Uninstalling modules..."
-    pip3 uninstall bleak
-    pip3 uninstall python-can
-    opkg remove python3-pip python3-modules
-    echo "done."
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    # remove dbus-serialbattery folder
+    rm -rf /data/apps/dbus-serialbattery
+
+    # remove logs
+    rm -rf /var/log/dbus-serialbattery.*
+    rm -rf /var/log/dbus-blebattery.*
+    rm -rf /var/log/dbus-canbattery.*
+
+    echo "The folder \"/data/apps/dbus-serialbattery\" and the logs were removed."
     echo
 fi
 
 
-read -r -p "Do you want to delete the install and configuration files in \"/data/etc/dbus-serialbattery\"? If you don't know just press enter. [y/N] " response
+echo "Disabling or removing the overlay-fs app could cause other apps to stop working correctly. Please ensure that no other app is using it."
+
+read -r -p "Do you want to disable the overlay-fs app? If unsure, just press enter. [y/N] " response
 echo
 response=${response,,} # tolower
-if [[ $response =~ ^(y) ]]; then
-    rm -rf /data/etc/dbus-serialbattery
-    echo "The folder \"/data/etc/dbus-serialbattery\" was removed."
-    echo
+if [[ $response =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    # remove dbus-serialbattery overlay-fs
+    bash /data/apps/overlay-fs/uninstall.sh
 fi
+
 
 
 echo "The dbus-serialbattery driver was uninstalled. Please reboot."

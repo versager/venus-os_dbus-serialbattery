@@ -7,34 +7,9 @@
 # check if minimum required Venus OS is installed | start
 versionRequired="v2.90"
 
-# elaborate version string for better comparing
-# https://github.com/kwindrem/SetupHelper/blob/ebaa65fcf23e2bea6797f99c1c41174143c1153c/updateFileSets#L56-L81
-function versionStringToNumber ()
-{
-    local p4="" ; local p5="" ; local p5=""
-    local major=""; local minor=""
+# import functions
+source /data/apps/dbus-serialbattery/functions.sh
 
-	# first character should be 'v' so first awk parameter will be empty and is not prited into the read command
-	#
-	# version number formats: v2.40, v2.40~6, v2.40-large-7, v2.40~6-large-7
-	# so we must adjust how we use paramters read from the version string
-	# and parsed by awk
-	# if no beta make sure release is greater than any beta (i.e., a beta portion of 999)
-
-    read major minor p4 p5 p6 <<< $(echo $1 | awk -v FS='[v.~-]' '{print $2, $3, $4, $5, $6}')
-	((versionNumber = major * 1000000000 + minor * 1000000))
-	if [ -z $p4 ] || [ $p4 = "large" ]; then
-        ((versionNumber += 999))
-	else
-		((versionNumber += p4))
-    fi
-	if [ ! -z $p4 ] && [ $p4 = "large" ]; then
-		((versionNumber += p5 * 1000))
-		large=$p5
-	elif [ ! -z $p6 ]; then
-		((versionNumber += p6 * 1000))
-	fi
-}
 
 # get current Venus OS version
 versionStringToNumber "$(head -n 1 /opt/victronenergy/version)"
@@ -60,64 +35,43 @@ fi
 # check if minimum required Venus OS is installed | end
 
 
-# check if at least 28 MB free space is available on the system partition
-freeSpace=$(df -m / | awk 'NR==2 {print $4}')
-if [ $freeSpace -lt 28 ]; then
 
-    # try to expand system partition
-    bash /opt/victronenergy/swupdate-scripts/resize2fs.sh
+# fix permissions
+chmod +x /data/apps/dbus-serialbattery/*.sh
+chmod +x /data/apps/dbus-serialbattery/*.py
+chmod +x /data/apps/dbus-serialbattery/service/run
+chmod +x /data/apps/dbus-serialbattery/service/log/run
 
-    freeSpace=$(df -m / | awk 'NR==2 {print $4}')
-    if [ $freeSpace -lt 28 ]; then
-        echo
-        echo
-        echo "ERROR: Not enough free space on the system partition. At least 28 MB are required."
-        echo
-        echo "       Please please try to execute this command"
-        echo
-        echo "       bash /opt/victronenergy/swupdate-scripts/resize2fs.sh"
-        echo
-        echo "       and try the installation again after."
-        echo
-        echo
-        exit 1
-    else
-        echo
-        echo
-        echo "INFO: System partition was expanded. Now there are $freeSpace MB free space available."
-        echo
-        echo
-    fi
 
+# remove old folders that are not needed anymore
+if [ -d /opt/victronenergy/dbus-serialbattery ]; then
+    echo "Remove old dbus-serialbattery folders on root fs..."
+    bash /opt/victronenergy/swupdate-scripts/remount-rw.sh
+    rm -rf /opt/victronenergy/service/dbus-serialbattery
+    rm -rf /opt/victronenergy/service-templates/dbus-serialbattery
+    rm -rf /opt/victronenergy/dbus-serialbattery
 fi
 
 
-# handle read only mounts
-# TODO: system should not remain in read-only mode
-bash /opt/victronenergy/swupdate-scripts/remount-rw.sh
+# check if overlay-fs is active
+checkOverlay dbus-serialbattery "/opt/victronenergy/service-templates"
 
-# fix permissions
-chmod +x /data/etc/dbus-serialbattery/*.sh
-chmod +x /data/etc/dbus-serialbattery/*.py
-chmod +x /data/etc/dbus-serialbattery/service/run
-chmod +x /data/etc/dbus-serialbattery/service/log/run
 
-# install
-rm -rf /opt/victronenergy/service/dbus-serialbattery
-rm -rf /opt/victronenergy/service-templates/dbus-serialbattery
-rm -rf /opt/victronenergy/dbus-serialbattery
-mkdir /opt/victronenergy/dbus-serialbattery
-mkdir /opt/victronenergy/dbus-serialbattery/bms
-mkdir /opt/victronenergy/dbus-serialbattery/ext
-cp -f /data/etc/dbus-serialbattery/* /opt/victronenergy/dbus-serialbattery &>/dev/null
-cp -f /data/etc/dbus-serialbattery/bms/* /opt/victronenergy/dbus-serialbattery/bms &>/dev/null
-cp -rf /data/etc/dbus-serialbattery/ext/* /opt/victronenergy/dbus-serialbattery/ext &>/dev/null
-cp -rf /data/etc/dbus-serialbattery/service /opt/victronenergy/service-templates/dbus-serialbattery
-bash /data/etc/dbus-serialbattery/install-qml.sh
+if [ -d "/opt/victronenergy/service-templates/dbus-serialbattery" ]; then
+    rm -rf "/opt/victronenergy/service-templates/dbus-serialbattery"
+fi
+cp -rf "/data/apps/dbus-serialbattery/service" "/opt/victronenergy/service-templates/dbus-serialbattery"
+
+
+
+# install custom GUI
+bash /data/apps/dbus-serialbattery/custom-gui-install.sh
+
+
 
 # check if serial-starter.d was deleted
 serialstarter_path="/data/conf/serial-starter.d"
-serialstarter_file="$serialstarter_path/dbus-serialbattery.conf"
+serialstarter_file="${serialstarter_path}/dbus-serialbattery.conf"
 
 # check if folder is a file (older versions of this driver < v1.0.0)
 if [ -f "$serialstarter_path" ]; then
@@ -132,11 +86,13 @@ fi
 # check if file exists
 if [ ! -f "$serialstarter_file" ]; then
     {
-        echo "service sbattery        dbus-serialbattery"
-        echo "alias default gps:vedirect:sbattery"
-        echo "alias rs485 cgwacs:fzsonick:imt:modbus:sbattery"
+        echo "service   sbattery    dbus-serialbattery"
+        echo "alias     default     gps:vedirect:sbattery"
+        echo "alias     rs485       cgwacs:fzsonick:imt:modbus:sbattery"
     } > "$serialstarter_file"
 fi
+
+
 
 # add install-script to rc.local to be ready for firmware update
 filename=/data/rc.local
@@ -144,10 +100,15 @@ if [ ! -f "$filename" ]; then
     echo "#!/bin/bash" > "$filename"
     chmod 755 "$filename"
 fi
-grep -qxF "bash /data/etc/dbus-serialbattery/reinstall-local.sh" $filename || echo "bash /data/etc/dbus-serialbattery/reinstall-local.sh" >> $filename
+
+# add enable script to rc.local
+# log the output to a file and run it in the background to prevent blocking the boot process
+grep -qxF "bash /data/apps/dbus-serialbattery/enable.sh > /data/apps/dbus-serialbattery/startup.log 2>&1 &" $filename || echo "bash /data/apps/dbus-serialbattery/enable.sh > /data/apps/dbus-serialbattery/startup.log 2>&1 &" >> $filename
+
+
 
 # add empty config.ini, if it does not exist to make it easier for users to add custom settings
-filename="/data/etc/dbus-serialbattery/config.ini"
+filename="/data/apps/dbus-serialbattery/config.ini"
 if [ ! -f "$filename" ]; then
     {
         echo "[DEFAULT]"
@@ -163,7 +124,18 @@ if [ ! -f "$filename" ]; then
     } > $filename
 fi
 
-# kill driver, if running. It gets restarted by the service daemon
+
+
+# TODO: stop BLE, CAN and serial?
+echo "Stop all dbus-serialbattery services..."
+for service in /service/dbus-serialbattery.*; do
+    [ -e "$service" ] && svc -d "$service"
+done
+for service in /service/dbus-canbattery.*; do
+    [ -e "$service" ] && svc -d "$service"
+done
+
+# kill driver, if still running
 pkill -f "supervise dbus-serialbattery.*"
 pkill -f "multilog .* /var/log/dbus-serialbattery.*"
 pkill -f "python .*/dbus-serialbattery.py /dev/tty.*"
@@ -173,7 +145,7 @@ pkill -f "python .*/dbus-serialbattery.py /dev/tty.*"
 ### BLUETOOTH PART | START ###
 
 # get bluetooth mode integrated/usb
-bluetooth_use_usb=$(awk -F "=" '/^BLUETOOTH_USE_USB/ {print $2}' /data/etc/dbus-serialbattery/config.ini)
+bluetooth_use_usb=$(awk -F "=" '/^BLUETOOTH_USE_USB/ {print $2}' /data/apps/dbus-serialbattery/config.ini)
 
 # works only for Raspberry Pi, since GX devices don't have a /u-boot/config.txt
 # replace dtoverlay in /u-boot/config.txt this needs a reboot!
@@ -192,25 +164,26 @@ if [ -f "/u-boot/config.txt" ]; then
 fi
 
 # get BMS list from config file
-bluetooth_bms=$(awk -F "=" '/^BLUETOOTH_BMS/ {print $2}' /data/etc/dbus-serialbattery/config.ini)
+bluetooth_bms=$(awk -F "=" '/^BLUETOOTH_BMS/ {print $2}' /data/apps/dbus-serialbattery/config.ini)
 #echo $bluetooth_bms
 
 # clear whitespaces
-bluetooth_bms_clean="$(echo $bluetooth_bms | sed 's/\s*,\s*/,/g')"
+bluetooth_bms_clean=$(echo "$bluetooth_bms" | tr -s ' ' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 #echo $bluetooth_bms_clean
 
 # split into array
 IFS="," read -r -a bms_array <<< "$bluetooth_bms_clean"
-#declare -p bms_array
-# readarray -td, bms_array <<< "$bluetooth_bms_clean,"; unset 'bms_array[-1]'; declare -p bms_array;
 
+# array length
 bluetooth_length=${#bms_array[@]}
 # echo $bluetooth_length
 
 # stop all dbus-blebattery services, if at least one exists
 if ls /service/dbus-blebattery.* 1> /dev/null 2>&1; then
-    echo "Killing old BLE battery services..."
-    svc -t /service/dbus-blebattery.*
+    echo "Stop all dbus-blebattery services..."
+    for service in /service/dbus-blebattery.*; do
+        [ -e "$service" ] && svc -d "$service"
+    done
 
     # always remove existing blebattery services to cleanup
     rm -rf /service/dbus-blebattery.*
@@ -231,63 +204,13 @@ if [ "$bluetooth_length" -gt 0 ]; then
     echo "Found $bluetooth_length Bluetooth BMS in the config file!"
     echo
 
+    # Required packages, shipped with the driver:
+    # - opkg install python3-misc
+    # - opkg install python3-pip
+    # - pip3 install bleak
+
     /etc/init.d/bluetooth stop
-    echo
-
-    # install required packages
-    echo "Checking required packages to use Bluetooth connection..."
-    echo
-
-    # dbus-fast: skip compiling/building the wheel
-    # else weak system crash and are not able to install it,
-    # see https://github.com/Bluetooth-Devices/dbus-fast/issues/237
-    # and https://github.com/Louisvdw/dbus-serialbattery/issues/785
-    export SKIP_CYTHON=false
-
-    if ! opkg list-installed | grep -q "python3-misc" || ! opkg list-installed | grep -q "python3-pip"; then
-        echo "Update packages..."
-        opkg update
-        echo
-    fi
-
-    if ! opkg list-installed | grep -q "python3-misc"; then
-        echo "Install python3-misc..."
-        opkg install python3-misc
-        echo
-    fi
-
-    if ! opkg list-installed | grep -q "python3-pip"; then
-        echo "Install python3-pip..."
-        opkg install python3-pip
-        echo
-    fi
-
-    # fastest way to check if bleak is installed
-    if [ ! -f "/usr/lib/python3.8/site-packages/bleak/__init__.py" ]; then
-        echo "Install bleak..."
-        pip3 install bleak
-        echo
-    fi
-
-    # # ONLY FOR TESTING if there are version issues
-    # echo
-    # echo "Available bleak versions:"
-    # curl --silent https://api.github.com/repos/hbldh/bleak/releases | grep '"name": "v' | sed "s/    \"name\": \"v//g" | sed "s/\",//g"
-    # echo
-    # read -r -p "Specify the bleak version to install: " bleak_version
-    # pip3 install bleak=="$bleak_version"
-    # echo
-    # echo
-    # echo "Available dbus-fast versions:"
-    # curl --silent https://api.github.com/repos/Bluetooth-Devices/dbus-fast/releases | grep '"name": "v' | sed "s/    \"name\": \"v//g" | sed "s/\",//g"
-    # echo
-    # read -r -p "Specify the dbus-fast version to install: " dbus_fast_version
-    # pip3 install dbus-fast=="$dbus_fast_version"
-    # echo
-
-    echo "done."
-    echo
-
+    sleep 2
     /etc/init.d/bluetooth start
     echo
 
@@ -338,7 +261,7 @@ if [ "$bluetooth_length" -gt 0 ]; then
             # display some Bluetooth device details
             echo "bluetoothctl info $3 | grep -E \"Device|Alias|Pair|Trusted|Blocked|Connected|RSSI|Power\""
             echo "echo"
-            echo "python /opt/victronenergy/dbus-serialbattery/dbus-serialbattery.py $2 $3"
+            echo "python /data/apps/dbus-serialbattery/dbus-serialbattery.py $2 $3"
             echo "pkill -f \"bluetoothctl scan on\""
         } > "/service/dbus-blebattery.$1/run"
         chmod 755 "/service/dbus-blebattery.$1/run"
@@ -357,20 +280,10 @@ if [ "$bluetooth_length" -gt 0 ]; then
 
     echo
 
-    # setup cronjob to restart Bluetooth
-    # remove if not needed anymore, has to be checked first --> seems that it's not needed anymore
-    # grep -qxF "5 0,12 * * * /etc/init.d/bluetooth restart" /var/spool/cron/root || echo "5 0,12 * * * /etc/init.d/bluetooth restart" >> /var/spool/cron/root
-
-    # remove cronjob
-    sed -i "/5 0,12 \* \* \* \/etc\/init.d\/bluetooth restart/d" /var/spool/cron/root >/dev/null 2>&1
-
 else
 
-    # remove cronjob
-    sed -i "/5 0,12 \* \* \* \/etc\/init.d\/bluetooth restart/d" /var/spool/cron/root >/dev/null 2>&1
-
     echo
-    echo "No Bluetooth battery configuration found in \"/data/etc/dbus-serialbattery/config.ini\"."
+    echo "No Bluetooth battery configuration found in \"/data/apps/dbus-serialbattery/config.ini\"."
     echo "You can ignore this, if you are using only a serial connection."
     echo
 
@@ -382,7 +295,7 @@ fi
 ### CAN PART | START ###
 
 # get CAN port(s) from config file
-can_port=$(awk -F "=" '/^CAN_PORT/ {print $2}' /data/etc/dbus-serialbattery/config.ini)
+can_port=$(awk -F "=" '/^CAN_PORT/ {print $2}' /data/apps/dbus-serialbattery/config.ini)
 #echo $can_port
 
 # clear whitespaces
@@ -418,39 +331,10 @@ if [ "$can_lenght" -gt 0 ]; then
     echo "Found $can_lenght CAN port(s) in the config file!"
     echo
 
-    # install required packages
-    echo "Checking required packages to use CAN connection..."
-    echo
-
-    if ! opkg list-installed | grep -q "python3-misc" || ! opkg list-installed | grep -q "python3-pip"; then
-        echo "Update packages..."
-        opkg update
-        echo
-    fi
-
-    if ! opkg list-installed | grep -q "python3-misc"; then
-        echo "Install python3-misc..."
-        opkg install python3-misc
-        echo
-    fi
-
-    if ! opkg list-installed | grep -q "python3-pip"; then
-        echo "Install python3-pip..."
-        opkg install python3-pip
-        echo
-    fi
-
-    # fastest way to check if can is installed
-    if [ ! -f "/usr/lib/python3.8/site-packages/can/__init__.py" ]; then
-        echo "Install can..."
-        # Note: 4.x version of python-can causes pip dependency issue on VenusOS v3.22, so using python-can 3.x
-        #     "ERROR: Could not build wheels for msgpack which use PEP 517 and cannot be installed directly"
-        pip3 install python-can==3.3.4
-        echo
-    fi
-
-    echo "done."
-    echo
+    # Required packages, shipped with the driver:
+    # - opkg install python3-misc
+    # - opkg install python3-pip
+    # - pip3 install python-can
 
     # function to install can battery
     install_canbattery_service() {
@@ -459,11 +343,6 @@ if [ "$can_lenght" -gt 0 ]; then
             echo
             exit 1
         fi
-        #if [ -z "$2" ]; then
-        #    echo "ERROR: BMS type for can port $1 is empty. Aborting installation."
-        #    echo
-        #    exit 1
-        #fi
 
         echo "Installing CAN port \"$1\" as dbus-canbattery.$1"
 
@@ -478,7 +357,7 @@ if [ "$can_lenght" -gt 0 ]; then
             echo "#!/bin/sh"
             echo "exec 2>&1"
             echo "echo"
-            echo "python /opt/victronenergy/dbus-serialbattery/dbus-serialbattery.py $1"
+            echo "python /data/apps/dbus-serialbattery/dbus-serialbattery.py $1"
         } > "/service/dbus-canbattery.$1/run"
         chmod 755 "/service/dbus-canbattery.$1/run"
     }
@@ -489,20 +368,13 @@ if [ "$can_lenght" -gt 0 ]; then
 
     for (( i=0; i<can_lenght; i++ ));
     do
-        # # split CAN port and BMS type
-        # IFS=' ' read -r -a bms <<< "${can_array[$i]}"
-        # install_canbattery_service $i "${bms[0]}" "${bms[1]}"
         install_canbattery_service "${can_array[$i]}"
     done
-
-    # root@mutliplus-ii-gx:~# cansequence
-    # interface = can0, family = 29, type = 3, proto = 1
-    # write: No buffer space available
 
 else
 
     echo
-    echo "No CAN port configuration found in \"/data/etc/dbus-serialbattery/config.ini\"."
+    echo "No CAN port configuration found in \"/data/apps/dbus-serialbattery/config.ini\"."
     echo "You can ignore this, if you are using only a serial connection."
     echo
 
@@ -517,6 +389,7 @@ rm -rf /service/dbus-blebattery-*
 # remove old install script from rc.local
 sed -i "/^sh \/data\/etc\/dbus-serialbattery\/reinstalllocal.sh/d" /data/rc.local
 sed -i "/^sh \/data\/etc\/dbus-serialbattery\/reinstall-local.sh/d" /data/rc.local
+sed -i "/^bash \/data\/etc\/dbus-serialbattery\/reinstall-local.sh/d" /data/rc.local
 # remove old entry from rc.local
 sed -i "/^sh \/data\/etc\/dbus-serialbattery\/installble.sh/d" /data/rc.local
 ### needed for upgrading from older versions | end ###
@@ -534,13 +407,13 @@ echo "SERIAL battery connection: The installation is complete. You don't have to
 echo
 echo "BLUETOOTH battery connection: There are a few more steps to complete installation."
 echo
-echo "    1. Add your Bluetooth BMS to the config file \"/data/etc/dbus-serialbattery/config.ini\"."
-echo "       Check the default config file \"/data/etc/dbus-serialbattery/config.default.ini\" for more informations."
+echo "    1. Add your Bluetooth BMS to the config file \"/data/apps/dbus-serialbattery/config.ini\"."
+echo "       Check the default config file \"/data/apps/dbus-serialbattery/config.default.ini\" for more informations."
 echo "       If your Bluetooth BMS are nearby you can show the MAC address with \"bluetoothctl devices\"."
 echo
 echo "    2. Make sure to disable Bluetooth in \"Settings -> Bluetooth\" in the remote console/GUI to prevent reconnects every minute."
 echo
-echo "    3. Re-run \"/data/etc/dbus-serialbattery/reinstall-local.sh\", if the Bluetooth BMS were not added to the \"config.ini\" before."
+echo "    3. Re-run \"/data/apps/dbus-serialbattery/reinstall-local.sh\", if the Bluetooth BMS were not added to the \"config.ini\" before."
 echo
 echo "    ATTENTION!"
 echo "    If you changed the default connection PIN of your BMS, then you have to pair the BMS first using OS tools like the \"bluetoothctl\"."
@@ -548,20 +421,18 @@ echo "    See https://wiki.debian.org/BluetoothUser#Using_bluetoothctl for more 
 echo
 echo "CAN battery connection: There are a few more steps to complete installation."
 echo
-echo "    1. Add your CAN port to the config file \"/data/etc/dbus-serialbattery/config.ini\"."
-echo "       Check the default config file \"/data/etc/dbus-serialbattery/config.default.ini\" for more informations."
+echo "    1. Add your CAN port to the config file \"/data/apps/dbus-serialbattery/config.ini\"."
+echo "       Check the default config file \"/data/apps/dbus-serialbattery/config.default.ini\" for more informations."
 echo
 echo "    2. Make sure to select a profile with 250 kbit/s in \"Settings -> Services -> VE.Can port -> CAN-bus profile\" in the remote console/GUI."
 echo
-echo "    3. Re-run \"/data/etc/dbus-serialbattery/reinstall-local.sh\", if the CAN port was not added to the \"config.ini\" before."
+echo "    3. Re-run \"/data/apps/dbus-serialbattery/reinstall-local.sh\", if the CAN port was not added to the \"config.ini\" before."
 echo
-echo "CUSTOM SETTINGS: If you want to add custom settings, then check the settings you want to change in \"/data/etc/dbus-serialbattery/config.default.ini\""
-echo "                 and add them to \"/data/etc/dbus-serialbattery/config.ini\" to persist future driver updates."
+echo "CUSTOM SETTINGS: If you want to add custom settings, then check the settings you want to change in \"/data/apps/dbus-serialbattery/config.default.ini\""
+echo "                 and add them to \"/data/apps/dbus-serialbattery/config.ini\" to persist future driver updates."
 echo
 echo
-# print which version was installed
-# fetch line 40 from utils.py
-line=$(cat /data/etc/dbus-serialbattery/utils.py | grep DRIVER_VERSION | awk -F'"' '{print "v" $2}')
+line=$(cat /data/apps/dbus-serialbattery/utils.py | grep DRIVER_VERSION | awk -F'"' '{print "v" $2}')
 echo "*** dbus-serialbattery $line was installed. ***"
 echo
 echo
