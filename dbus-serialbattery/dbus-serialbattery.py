@@ -1,22 +1,33 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import math
+import os
+import sys
+from datetime import datetime
+from time import sleep
 from typing import Union
 
-from time import sleep
-from datetime import datetime
 from dbus.mainloop.glib import DBusGMainLoop
-
-import sys
-
 from gi.repository import GLib as gobject
 
-from dbushelper import DbusHelper
-from utils import logger
-import utils
 from battery import Battery
-import math
+from dbushelper import DbusHelper
+from utils import (
+    BMS_TYPE,
+    bytearray_to_string,
+    CAN_SPEED,
+    DRIVER_VERSION,
+    EXCLUDED_DEVICES,
+    EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE,
+    EXTERNAL_CURRENT_SENSOR_DBUS_PATH,
+    logger,
+    MODBUS_ADDRESSES,
+    POLL_INTERVAL,
+    validate_config_values,
+)
 
 # import battery classes
+# TODO: import only the classes that are needed
 from bms.daly import Daly
 from bms.daren_485 import Daren485
 from bms.ecs import Ecs
@@ -31,12 +42,15 @@ from bms.renogy import Renogy
 from bms.seplos import Seplos
 from bms.seplosv3 import Seplosv3
 
+# add ext folder to sys.path
+sys.path.insert(1, os.path.join(os.path.dirname(__file__), "ext"))
+
 # enabled only if explicitly set in config under "BMS_TYPE"
-if "ANT" in utils.BMS_TYPE:
+if "ANT" in BMS_TYPE:
     from bms.ant import ANT
-if "MNB" in utils.BMS_TYPE:
+if "MNB" in BMS_TYPE:
     from bms.mnb import MNB
-if "Sinowealth" in utils.BMS_TYPE:
+if "Sinowealth" in BMS_TYPE:
     from bms.sinowealth import Sinowealth
 
 supported_bms_types = [
@@ -58,14 +72,14 @@ supported_bms_types = [
 ]
 
 # enabled only if explicitly set in config under "BMS_TYPE"
-if "ANT" in utils.BMS_TYPE:
+if "ANT" in BMS_TYPE:
     supported_bms_types.append({"bms": ANT, "baud": 19200})
-if "MNB" in utils.BMS_TYPE:
+if "MNB" in BMS_TYPE:
     supported_bms_types.append({"bms": MNB, "baud": 9600})
-if "Sinowealth" in utils.BMS_TYPE:
+if "Sinowealth" in BMS_TYPE:
     supported_bms_types.append({"bms": Sinowealth, "baud": 9600})
 
-expected_bms_types = [battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in utils.BMS_TYPE or len(utils.BMS_TYPE) == 0]
+expected_bms_types = [battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in BMS_TYPE or len(BMS_TYPE) == 0]
 
 logger.info("")
 logger.info("Starting dbus-serialbattery")
@@ -148,12 +162,10 @@ def main():
                         _bms_address = None
 
                     logger.info(
-                        "Testing "
-                        + test["bms"].__name__
-                        + (' at address "' + utils.bytearray_to_string(_bms_address) + '"' if _bms_address is not None else "")
+                        "Testing " + test["bms"].__name__ + (' at address "' + bytearray_to_string(_bms_address) + '"' if _bms_address is not None else "")
                     )
                     batteryClass = test["bms"]
-                    baud = test["baud"] if "baud" in test else None
+                    baud = test["baud"]
                     battery: Battery = batteryClass(port=_port, baud=baud, address=_bms_address)
                     if battery.test_connection() and battery.validate_data():
                         logger.info("-- Connection established to " + battery.__class__.__name__)
@@ -184,14 +196,14 @@ def main():
         """
         if len(sys.argv) > 1:
             port = sys.argv[1]
-            if port not in utils.EXCLUDED_DEVICES:
+            if port not in EXCLUDED_DEVICES:
                 return port
             else:
                 logger.debug("Stopping dbus-serialbattery: " + str(port) + " is excluded through the config file")
                 sleep(60)
                 # Exit with error so that the serialstarter continues
                 sys.exit(1)
-        elif "MNB" in utils.BMS_TYPE:
+        elif "MNB" in BMS_TYPE:
             # Special case for MNB-SPI
             logger.info("No Port needed")
             return "/dev/ttyUSB9"
@@ -202,7 +214,7 @@ def main():
 
     def check_bms_types(supported_bms_types, type) -> None:
         """
-        Checks if utils.BMS_TYPE is not empty and all specified BMS types are supported.
+        Checks if BMS_TYPE is not empty and all specified BMS types are supported.
 
         :param supported_bms_types: List of supported BMS types.
         :param type: The type of BMS connection (ble, can, or serial).
@@ -210,15 +222,15 @@ def main():
         """
         # Get only BMS_TYPE that end with "_Ble"
         if type == "ble":
-            bms_types = [type for type in utils.BMS_TYPE if type.endswith("_Ble")]
+            bms_types = [type for type in BMS_TYPE if type.endswith("_Ble")]
 
         # Get only BMS_TYPE that end with "_Can"
         if type == "can":
-            bms_types = [type for type in utils.BMS_TYPE if type.endswith("_Can")]
+            bms_types = [type for type in BMS_TYPE if type.endswith("_Can")]
 
         # Get only BMS_TYPE that do not end with "_Ble" or "_Can"
         if type == "serial":
-            bms_types = [type for type in utils.BMS_TYPE if not type.endswith("_Ble") and not type.endswith("_Can")]
+            bms_types = [type for type in BMS_TYPE if not type.endswith("_Ble") and not type.endswith("_Can")]
 
         if len(bms_types) > 0:
             for bms_type in bms_types:
@@ -242,7 +254,7 @@ def main():
     logger.info("Venus OS " + venus_version + " running on " + gx_device_type)
 
     # show the version of the driver
-    logger.info("dbus-serialbattery v" + str(utils.DRIVER_VERSION))
+    logger.info("dbus-serialbattery v" + str(DRIVER_VERSION))
 
     port = get_port()
     battery = {}
@@ -282,27 +294,25 @@ def main():
         Import CAN classes only if it's a CAN port; otherwise, the driver won't start due to missing Python modules.
         This prevents issues when using the driver exclusively with a serial connection.
         """
-        from bms.daly_can import Daly_Can
+        # from bms.daly_can import Daly_Can
         from bms.jkbms_can import Jkbms_Can
 
         # only try CAN BMS on CAN port
         supported_bms_types = [
-            {"bms": Daly_Can},
-            {"bms": Jkbms_Can},
+            # {"bms": Daly_Can, "baud": CAN_SPEED},
+            {"bms": Jkbms_Can, "baud": CAN_SPEED},
         ]
 
-        # check if utils.BMS_TYPE is not empty and all BMS types in the list are supported
+        # check if BMS_TYPE is not empty and all BMS types in the list are supported
         check_bms_types(supported_bms_types, "can")
 
-        expected_bms_types = [
-            battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in utils.BMS_TYPE or len(utils.BMS_TYPE) == 0
-        ]
+        expected_bms_types = [battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in BMS_TYPE or len(BMS_TYPE) == 0]
 
         battery[0] = get_battery(port)
 
     # SERIAL
     else:
-        # check if utils.BMS_TYPE is not empty and all BMS types in the list are supported
+        # check if BMS_TYPE is not empty and all BMS types in the list are supported
         check_bms_types(supported_bms_types, "serial")
 
         # wait some seconds to be sure that the serial connection is ready
@@ -310,8 +320,8 @@ def main():
         sleep(16)
 
         # check if MODBUS_ADDRESSES is not empty
-        if utils.MODBUS_ADDRESSES:
-            for address in utils.MODBUS_ADDRESSES:
+        if MODBUS_ADDRESSES:
+            for address in MODBUS_ADDRESSES:
                 checkbatt = get_battery(port, address)
                 if checkbatt is not None:
                     battery[address] = checkbatt
@@ -330,11 +340,7 @@ def main():
             battery_found = True
 
     if not battery_found:
-        logger.error(
-            "ERROR >>> No battery connection at "
-            + port
-            + (" and this Modbus addresses: " + ", ".join(utils.MODBUS_ADDRESSES) if utils.MODBUS_ADDRESSES else "")
-        )
+        logger.error("ERROR >>> No battery connection at " + port + (" and this Modbus addresses: " + ", ".join(MODBUS_ADDRESSES) if MODBUS_ADDRESSES else ""))
         sys.exit(1)
 
     # Have a mainloop, so we can send/receive asynchronous calls to and from dbus
@@ -350,9 +356,7 @@ def main():
         helper[key_address] = DbusHelper(battery[key_address], key_address)
         if not helper[key_address].setup_vedbus():
             logger.error(
-                "ERROR >>> Problem with battery set up at "
-                + port
-                + (" and this Modbus address: " + ", ".join(utils.MODBUS_ADDRESSES) if utils.MODBUS_ADDRESSES else "")
+                "ERROR >>> Problem with battery set up at " + port + (" and this Modbus address: " + ", ".join(MODBUS_ADDRESSES) if MODBUS_ADDRESSES else "")
             )
             sys.exit(1)
 
@@ -362,8 +366,8 @@ def main():
     # try using active callback on this battery (normally only used for Bluetooth BMS)
     if not battery[first_key].use_callback(lambda: poll_battery(mainloop)):
         # change poll interval if set in config
-        if utils.POLL_INTERVAL is not None:
-            battery[first_key].poll_interval = utils.POLL_INTERVAL
+        if POLL_INTERVAL is not None:
+            battery[first_key].poll_interval = POLL_INTERVAL
 
         logger.info(f"Polling interval: {battery[first_key].poll_interval/1000:.3f} s")
 
@@ -379,13 +383,13 @@ def main():
 
     # check config, if there are any invalid values trigger "settings incorrect" error
     # and set the battery in error state to prevent chargin/discharging
-    if not utils.validate_config_values():
+    if not validate_config_values():
         for key_address in battery:
             battery[key_address].state = 10
             battery[key_address].error_code = 119
 
     # check, if external current sensor should be used
-    if utils.EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE is not None and utils.EXTERNAL_CURRENT_SENSOR_DBUS_PATH is not None:
+    if EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE is not None and EXTERNAL_CURRENT_SENSOR_DBUS_PATH is not None:
         for key_address in battery:
             battery[key_address].setup_external_current_sensor()
 
