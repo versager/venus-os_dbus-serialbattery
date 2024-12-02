@@ -52,7 +52,7 @@ class DbusHelper:
         )
         self._dbusservice = VeDbusService(self._dbusname, get_bus(), register=False)
         self.bms_id = "".join(
-            # remove all non alphanumeric characters from the identifier
+            # remove all non alphanumeric characters except underscore from the identifier
             c if c.isalnum() else "_"
             for c in self.battery.unique_identifier()
         )
@@ -105,6 +105,8 @@ class DbusHelper:
             else:
                 logger.error("Change the customizable field in your BMS settings to be unique.")
             logger.error("To see which battery already uses this serial number/unique identifier check " + f'this file "{pid_file_path}"')
+            logger.error("")
+            logger.error("If you can't change any data in your BMS then set USE_PORT_AS_UNIQUE_ID = True in the config.ini file.")
 
             self.pid_file.close()
             sleep(60)
