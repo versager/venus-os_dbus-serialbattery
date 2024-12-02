@@ -30,7 +30,12 @@ from functools import partial
 
 # our own packages
 from ve_utils import exit_on_error, wrap_dbus_value, unwrap_dbus_value, add_name_owner_changed_receiver
-notfound = object() # For lookups where None is a valid result
+
+# dbus interface
+VE_INTERFACE = "com.victronenergy.BusItem"
+
+# For lookups where None is a valid result
+notfound = object()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -211,20 +216,20 @@ class DbusMonitor(object):
 		# Try to fetch everything with a GetItems, then fall back to older
 		# methods if that fails
 		try:
-			values = self.dbusConn.call_blocking(serviceName, '/', None, 'GetItems', '', [])
+			values = self.dbusConn.call_blocking(serviceName, '/', VE_INTERFACE, 'GetItems', '', [])
 		except dbus.exceptions.DBusException:
 			logger.info("GetItems failed, trying legacy methods")
 		else:
 			return self.scan_dbus_service_getitems_done(serviceName, serviceId, values)
 
-		if serviceName == 'com.victronenergy.settings':
+		if serviceName == 'com.victronenergy.settings' or serviceName == 'com.victronenergy.platform':
 			di = 0
 		elif serviceName.startswith('com.victronenergy.vecan.'):
 			di = 0
 		else:
 			try:
 				di = self.dbusConn.call_blocking(serviceName,
-					'/DeviceInstance', None, 'GetValue', '', [])
+					'/DeviceInstance', VE_INTERFACE, 'GetValue', '', [])
 			except dbus.exceptions.DBusException:
 				logger.info("       %s was skipped because it has no device instance" % serviceName)
 				return False # Skip it
@@ -238,8 +243,8 @@ class DbusMonitor(object):
 		values = {}
 		texts = {}
 		try:
-			values.update(self.dbusConn.call_blocking(serviceName, '/', None, 'GetValue', '', []))
-			texts.update(self.dbusConn.call_blocking(serviceName, '/', None, 'GetText', '', []))
+			values.update(self.dbusConn.call_blocking(serviceName, '/', VE_INTERFACE, 'GetValue', '', []))
+			texts.update(self.dbusConn.call_blocking(serviceName, '/', VE_INTERFACE, 'GetText', '', []))
 		except:
 			pass
 
@@ -255,9 +260,9 @@ class DbusMonitor(object):
 			text = texts.get(path[1:], notfound)
 			if value is notfound or text is notfound:
 				try:
-					value = self.dbusConn.call_blocking(serviceName, path, None, 'GetValue', '', [])
+					value = self.dbusConn.call_blocking(serviceName, path, VE_INTERFACE, 'GetValue', '', [])
 					service.set_seen(path)
-					text = self.dbusConn.call_blocking(serviceName, path, None, 'GetText', '', [])
+					text = self.dbusConn.call_blocking(serviceName, path, VE_INTERFACE, 'GetText', '', [])
 				except dbus.exceptions.DBusException as e:
 					if e.get_dbus_name() in (
 							'org.freedesktop.DBus.Error.ServiceUnknown',
@@ -285,7 +290,7 @@ class DbusMonitor(object):
 
 	def scan_dbus_service_getitems_done(self, serviceName, serviceId, values):
 		# Keeping these exceptions for legacy reasons
-		if serviceName == 'com.victronenergy.settings':
+		if serviceName == 'com.victronenergy.settings' or serviceName == 'com.victronenergy.platform':
 			di = 0
 		elif serviceName.startswith('com.victronenergy.vecan.'):
 			di = 0
@@ -409,7 +414,7 @@ class DbusMonitor(object):
 	# Typically seen will be sufficient and doesn't need access to the dbus.
 	def exists(self, serviceName, objectPath):
 		try:
-			self.dbusConn.call_blocking(serviceName, objectPath, None, 'GetValue', '', [])
+			self.dbusConn.call_blocking(serviceName, objectPath, VE_INTERFACE, 'GetValue', '', [])
 			return True
 		except dbus.exceptions.DBusException as e:
 			return False
@@ -441,7 +446,7 @@ class DbusMonitor(object):
 			return -1
 		# We do not catch D-Bus exceptions here, because the previous implementation did not do that either.
 		return self.dbusConn.call_blocking(serviceName, objectPath,
-				   dbus_interface='com.victronenergy.BusItem',
+				   dbus_interface=VE_INTERFACE,
 				   method='SetValue', signature=None,
 				   args=[wrap_dbus_value(value)])
 
@@ -452,7 +457,7 @@ class DbusMonitor(object):
 		if service is not None:
 			if objectPath in service.paths:
 				self.dbusConn.call_async(serviceName, objectPath,
-					dbus_interface='com.victronenergy.BusItem',
+					dbus_interface=VE_INTERFACE,
 					method='SetValue', signature=None,
 					args=[wrap_dbus_value(value)],
 					reply_handler=reply_handler, error_handler=error_handler)
