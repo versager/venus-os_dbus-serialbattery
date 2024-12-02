@@ -21,7 +21,7 @@ from utils import (
     EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE,
     EXTERNAL_CURRENT_SENSOR_DBUS_PATH,
     logger,
-    MODBUS_ADDRESSES,
+    BATTERY_ADDRESSES,
     POLL_INTERVAL,
     validate_config_values,
 )
@@ -319,9 +319,9 @@ def main():
         # else the error throw a lot of timeouts
         sleep(16)
 
-        # check if MODBUS_ADDRESSES is not empty
-        if MODBUS_ADDRESSES:
-            for address in MODBUS_ADDRESSES:
+        # check if BATTERY_ADDRESSES is not empty
+        if BATTERY_ADDRESSES:
+            for address in BATTERY_ADDRESSES:
                 checkbatt = get_battery(port, address)
                 if checkbatt is not None:
                     battery[address] = checkbatt
@@ -340,7 +340,9 @@ def main():
             battery_found = True
 
     if not battery_found:
-        logger.error("ERROR >>> No battery connection at " + port + (" and this Modbus addresses: " + ", ".join(MODBUS_ADDRESSES) if MODBUS_ADDRESSES else ""))
+        logger.error(
+            "ERROR >>> No battery connection at " + port + (" and this Modbus addresses: " + ", ".join(BATTERY_ADDRESSES) if BATTERY_ADDRESSES else "")
+        )
         sys.exit(1)
 
     # Have a mainloop, so we can send/receive asynchronous calls to and from dbus
@@ -356,7 +358,7 @@ def main():
         helper[key_address] = DbusHelper(battery[key_address], key_address)
         if not helper[key_address].setup_vedbus():
             logger.error(
-                "ERROR >>> Problem with battery set up at " + port + (" and this Modbus address: " + ", ".join(MODBUS_ADDRESSES) if MODBUS_ADDRESSES else "")
+                "ERROR >>> Problem with battery set up at " + port + (" and this Modbus address: " + ", ".join(BATTERY_ADDRESSES) if BATTERY_ADDRESSES else "")
             )
             sys.exit(1)
 
