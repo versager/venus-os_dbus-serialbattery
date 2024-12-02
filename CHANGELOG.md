@@ -9,7 +9,7 @@
 * 🚨 The Bluetooth connection is still not stable on some systems. If you want to have a stable connection use the serial connection.
 
 
-## v1.5.x
+## v1.5.20241202
 
 ### What's Changed
 
