@@ -153,7 +153,7 @@ def main():
                         + (' at address "' + utils.bytearray_to_string(_bms_address) + '"' if _bms_address is not None else "")
                     )
                     batteryClass = test["bms"]
-                    baud = test["baud"]
+                    baud = test["baud"] if "baud" in test else None
                     battery: Battery = batteryClass(port=_port, baud=baud, address=_bms_address)
                     if battery.test_connection() and battery.validate_data():
                         logger.info("-- Connection established to " + battery.__class__.__name__)
@@ -287,8 +287,8 @@ def main():
 
         # only try CAN BMS on CAN port
         supported_bms_types = [
-            {"bms": Daly_Can, "baud": utils.CAN_SPEED},
-            {"bms": Jkbms_Can, "baud": utils.CAN_SPEED},
+            {"bms": Daly_Can},
+            {"bms": Jkbms_Can},
         ]
 
         # check if utils.BMS_TYPE is not empty and all BMS types in the list are supported
