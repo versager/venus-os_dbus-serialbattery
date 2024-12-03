@@ -68,12 +68,14 @@ class DbusHelper:
         self.telemetry_upload_last: int = 0
         self.telemetry_upload_running: bool = False
 
-    def create_pid_file(self) -> None:
+    def create_pid_file(self) -> bool:
         """
         Create a pid file for the driver with the device instance as file name suffix.
         Keep the file locked for the entire script runtime, to prevent another instance from running with
         the same device instance. This is achieved by maintaining a reference to the "pid_file" object for
         the entire script runtime storing "pid_file" as an instance variable "self.pid_file".
+
+        :return: True if the pid file was created successfully, False if the file is already locked.
         """
         # only used for this function
         import fcntl
@@ -110,7 +112,7 @@ class DbusHelper:
 
             self.pid_file.close()
             sleep(60)
-            sys.exit(1)
+            return False
 
         except Exception:
             (
@@ -136,13 +138,17 @@ class DbusHelper:
 
         logger.debug(f"PID file created successfully: {pid_file_path}")
 
-    def setup_instance(self):
+        return True
+
+    def setup_instance(self) -> bool:
         """
         Sets up the instance of the battery by checking if it was already connected once.
         If the battery was already connected, it retrieves the instance from the dbus settings and
-            updates the last seen time.
+        updates the last seen time.
         If the battery was not connected before, it creates the settings and sets the instance to the
-            next available one.
+        next available one.
+
+        :return: True if the instance was set up successfully, False if the instance could not be set up.
         """
 
         # bms_id = self.battery.production if self.battery.production is not None else \
@@ -391,14 +397,29 @@ class DbusHelper:
         logger.debug(f"Found DeviceInstances: {device_instances_used}")
 
         # create pid file
-        self.create_pid_file()
+        if not self.create_pid_file():
+            return False
 
-    def get_role_instance(self):
+        return True
+
+    def get_role_instance(self) -> tuple:
+        """
+        Get the role and instance from the settings.
+
+        :return: Tuple with role and instance.
+        """
         val = self.settings["ClassAndVrmInstance"].split(":")
         logger.debug(f"Use DeviceInstance: {int(val[1])}")
         return val[0], int(val[1])
 
-    def handle_changed_setting(self, setting, oldvalue, newvalue):
+    def handle_changed_setting(self, setting, oldvalue, newvalue) -> None:
+        """
+        Handle the changed settings from dbus.
+
+        :param setting: The setting that was changed.
+        :param oldvalue: The old value of the setting.
+        :param newvalue: The new value of the setting.
+        """
         if setting == "ClassAndVrmInstance":
             old_instance = self.instance
             self.battery.role, self.instance = self.get_role_instance()
@@ -413,11 +434,14 @@ class DbusHelper:
     # this function is called when the battery is initiated
     def setup_vedbus(self) -> bool:
         """
-        Set up dbus service and device instance
-        and notify of all the attributes we intend to update
-        This is only called once when a battery is initiated
+        Set up dbus service and device instance and notify of all the attributes we intend to update.
+        This is only called once when a battery is initiated.
+
+        :return: True if the setup was successful, False if the setup failed.
         """
-        self.setup_instance()
+        if not self.setup_instance():
+            return False
+
         logger.info(f"Use dbus ServiceName: {self._dbusname}")
 
         # Create the management objects, as specified in the ccgx dbus-api document
@@ -585,6 +609,8 @@ class DbusHelper:
         self._dbusservice.add_path("/History/TimeSinceLastFullCharge", None, writeable=True)
         self._dbusservice.add_path("/History/LowVoltageAlarms", None, writeable=True)
         self._dbusservice.add_path("/History/HighVoltageAlarms", None, writeable=True)
+        self._dbusservice.add_path("/History/MinimumTemperature", None, writeable=True)
+        self._dbusservice.add_path("/History/MaximumTemperature", None, writeable=True)
         self._dbusservice.add_path("/History/DischargedEnergy", None, writeable=True)
         self._dbusservice.add_path("/History/ChargedEnergy", None, writeable=True)
 
@@ -689,8 +715,13 @@ class DbusHelper:
 
         return True
 
-    def publish_battery(self, loop):
-        # This is called every battery.poll_interval milli second as set up per battery type to read and update the data
+    def publish_battery(self, loop) -> None:
+        """
+        Publishes the battery data to dbus.
+        This is called every battery.poll_interval milli second as set up per battery type to read and update the data
+
+        :param loop: The main loop of the driver.
+        """
         try:
             # Call the battery's refresh_data function
             result = self.battery.refresh_data()
@@ -811,8 +842,10 @@ class DbusHelper:
             traceback.print_exc()
             loop.quit()
 
-    def publish_dbus(self):
-        # Update SOC, DC and System items
+    def publish_dbus(self) -> None:
+        """
+        Publishes the battery data to dbus and refresh it.
+        """
         self._dbusservice["/System/NrOfCellsPerBattery"] = self.battery.cell_count
         if utils.SOC_CALCULATION:
             self._dbusservice["/Soc"] = round(self.battery.soc_calc, 2) if self.battery.soc_calc is not None else None
@@ -1070,6 +1103,15 @@ class DbusHelper:
             self._dbusservice["/Settings/ResetSoc"] = self.battery.reset_soc
 
     def get_settings_with_values(self, bus, service: str, object_path: str, recursive: bool = True) -> dict:
+        """
+        Get all settings with values from dbus.
+
+        :param bus: The dbus object.
+        :param service: The service name.
+        :param object_path: The object path.
+        :param recursive: If True, it will get all settings with values recursively.
+        :return: A dictionary with all settings and values.
+        """
         # print(object_path)
         obj = bus.get_object(service, object_path)
         iface = dbus.Interface(obj, "org.freedesktop.DBus.Introspectable")
@@ -1108,6 +1150,15 @@ class DbusHelper:
         return result
 
     def set_settings(self, bus, service: str, object_path: str, setting_name: str, value) -> bool:
+        """
+        Set a setting with a value to dbus.
+
+        :param bus: The dbus object.
+        :param service: The service name.
+        :param object_path: The object path.
+        :param setting_name: The setting name.
+        :param value: The value to set.
+        """
         # check if value is None
         if value is None:
             return False
@@ -1128,6 +1179,14 @@ class DbusHelper:
             logger.error(f"Failed to set setting: {e}")
 
     def remove_settings(self, bus, service: str, object_path: str, setting_name: list) -> bool:
+        """
+        Remove a setting from dbus.
+
+        :param bus: The dbus object.
+        :param service: The service name.
+        :param object_path: The object path.
+        :param setting_name: The setting name.
+        """
         obj = bus.get_object(service, object_path)
         # iface = dbus.Interface(obj, "org.freedesktop.DBus.Introspectable")
         # xml_string = iface.Introspect()
@@ -1144,6 +1203,17 @@ class DbusHelper:
             logger.error(f"Failed to remove setting: {e}")
 
     def create_nested_dict(self, path, value) -> dict:
+        """
+        Creates a nested dictionary from a given path and value.
+
+        This function takes a string path, splits it by "/", and creates a nested dictionary structure
+        where each part of the path becomes a key in the dictionary. The final part of the path is
+        assigned the provided value.
+
+        :param path: A string representing the path, with parts separated by "/".
+        :param value: The value to assign to the final key in the nested dictionary.
+        :return: A nested dictionary representing the path and value.
+        """
         keys = path.strip("/").split("/")
         result = current = {}
         for key in keys[:-1]:
@@ -1153,14 +1223,35 @@ class DbusHelper:
         return result
 
     def merge_dicts(self, dict1, dict2) -> None:
+        """
+        Merges dict2 into dict1 recursively.
+
+        This function takes two dictionaries and merges dict2 into dict1. If a key exists in both dictionaries
+        and the corresponding values are also dictionaries, it merges those dictionaries recursively. Otherwise,
+        it overwrites the value in dict1 with the value from dict2.
+
+        :param dict1: The dictionary to merge into.
+        :param dict2: The dictionary to merge from.
+        :return: None
+        """
         for key in dict2:
             if key in dict1 and isinstance(dict1[key], dict) and isinstance(dict2[key], dict):
                 self.merge_dicts(dict1[key], dict2[key])
             else:
                 dict1[key] = dict2[key]
 
-    # save custom name to dbus
     def custom_name_callback(self, path, value) -> str:
+        """
+        Callback function to set a custom name for the battery.
+
+        This function sets a custom name for the battery by updating the settings on the D-Bus.
+        It logs the result of the operation and returns the new value if the operation was successful,
+        otherwise it returns None.
+
+        :param path: The D-Bus path where the custom name should be set.
+        :param value: The custom name to set.
+        :return: The custom name if the operation was successful, otherwise None.
+        """
         result = self.set_settings(
             get_bus(),
             "com.victronenergy.settings",
@@ -1173,6 +1264,14 @@ class DbusHelper:
 
     # save current battery states to dbus
     def save_current_battery_state(self) -> bool:
+        """
+        Save the current battery state to dbus.
+
+        This function saves the current battery state to dbus. It checks if the values have changed and
+        only saves the values that have changed.
+
+        :return: True if the values have been saved, otherwise False.
+        """
         result = True
 
         if self.battery.allow_max_voltage != self.save_charge_details_last["allow_max_voltage"]:

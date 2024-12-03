@@ -689,6 +689,8 @@ def read_serial_data(
 
     except serial.SerialException as e:
         logger.error(e)
+        # close the serial port
+        ser.close()
         return False
 
     except Exception:

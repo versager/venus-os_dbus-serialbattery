@@ -243,26 +243,28 @@ if [ "$bluetooth_length" -gt 0 ]; then
 
         {
             echo "#!/bin/sh"
-            echo "exec 2>&1"
-            echo "echo"
-            echo "echo"
-            echo "echo \"INFO:Preparing Bluetooth for connection to BMS\""
-            echo "echo \"INFO:Bluetooth details\""
+            echo
+            echo "# Forward signals to the child process"
+            echo "trap 'kill -TERM \$PID' TERM INT"
+            echo
             # close all open connections, else the driver can't connect
-            echo "bluetoothctl disconnect $3"
-
-            # enable bluetoothctl scan in background to display signal strength (RSSI), else it's missing
-            echo "bluetoothctl scan on | grep \"$3\" | grep \"RSSI\" &"
-            # with multiple Bluetooth BMS one scan for all should be enough. Check if that can be changed globally, maybe with a cronjob after reboot?
-            # echo "bluetoothctl scan on > /dev/null &"
-
-            # wait 5 seconds to finish the scan
-            echo "sleep 5"
-            # display some Bluetooth device details
-            echo "bluetoothctl info $3 | grep -E \"Device|Alias|Pair|Trusted|Blocked|Connected|RSSI|Power\""
-            echo "echo"
-            echo "python /data/apps/dbus-serialbattery/dbus-serialbattery.py $2 $3"
-            echo "pkill -f \"bluetoothctl scan on\""
+            echo "bluetoothctl disconnect $3 > /dev/null 2>&1"
+            echo
+            echo "# Start the main process"
+            echo "exec 2>&1"
+            echo "python /data/apps/dbus-serialbattery/dbus-serialbattery.py $2 $3 &"
+            echo
+            echo "# Capture the PID of the child process"
+            echo "PID=\$!"
+            echo
+            echo "# Wait for the child process to exit"
+            echo "wait \$PID"
+            echo
+            echo "# Capture the exit status"
+            echo "EXIT_STATUS=\$?"
+            echo
+            echo "# Exit with the same status"
+            echo "exit \$EXIT_STATUS"
         } > "/service/dbus-blebattery.$1/run"
         chmod 755 "/service/dbus-blebattery.$1/run"
     }
@@ -355,9 +357,25 @@ if [ "$can_lenght" -gt 0 ]; then
 
         {
             echo "#!/bin/sh"
+            echo
+            echo "# Forward signals to the child process"
+            echo "trap 'kill -TERM \$PID' TERM INT"
+            echo
+            echo "# Start the main process"
             echo "exec 2>&1"
-            echo "echo"
-            echo "python /data/apps/dbus-serialbattery/dbus-serialbattery.py $1"
+            echo "python /data/apps/dbus-serialbattery/dbus-serialbattery.py $1 &"
+            echo
+            echo "# Capture the PID of the child process"
+            echo "PID=\$!"
+            echo
+            echo "# Wait for the child process to exit"
+            echo "wait \$PID"
+            echo
+            echo "# Capture the exit status"
+            echo "EXIT_STATUS=\$?"
+            echo
+            echo "# Exit with the same status"
+            echo "exit \$EXIT_STATUS"
         } > "/service/dbus-canbattery.$1/run"
         chmod 755 "/service/dbus-canbattery.$1/run"
     }

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import math
 import os
+import signal
 import sys
 from datetime import datetime
 from time import sleep
@@ -92,6 +93,43 @@ delayed_loop_count = 0
 
 def main():
     global expected_bms_types, supported_bms_types
+
+    def exit_driver(sig, frame, code: int = 0) -> None:
+        """
+        Gracefully exit the driver.
+        Handles also signal for SIGINT and SIGTERM.
+
+        :return: None
+        """
+        logger.info("Exit signal received, exiting gracefully...")
+
+        port = get_port()
+
+        # Stop the main loop, if set
+        if "mainloop" in globals() and mainloop is not None:
+            mainloop.quit()
+
+        # For BLE connections, disconnect from the BLE device
+        if port.endswith("_Ble"):
+            if battery and len(battery) > 0 and hasattr(battery[0], "disconnect") and callable(battery[0].disconnect):
+                battery[0].disconnect()
+
+        # Stop the CanReceiverThread
+        elif port.startswith("can") or port.startswith("vecan"):
+            can_thread.stop()
+
+        # Close the serial connection
+        else:
+            # Currently not feasible to close the serial connection
+            # TODO: Is it worth implementing this?
+            pass
+
+        logger.info(f"Stopped dbus-serialbattery with exit code {code}")
+        sys.exit(code)
+
+    # Register the signal handler
+    signal.signal(signal.SIGINT, exit_driver)
+    signal.signal(signal.SIGTERM, exit_driver)
 
     def poll_battery(loop) -> bool:
         """
@@ -202,7 +240,7 @@ def main():
                 logger.debug("Stopping dbus-serialbattery: " + str(port) + " is excluded through the config file")
                 sleep(60)
                 # Exit with error so that the serialstarter continues
-                sys.exit(1)
+                exit_driver(None, None, 1)
         elif "MNB" in BMS_TYPE:
             # Special case for MNB-SPI
             logger.info("No Port needed")
@@ -210,7 +248,7 @@ def main():
         else:
             logger.error("ERROR >>> No port specified in the command line arguments")
             sleep(60)
-            sys.exit(1)
+            exit_driver(None, None, 1)
 
     def check_bms_types(supported_bms_types, type) -> None:
         """
@@ -240,7 +278,7 @@ def main():
                         + f"{', '.join([bms['bms'].__name__ for bms in supported_bms_types])}"
                         + "; Disabled by default: ANT, MNB, Sinowealth"
                     )
-                    sys.exit(1)
+                    exit_driver(None, None, 1)
 
     # read the version of Venus OS
     with open("/opt/victronenergy/version", "r") as f:
@@ -343,7 +381,7 @@ def main():
         logger.error(
             "ERROR >>> No battery connection at " + port + (" and this Modbus addresses: " + ", ".join(BATTERY_ADDRESSES) if BATTERY_ADDRESSES else "")
         )
-        sys.exit(1)
+        exit_driver(None, None, 1)
 
     # Have a mainloop, so we can send/receive asynchronous calls to and from dbus
     DBusGMainLoop(set_as_default=True)
@@ -360,7 +398,7 @@ def main():
             logger.error(
                 "ERROR >>> Problem with battery set up at " + port + (" and this Modbus address: " + ", ".join(BATTERY_ADDRESSES) if BATTERY_ADDRESSES else "")
             )
-            sys.exit(1)
+            exit_driver(None, None, 1)
 
     # get first key from battery dict
     first_key = list(battery.keys())[0]
