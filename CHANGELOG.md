@@ -9,6 +9,28 @@
 * 🚨 The Bluetooth connection is still not stable on some systems. If you want to have a stable connection use the serial connection.
 
 
+## v2.0.x
+
+### Breaking Changes
+
+* Driver version greater or equal to `v2.0.20241202dev`
+
+  * The driver path changed from `/data/etc/dbus-serialbattery` to `/data/apps/dbus-serialbattery`
+  * Changes to `config.default.ini`: `MODBUS_ADDRESSES` was replaced by `BATTERY_ADDRESSES`
+  * Changes to `config.default.ini`: Changed default values for Cell Voltage Current Limitation and Temperature Current Limitation
+
+### What's Changed
+* Added: Signal handler for clean service restart/shutdown by @mr-manuel
+* Changed: A lot of under the hood optimizations by @mr-manuel
+* Changed: Dependencies are now shipped with the driver and not downloaded anymore which allows a complete offline installation by @mr-manuel
+* Changed: Driver was moved from `/data/etc/dbus-serialbattery` to `/data/apps/dbus-serialbattery` by @mr-manuel
+* Changed: Improved driver and `config.default.ini` descriptions by @mr-manuel
+* Changed: Licensing from MIT license to GNU AGPLv3 license by @mr-manuel
+* Changed: Refactored driver installation via USB/SD card by @mr-manuel
+* Changed: The driver is now running directly from it's app folder. No need to copy the `config.ini` file anywhere, which means changes are applied by simply restarting the service by @mr-manuel
+* Changed: The root filesystem is not mounted as read-write anymore, since overlay filesystems are used now. This allows to let the core system files untouched and to revert all changes with one command. The changes are now also persistant and do not have to be installed on every Venus OS update again by @mr-manuel
+
+
 ## v1.5.20241202
 
 ### What's Changed
