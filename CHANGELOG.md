@@ -17,9 +17,11 @@
 
   * The driver path changed from `/data/etc/dbus-serialbattery` to `/data/apps/dbus-serialbattery`
   * Changes to `config.default.ini`: `MODBUS_ADDRESSES` was replaced by `BATTERY_ADDRESSES`
+  * Changes to `config.default.ini`: `SEPLOS_USE_BMS_VALUES` was replaced by `USE_BMS_DVCC_VALUES`
   * Changes to `config.default.ini`: Changed default values for Cell Voltage Current Limitation and Temperature Current Limitation
 
 ### What's Changed
+* Added: Felicity BMS by @versager
 * Added: JKBMS CAN - Extended protocol with version V2 by @Hooorny and @mr-manuel
 * Added: Min/Max lifetime temperature to history class and battery template by @mr-manuel
 * Added: Signal handler for clean service restart/shutdown by @mr-manuel
@@ -33,6 +35,8 @@
 * Changed: Refactored driver installation via USB/SD card by @mr-manuel
 * Changed: The driver is now running directly from it's app folder. No need to copy the `config.ini` file anywhere, which means changes are applied by simply restarting the service by @mr-manuel
 * Changed: The root filesystem is not mounted as read-write anymore, since overlay filesystems are used now. This allows to let the core system files untouched and to revert all changes with one command. The changes are now also persistant and do not have to be installed on every Venus OS update again by @mr-manuel
+* Changed: The setting `MODBUS_ADDRESSES` was replaced by `BATTERY_ADDRESSES` in the `config.default.ini` by @mr-manuel
+* Changed: The setting `SEPLOS_USE_BMS_VALUES` was replaced by `USE_BMS_DVCC_VALUES` in the `config.default.ini` by @mr-manuel
 
 
 ## v1.5.20241202

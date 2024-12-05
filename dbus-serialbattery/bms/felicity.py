@@ -146,7 +146,7 @@ class Felicity(Battery):
             self.current = unpack_from(">h", voltage_current_data, 2)[0] / 10 * -1
             logger.debug(">>> INFO: Battery current: %f A", self.current)
 
-        if utils.FELICITY_USE_BMS_VALUES is True:
+        if utils.USE_BMS_DVCC_VALUES is True:
             dvcc_data = self.read_serial_data_felicity(self.command_dvcc)
             if dvcc_data is False:
                 return False

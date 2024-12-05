@@ -410,15 +410,16 @@ TELEMETRY: bool = get_bool_from_config("DEFAULT", "TELEMETRY")
 VOLTAGE_DROP: float = get_float_from_config("DEFAULT", "VOLTAGE_DROP")
 
 # --------- BMS specific settings ---------
-AUTO_RESET_SOC: bool = get_bool_from_config("DEFAULT", "AUTO_RESET_SOC")
 USE_PORT_AS_UNIQUE_ID: bool = get_bool_from_config("DEFAULT", "USE_PORT_AS_UNIQUE_ID")
+BATTERY_CAPACITY: float = get_float_from_config("DEFAULT", "BATTERY_CAPACITY")
+AUTO_RESET_SOC: bool = get_bool_from_config("DEFAULT", "AUTO_RESET_SOC")
+USE_BMS_DVCC_VALUES: bool = get_bool_from_config("DEFAULT", "USE_BMS_DVCC_VALUES")
 
 # -- LltJbd settings
 SOC_LOW_WARNING: float = get_float_from_config("DEFAULT", "SOC_LOW_WARNING")
 SOC_LOW_ALARM: float = get_float_from_config("DEFAULT", "SOC_LOW_ALARM")
 
 # -- Daly settings
-BATTERY_CAPACITY: float = get_float_from_config("DEFAULT", "BATTERY_CAPACITY")
 INVERT_CURRENT_MEASUREMENT: int = get_int_from_config("DEFAULT", "INVERT_CURRENT_MEASUREMENT")
 
 # -- ESC GreenMeter and Lipro device settings
@@ -426,9 +427,6 @@ GREENMETER_ADDRESS: int = get_int_from_config("DEFAULT", "GREENMETER_ADDRESS")
 LIPRO_START_ADDRESS: int = get_int_from_config("DEFAULT", "LIPRO_START_ADDRESS")
 LIPRO_END_ADDRESS: int = get_int_from_config("DEFAULT", "LIPRO_END_ADDRESS")
 LIPRO_CELL_COUNT: int = get_int_from_config("DEFAULT", "LIPRO_CELL_COUNT")
-
-# -- Seplos V3 settings
-SEPLOS_USE_BMS_VALUES: bool = get_bool_from_config("DEFAULT", "SEPLOS_USE_BMS_VALUES")
 
 
 # FUNCTIONS

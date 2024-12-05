@@ -11,7 +11,7 @@ from typing import Union
 import ext.minimalmodbus as minimalmodbus
 import serial
 from battery import Battery, Cell, Protection
-from utils import logger, SEPLOS_USE_BMS_VALUES
+from utils import logger, USE_BMS_DVCC_VALUES
 
 RETRYCNT = 3
 
@@ -204,7 +204,7 @@ class Seplosv3(Battery):
             # self.capacity_remain = spa[0x5A] / 100
 
             # use BMS values instead of driver calculated values
-            if SEPLOS_USE_BMS_VALUES:
+            if USE_BMS_DVCC_VALUES:
                 self.max_battery_voltage = spa[0x05] / 100
                 self.min_battery_voltage = spa[0x11] / 100
                 # below does not seem required to be set by BMS
