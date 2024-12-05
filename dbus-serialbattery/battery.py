@@ -116,6 +116,16 @@ class History:
         Number of high voltage alarms
         """
 
+        self.minimum_temperature: float = None
+        """
+        Minimum temperature in Celsius (lifetime)
+        """
+
+        self.maximum_temperature: float = None
+        """
+        Maximum temperature in Celsius (lifetime)
+        """
+
         self.discharged_energy: int = None
         """
         Discharged energy in kilo Watt hours

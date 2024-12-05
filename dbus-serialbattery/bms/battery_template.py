@@ -291,6 +291,12 @@ class BatteryTemplate(Battery):
         # Number of high voltage alarms (int)
         self.history.high_voltage_alarms = VALUE_FROM_BMS
 
+        # Minimum temperature in Celsius (lifetime)
+        self.history.minimum_temperature = VALUE_FROM_BMS
+
+        # Maximum temperature in Celsius (lifetime)
+        self.history.maximum_temperature = VALUE_FROM_BMS
+
         # Discharged energy in kilo Watt hours (int)
         self.history.discharged_energy = VALUE_FROM_BMS
 
