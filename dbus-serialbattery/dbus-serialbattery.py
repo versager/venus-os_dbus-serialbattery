@@ -16,7 +16,6 @@ from dbushelper import DbusHelper
 from utils import (
     BMS_TYPE,
     bytearray_to_string,
-    CAN_SPEED,
     DRIVER_VERSION,
     EXCLUDED_DEVICES,
     EXTERNAL_CURRENT_SENSOR_DBUS_DEVICE,
@@ -174,7 +173,7 @@ def main():
 
         return True
 
-    def get_battery(_port: str, _modbus_address: hex = None) -> Union[Battery, None]:
+    def get_battery(_port: str, _modbus_address: hex = None, _can_message_cache_callback: callable = None) -> Union[Battery, None]:
         """
         Attempts to establish a connection to the battery and returns the battery object if successful.
 
@@ -203,8 +202,9 @@ def main():
                         "Testing " + test["bms"].__name__ + (' at address "' + bytearray_to_string(_bms_address) + '"' if _bms_address is not None else "")
                     )
                     batteryClass = test["bms"]
-                    baud = test["baud"]
+                    baud = test["baud"] if "baud" in test else None
                     battery: Battery = batteryClass(port=_port, baud=baud, address=_bms_address)
+                    battery.set_message_cache_callback(_can_message_cache_callback)
                     if battery.test_connection() and battery.validate_data():
                         logger.info("-- Connection established to " + battery.__class__.__name__)
                         return battery
@@ -332,13 +332,13 @@ def main():
         Import CAN classes only if it's a CAN port; otherwise, the driver won't start due to missing Python modules.
         This prevents issues when using the driver exclusively with a serial connection.
         """
-        # from bms.daly_can import Daly_Can
+        from bms.daly_can import Daly_Can
         from bms.jkbms_can import Jkbms_Can
 
         # only try CAN BMS on CAN port
         supported_bms_types = [
-            # {"bms": Daly_Can, "baud": CAN_SPEED},
-            {"bms": Jkbms_Can, "baud": CAN_SPEED},
+            {"bms": Daly_Can},
+            {"bms": Jkbms_Can},
         ]
 
         # check if BMS_TYPE is not empty and all BMS types in the list are supported
@@ -346,7 +346,31 @@ def main():
 
         expected_bms_types = [battery_type for battery_type in supported_bms_types if battery_type["bms"].__name__ in BMS_TYPE or len(BMS_TYPE) == 0]
 
-        battery[0] = get_battery(port)
+        # start the corresponding CanReceiverThread if BMS for this type found
+        from utils_can import CanReceiverThread
+
+        try:
+            can_thread = CanReceiverThread.get_instance(bustype="socketcan", channel=port)
+        except Exception as e:
+            print(f"Error: {e}")
+
+        logger.debug("Wait shortly to make sure that all needed data is in the cache")
+        # Slowest message cycle trasmission is every 1 second, wait a bit more for the fist time to fetch all needed data
+        sleep(2)
+
+        # check if BATTERY_ADDRESSES is not empty
+        if BATTERY_ADDRESSES:
+            logger.info(">>> CAN multi device mode")
+            for address in BATTERY_ADDRESSES:
+                checkbatt = get_battery(port, address, can_thread.get_message_cache)
+                if checkbatt is not None:
+                    battery[address] = checkbatt
+                    logger.info("Successful battery connection at " + port + " and this device address " + str(address))
+                else:
+                    logger.warning("No battery connection at " + port + " and this device address " + str(address))
+        # use default address
+        else:
+            battery[0] = get_battery(port, None, can_thread.get_message_cache)
 
     # SERIAL
     else:

@@ -20,11 +20,13 @@
   * Changes to `config.default.ini`: Changed default values for Cell Voltage Current Limitation and Temperature Current Limitation
 
 ### What's Changed
+* Added: JKBMS CAN - Extended protocol with version V2 by @Hooorny and @mr-manuel
 * Added: Signal handler for clean service restart/shutdown by @mr-manuel
 * Changed: A lot of under the hood optimizations by @mr-manuel
 * Changed: Dependencies are now shipped with the driver and not downloaded anymore which allows a complete offline installation by @mr-manuel
 * Changed: Driver was moved from `/data/etc/dbus-serialbattery` to `/data/apps/dbus-serialbattery` by @mr-manuel
 * Changed: Improved driver and `config.default.ini` descriptions by @mr-manuel
+* Changed: JKBMS CAN - Per default only address 0 is recognized. Change `BATTERY_ADDRESS` to match your device address by @Hooorny and @mr-manuel
 * Changed: Licensing from MIT license to GNU AGPLv3 license by @mr-manuel
 * Changed: Refactored driver installation via USB/SD card by @mr-manuel
 * Changed: The driver is now running directly from it's app folder. No need to copy the `config.ini` file anywhere, which means changes are applied by simply restarting the service by @mr-manuel

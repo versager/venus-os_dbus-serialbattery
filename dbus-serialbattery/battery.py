@@ -159,6 +159,7 @@ class Battery(ABC):
         self.port: str = port
         self.baud_rate: int = baud
         self.address: str = address
+        self.can_message_cache_callback: callable = None
         self.role: str = "battery"
         self.type: str = "Generic"
         self.poll_interval: int = 1000
@@ -342,6 +343,15 @@ class Battery(ABC):
             True if callable should be used for updates as they arrive from the battery
         """
         return False
+
+    def set_message_cache_callback(self, callback: callable) -> None:
+        """
+        Set the callback for the can message cache.
+
+        :param callback: the callback
+        :return: None
+        """
+        self.can_message_cache_callback: callable = callback
 
     @abstractmethod
     def get_settings(self) -> bool:
