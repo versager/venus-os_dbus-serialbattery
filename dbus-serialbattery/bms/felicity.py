@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+
+# NOTES
+# Added by https://github.com/versager
+# https://github.com/mr-manuel/venus-os_dbus-serialbattery/pull/116
+
 from battery import Battery, Cell, Protection
 from utils import read_serial_data, unpack_from, logger
 import utils
@@ -69,10 +74,6 @@ class Felicity(Battery):
         # Return True if success, False for failure
 
         self.capacity = utils.BATTERY_CAPACITY if not None else 0.0
-        self.max_battery_charge_current = utils.MAX_BATTERY_CHARGE_CURRENT
-        self.max_battery_discharge_current = utils.MAX_BATTERY_DISCHARGE_CURRENT
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
 
         return True
 
