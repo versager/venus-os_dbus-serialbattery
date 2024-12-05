@@ -5,6 +5,7 @@ from utils import logger
 import utils
 import logging
 import math
+from datetime import datetime
 from time import time
 from abc import ABC, abstractmethod
 import sys
@@ -273,6 +274,7 @@ class Battery(ABC):
         self.voltage: float = None
         self.current: float = None
         self.current_corrected: float = None
+        self.driver_start_time: int = int(time())
 
     @abstractmethod
     def test_connection(self) -> bool:
@@ -746,8 +748,12 @@ class Battery(ABC):
                 soc_reset_days_ago = round((current_time - self.soc_reset_last_reached) / 60 / 60 / 24, 2)
                 soc_reset_in_days = round(utils.SOC_RESET_AFTER_DAYS - soc_reset_days_ago, 2)
 
+                driver_start_time_dt = datetime.fromtimestamp(self.driver_start_time)
+                formatted_time = driver_start_time_dt.strftime("%Y.%m.%d %H:%M:%S")
+
                 self.charge_mode_debug = (
-                    f"max_battery_voltage: {(self.max_battery_voltage):.2f} V • "
+                    f"driver started: {formatted_time} • running since: {self.get_secondsToString(int(time()) - self.driver_start_time)}\n"
+                    + f"max_battery_voltage: {(self.max_battery_voltage):.2f} V • "
                     + f"control_voltage: {self.control_voltage:.2f} V\n"
                     + f"voltage: {self.voltage:.2f} V • "
                     + f"VOLTAGE_DROP: {utils.VOLTAGE_DROP:.2f} V\n"
@@ -907,8 +913,12 @@ class Battery(ABC):
                 soc_reset_days_ago = round((current_time - self.soc_reset_last_reached) / 60 / 60 / 24, 2)
                 soc_reset_in_days = round(utils.SOC_RESET_AFTER_DAYS - soc_reset_days_ago, 2)
 
+                driver_start_time_dt = datetime.fromtimestamp(self.driver_start_time)
+                formatted_time = driver_start_time_dt.strftime("%Y.%m.%d %H:%M:%S")
+
                 self.charge_mode_debug = (
-                    f"max_battery_voltage: {(self.max_battery_voltage):.2f} V • "
+                    f"driver started: {formatted_time} • running since: {self.get_secondsToString(int(time()) - self.driver_start_time)}\n"
+                    + f"max_battery_voltage: {(self.max_battery_voltage):.2f} V • "
                     + f"control_voltage: {self.control_voltage:.2f} V\n"
                     + f"voltage: {self.voltage:.2f} V • "
                     + f"VOLTAGE_DROP: {utils.VOLTAGE_DROP:.2f} V\n"
@@ -1767,6 +1777,8 @@ class Battery(ABC):
         """
         Setup external current sensor and it's dbus items
         """
+        # TODO: sometimes it happens that the external sensor disconnects, the system switches to native sensor
+        # ans after switching back to the external sensor, the system does not update the current values anymore
         import dbus
         import os
         from dbus.mainloop.glib import DBusGMainLoop
