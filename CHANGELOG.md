@@ -23,6 +23,7 @@
 * Added: JKBMS CAN - Extended protocol with version V2 by @Hooorny and @mr-manuel
 * Added: Signal handler for clean service restart/shutdown by @mr-manuel
 * Changed: A lot of under the hood optimizations by @mr-manuel
+* Changed: Daly CAN - Refactored driver to match new CAN standard by @mr-manuel
 * Changed: Dependencies are now shipped with the driver and not downloaded anymore which allows a complete offline installation by @mr-manuel
 * Changed: Driver was moved from `/data/etc/dbus-serialbattery` to `/data/apps/dbus-serialbattery` by @mr-manuel
 * Changed: Improved driver and `config.default.ini` descriptions by @mr-manuel
