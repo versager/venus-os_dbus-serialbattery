@@ -329,9 +329,15 @@ Page {
 
 			ListNavigation {
 				text: "Cell Voltages"
+				allowed: defaultAllowed && cell3Voltage.isValid
 				onClicked: {
 					Global.pageManager.pushPage("/pages/settings/devicelist/battery/PageBatteryCellVoltages.qml",
 							{ "title": text, "bindPrefix": root.battery.serviceUid })
+				}
+
+				VeQuickItem {
+					id: cell3Voltage
+					uid: root.battery.serviceUid + "/Voltages/Cell3"
 				}
 			}
 
