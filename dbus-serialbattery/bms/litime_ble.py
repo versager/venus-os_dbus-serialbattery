@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+
+# NOTES
+# Added by https://github.com/calledit
+# https://github.com/mr-manuel/venus-os_dbus-serialbattery/pull/59
+
 from battery import Battery, Cell
-import utils
-from bms.syncron_ble import Syncron_Ble
 from struct import unpack_from
+from utils_ble import Syncron_Ble
 import time
 
 
@@ -29,7 +33,6 @@ class LiTime_Ble(Battery):
             self.address, read_characteristic="0000ffe1-0000-1000-8000-00805f9b34fb", write_characteristic="0000ffe2-0000-1000-8000-00805f9b34fb"
         )
         self.request_and_proccess_battery_staus()
-        self.get_settings()
 
         return True
 
@@ -157,12 +160,6 @@ class LiTime_Ble(Battery):
         self.capacity_remaining = remaining_amph
         self.history.total_ah_drawn = discharges_amph_count
         self.history.full_discharges = discharges_count
-
-    def get_settings(self):
-
-        self.max_battery_voltage = utils.MAX_CELL_VOLTAGE * self.cell_count
-        self.min_battery_voltage = utils.MIN_CELL_VOLTAGE * self.cell_count
-        return True
 
     def request_and_proccess_battery_staus(self):
         data = self.ble_handle.send_data(self.query_battery_status)

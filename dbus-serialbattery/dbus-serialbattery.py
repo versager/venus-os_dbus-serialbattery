@@ -321,7 +321,7 @@ def main():
 
             if port == "LiTime_Ble":
                 # noqa: F401 --> ignore flake "imported but unused" error
-                from bms.litime import LiTime_Ble  # noqa: F401
+                from bms.litime_ble import LiTime_Ble  # noqa: F401
 
             class_ = eval(port)
 

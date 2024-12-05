@@ -23,6 +23,7 @@
 ### What's Changed
 * Added: Felicity BMS by @versager
 * Added: JKBMS CAN - Extended protocol with version V2 by @Hooorny and @mr-manuel
+* Added: LiTime BMS by @calledit
 * Added: Min/Max lifetime temperature to history class and battery template by @mr-manuel
 * Added: Signal handler for clean service restart/shutdown by @mr-manuel
 * Changed: A lot of under the hood optimizations by @mr-manuel
